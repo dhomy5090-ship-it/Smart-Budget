@@ -795,7 +795,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;">Finexy • AI Cloud V3.8</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;">Finexy • AI Cloud V3.9</div>
             </div>
         </div>
 
@@ -1728,6 +1728,19 @@
         </div>
     </div>
 
+    <!-- نافذة تفاصيل مصروفات اليوم في التقويم -->
+    <div id="calendarDayDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:16px;">
+                <h3 id="cal-day-modal-title" style="margin:0; font-size:1.15em;"><i class="fas fa-calendar-day text-primary"></i> تفاصيل اليوم</h3>
+                <button class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('calendarDayDetailsModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="cal-day-modal-kpis" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px; text-align:center;"></div>
+            <h4 style="margin:0 0 10px 0; font-size:0.95em; color:var(--text-muted);"><i class="fas fa-list-ul text-primary"></i> العمليات المسجلة في هذا اليوم:</h4>
+            <div id="cal-day-modal-list" style="max-height:50vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
+
     <input type="file" id="import-file" style="display:none" accept=".json,application/json" onchange="importLocalDataFile(event)">
 
     <script>
@@ -1783,11 +1796,38 @@
         // متغير عالمي لتخزين مكتبات السحابة لتسريع المزامنة بشكل هائل
         let FB = null;
 
+        function resetAppStateToDefault() {
+            APP_STATE.monthlyBudget = 8000;
+            APP_STATE.dailyBudget = 266;
+            APP_STATE.bankBalance = 0;
+            APP_STATE.emergencySaved = 0;
+            APP_STATE.emergencyFundHistory = [];
+            APP_STATE.splitBills = [];
+            APP_STATE.debts = [];
+            APP_STATE.expenses = [];
+            APP_STATE.savingsGoals = [];
+            APP_STATE.recurringExpenses = [];
+            APP_STATE.notifications = [];
+            APP_STATE.geminiApiKey = 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
+            APP_STATE.categories = [
+                { id: 'cat-1', name: 'المقاضي والمواد الغذائية', budget: 2000, icon: 'fa-shopping-basket' },
+                { id: 'cat-2', name: 'السيارة والبنزين', budget: 800, icon: 'fa-car' },
+                { id: 'cat-3', name: 'الفواتير والالتزامات', budget: 1500, icon: 'fa-file-invoice' },
+                { id: 'cat-4', name: 'المطاعم والترفيه', budget: 1200, icon: 'fa-utensils' }
+            ];
+        }
+
         function saveLocalData(skipCloudSync = false) {
             try {
-                localStorage.setItem('budget_smart_app_data_v1', JSON.stringify(APP_STATE));
+                // عدم حفظ البيانات المالية محلياً لتبقى آمنة في السحابة فقط، وحفظ جلسة الدخول والرمز السري فقط
+                localStorage.removeItem('budget_smart_app_data_v1');
                 if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
                     localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
+                }
+                if (APP_STATE.appPin) {
+                    localStorage.setItem('smart_budget_app_pin', APP_STATE.appPin);
+                } else {
+                    localStorage.removeItem('smart_budget_app_pin');
                 }
             } catch(e) {}
             if (!skipCloudSync) saveCloudData();
@@ -1795,15 +1835,15 @@
 
         function loadLocalData() {
             try {
-                const saved = localStorage.getItem('budget_smart_app_data_v1');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    Object.assign(APP_STATE, parsed);
-                }
+                localStorage.removeItem('budget_smart_app_data_v1');
                 // استرجاع جلسة المستخدم المحفوظة بشكل دائم (تذكر الحساب برقم الجوال)
                 const savedSession = localStorage.getItem('smart_budget_auth_session');
                 if (savedSession) {
                     APP_STATE.userAuth = JSON.parse(savedSession);
+                }
+                const savedPin = localStorage.getItem('smart_budget_app_pin');
+                if (savedPin) {
+                    APP_STATE.appPin = savedPin;
                 }
 
                 // دمج مفتاح الذكاء الاصطناعي بشكل إلزامي دائم
@@ -1858,20 +1898,41 @@
 
         async function sendAuthOtpEmail() {
             const phone = document.getElementById('auth-input-phone').value.trim();
-            const email = document.getElementById('auth-input-email').value.trim();
+            const email = document.getElementById('auth-input-email').value.trim().toLowerCase();
 
             if (!phone || phone.length < 7 || !email || !email.includes('@')) {
                 showToast('يرجى إدخال رقم جوال صحيح وبريد إلكتروني صالح', 'warning');
                 return;
             }
 
-            const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
-            pendingAuthData = { phone, email, otp: generatedOtp };
-
             const sendBtn = document.getElementById('btn-send-otp');
             const origBtnHtml = sendBtn.innerHTML;
             sendBtn.disabled = true;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحقق والإرسال...';
+
+            // التحقق من تطابق البريد الإلكتروني مع رقم الجوال في قاعدة البيانات السحابية
+            if (firestoreDb && FB) {
+                try {
+                    const phoneKey = phone.replace(/[^0-9+]/g, '');
+                    const docRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
+                    const docSnap = await FB.getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const existingData = docSnap.data();
+                        const existingEmail = (existingData.email || (existingData.state && existingData.state.userAuth && existingData.state.userAuth.email) || '').trim().toLowerCase();
+                        if (existingEmail && existingEmail !== email) {
+                            sendBtn.disabled = false;
+                            sendBtn.innerHTML = origBtnHtml;
+                            showToast('عذراً، البريد الإلكتروني لا يطابق البريد المرتبط برقم الجوال هذا في السحابة!', 'danger');
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Cloud check error:", err);
+                }
+            }
+
+            const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+            pendingAuthData = { phone, email, otp: generatedOtp };
 
             try {
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
@@ -1920,14 +1981,28 @@
         }
 
         async function logoutUserSession() {
+            if (unsubscribeCloudSnapshot) {
+                unsubscribeCloudSnapshot();
+                unsubscribeCloudSnapshot = null;
+            }
             localStorage.removeItem('smart_budget_auth_session');
+            localStorage.removeItem('budget_smart_app_data_v1');
             APP_STATE.userAuth = null;
-            saveLocalData(true);
+            resetAppStateToDefault();
             updateAuthHeaderLabel();
             closeModal('userAuthModal');
 
-            await subscribeToActiveCloudDocument();
-            showToast('تم تسجيل الخروج من الحساب بنجاح', 'info');
+            renderDashboard();
+            renderCategories();
+            renderRecentExpenses();
+            renderCalendar();
+            renderDebtsPage();
+            renderSavingsPage();
+            renderNotifications();
+            updateCharts();
+            updateCloudSyncStatusBadge();
+
+            showToast('تم تسجيل الخروج ومسح البيانات محلياً من الجهاز بنجاح', 'info');
         }
 
         function applyCloudDataToAppState(cloudData) {
@@ -1969,28 +2044,25 @@
                     unsubscribeCloudSnapshot = null;
                 }
 
-                // إذا كان المستخدم مسجلاً برقم جواله، يكون رقم الجوال هو المعرّف الأساسي لملفه في السحابة
-                let targetDocRef;
-                let isUserPhoneDoc = false;
-                if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
-                    const phoneKey = APP_STATE.userAuth.phone.replace(/[^0-9+]/g, '');
-                    targetDocRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
-                    isUserPhoneDoc = true;
-                } else {
-                    targetDocRef = FB.doc(firestoreDb, 'shared_budgets', 'primary_budget_state');
+                // لا يتم جلب أو مزامنة البيانات إلا في حال تسجيل الدخول برقم الجوال
+                if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+                    isCloudConnected = true;
+                    updateCloudSyncStatusBadge();
+                    return;
                 }
+
+                const phoneKey = APP_STATE.userAuth.phone.replace(/[^0-9+]/g, '');
+                const targetDocRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
 
                 unsubscribeCloudSnapshot = FB.onSnapshot(targetDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const rawData = docSnap.data();
-                        const statePayload = (isUserPhoneDoc && rawData.state) ? rawData.state : rawData;
+                        const statePayload = rawData.state ? rawData.state : rawData;
                         if (statePayload && !isSyncingFromCloud) {
                             applyCloudDataToAppState(statePayload);
                         }
                     } else {
-                        // الحل الجذري: إزالة الرفع التلقائي للسحابة هنا (saveCloudData)
-                        // لمنع الجهاز الجديد الفارغ من مسح بيانات السحابة قبل أن يستلمها.
-                        console.log("جاري استلام البيانات من السحابة أو الحساب جديد كلياً...");
+                        saveCloudData();
                     }
                     isCloudConnected = true;
                     updateCloudSyncStatusBadge();
@@ -2051,9 +2123,6 @@
                         state: APP_STATE,
                         updatedAt: new Date().toISOString()
                     });
-                } else {
-                    const docRef = FB.doc(firestoreDb, 'shared_budgets', 'primary_budget_state');
-                    await FB.setDoc(docRef, { ...APP_STATE, updatedAt: new Date().toISOString() });
                 }
             } catch (err) {}
         }
@@ -2851,11 +2920,63 @@
                         ${spentH}
                         ${remH}
                     `;
+                    cell.onclick = () => openCalendarDayModal(dayStr);
                 }
                 grid.appendChild(cell);
             }
         }
         function changeCalendarMonth(d) { calendarCurrentDate.setMonth(calendarCurrentDate.getMonth() + d); renderCalendar(); }
+
+        function openCalendarDayModal(dayStr) {
+            const titleEl = document.getElementById('cal-day-modal-title');
+            if (titleEl) titleEl.innerHTML = `<i class="fas fa-calendar-day text-primary"></i> عمليات يوم <span dir="ltr">${dayStr}</span>`;
+
+            const dayExps = (APP_STATE.expenses || []).filter(e => e.date && e.date.startsWith(dayStr));
+            const dSpent = dayExps.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+            const dRem = APP_STATE.dailyBudget - dSpent;
+
+            const kpisEl = document.getElementById('cal-day-modal-kpis');
+            if (kpisEl) {
+                kpisEl.innerHTML = `
+                    <div style="background:var(--surface-card); padding:10px; border-radius:14px; border:1px solid var(--border-color);">
+                        <div style="font-size:0.75em; color:var(--text-muted); margin-bottom:2px; font-weight:bold;">المخصص اليومي</div>
+                        <div class="font-bold" style="font-size:1.05em;" dir="ltr">${formatEn(APP_STATE.dailyBudget)}</div>
+                    </div>
+                    <div style="background:rgba(239,68,68,0.06); padding:10px; border-radius:14px; border:1px solid rgba(239,68,68,0.15);">
+                        <div style="font-size:0.75em; color:var(--danger); margin-bottom:2px; font-weight:bold;">المنصرف</div>
+                        <div class="font-bold text-danger" style="font-size:1.05em;" dir="ltr">${formatEn(dSpent)}</div>
+                    </div>
+                    <div style="background:${dRem >= 0 ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)'}; padding:10px; border-radius:14px; border:1px solid ${dRem >= 0 ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'};">
+                        <div style="font-size:0.75em; color:${dRem >= 0 ? 'var(--success)' : 'var(--danger)'}; margin-bottom:2px; font-weight:bold;">${dRem >= 0 ? 'المتبقي' : 'العجز'}</div>
+                        <div class="font-bold ${dRem >= 0 ? 'text-success' : 'text-danger'}" style="font-size:1.05em;" dir="ltr">${formatEn(dRem)}</div>
+                    </div>
+                `;
+            }
+
+            const listEl = document.getElementById('cal-day-modal-list');
+            if (listEl) {
+                listEl.innerHTML = '';
+                if (dayExps.length === 0) {
+                    listEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.9em; background:var(--surface-card); border-radius:14px;">لا توجد عمليات صرف مسجلة في هذا اليوم.</div>';
+                } else {
+                    dayExps.forEach(e => {
+                        let timePart = e.date && e.date.includes('T') ? e.date.split('T')[1].slice(0, 5) : '';
+                        let methodInfo = e.method ? ` • ${e.method}${e.bank ? ' (' + e.bank + ')' : ''}` : '';
+                        listEl.innerHTML += `
+                            <div style="background:var(--surface-color); border:1px solid var(--border-color); padding:12px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="closeModal('calendarDayDetailsModal'); openExpenseDetailsModal('${e.id}')">
+                                <div>
+                                    <strong style="font-size:0.98em;">${e.store}</strong>
+                                    <div style="font-size:0.78em; color:var(--text-muted); margin-top:2px;">${e.category}${methodInfo}${timePart ? ' • <span dir="ltr">' + timePart + '</span>' : ''}</div>
+                                </div>
+                                <span class="text-danger font-bold" style="font-size:1.1em;" dir="ltr">-${formatEn(e.amount)}</span>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            openModal('calendarDayDetailsModal');
+        }
 
         function ensureChartsInitialized() {
             if(!document.getElementById('myChart')) return;
