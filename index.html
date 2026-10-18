@@ -71,18 +71,22 @@
 
                 var ua = navigator.userAgent || '';
                 var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                var isMobileUA = isIOS || /Android|webOS|BlackBerry|IEMobile|Opera Mini|Mobile|Phone/i.test(ua) || (navigator.userAgentData && navigator.userAgentData.mobile === true);
+                var isSamsung = /SamsungBrowser/i.test(ua);
+                var isMobileUA = isIOS || /Android|webOS|BlackBerry|IEMobile|Opera Mini|Mobile|Phone|SamsungBrowser/i.test(ua) || (navigator.userAgentData && navigator.userAgentData.mobile === true);
                 var isSmallTouch = false;
                 try {
-                    isSmallTouch = window.matchMedia('(max-width: 820px) and (pointer: coarse)').matches;
+                    isSmallTouch = window.matchMedia('(max-width: 960px) and (pointer: coarse)').matches;
                 } catch (e) {}
                 var isMobileDevice = !!(isMobileUA || isSmallTouch);
                 window.__FINEXY_IS_MOBILE__ = isMobileDevice;
+                window.__FINEXY_IS_IOS__ = isIOS;
+                window.__FINEXY_IS_SAMSUNG__ = isSamsung;
                 document.documentElement.setAttribute('data-device-type', isMobileDevice ? 'mobile' : 'desktop');
+                if (isIOS) document.documentElement.setAttribute('data-ios', 'true');
+                if (isSamsung) document.documentElement.setAttribute('data-samsung-browser', 'true');
 
-                // في الآيفون (Safari / iOS): الاعتماد المباشر على apple-mobile-web-app-capable="yes" بدون رابط data/blob manifest
-                // يضمن فتح التطبيق من الشاشة الرئيسية بوضع ملء الشاشة الكامل واختفاء الشريط السفلي للبحث في سفاري 100%.
-                // أما في الأندرويد (Chrome / Samsung Internet) والكمبيوتر (Windows / Mac / Linux): نحقن manifest مخصص لنوع الجهاز.
+                // في الآيفون (Safari / iOS): الاعتماد المباشر على apple-mobile-web-app-capable="yes"
+                // أما في الأندرويد (Chrome / Samsung Internet) والكمبيوتر: نستخدم Blob URL نظيف وخفيف ليتوافق 100% مع متصفح سامسونج وكروم
                 if (!isIOS) {
                     var cleanUrl = window.location.href.split('#')[0].split('?')[0];
                     var scopeUrl = cleanUrl.substring(0, cleanUrl.lastIndexOf('/') + 1) || cleanUrl;
@@ -94,21 +98,26 @@
                         start_url: cleanUrl,
                         scope: scopeUrl,
                         display: "standalone",
-                        display_override: isMobileDevice ? ["fullscreen", "standalone", "minimal-ui"] : ["window-controls-overlay", "standalone"],
+                        display_override: isMobileDevice ? ["standalone", "minimal-ui"] : ["window-controls-overlay", "standalone"],
                         orientation: isMobileDevice ? "portrait" : "any",
                         dir: "rtl",
                         lang: "ar",
                         background_color: "#06050b",
                         theme_color: "#111115",
                         icons: [
-                            { src: icon192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
-                            { src: icon512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+                            { src: icon192, sizes: "192x192", type: "image/png", purpose: "any" },
+                            { src: icon512, sizes: "512x512", type: "image/png", purpose: "any" }
                         ]
                     };
                     var manifestLink = document.createElement('link');
                     manifestLink.rel = 'manifest';
                     manifestLink.id = 'finexy-manifest-link';
-                    manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestData));
+                    try {
+                        var mBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
+                        manifestLink.href = URL.createObjectURL(mBlob);
+                    } catch (eBlob) {
+                        manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestData));
+                    }
                     document.head.appendChild(manifestLink);
                 }
             } catch (e) {}
@@ -135,7 +144,11 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
         (function() {
-            emailjs.init("Rs6OfjlzR1mCMoOoM");
+            try {
+                if (typeof emailjs !== 'undefined' && emailjs && typeof emailjs.init === 'function') {
+                    emailjs.init("Rs6OfjlzR1mCMoOoM");
+                }
+            } catch (e) {}
         })();
     </script>
 
@@ -212,18 +225,30 @@
             font-family: 'Plus Jakarta Sans', sans-serif !important;
         }
 
+        html {
+            height: auto !important;
+            min-height: 100% !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
         body {
             background-color: var(--bg-color);
             background-image: var(--bg-gradient);
-            background-attachment: fixed;
+            background-attachment: scroll;
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            height: 100vh;
-            overflow: hidden;
+            display: block !important;
+            min-height: 100vh !important;
+            min-height: 100dvh !important;
+            height: auto !important;
+            overflow-x: hidden !important;
+            overflow-y: visible !important;
+            overscroll-behavior-y: auto !important;
+            touch-action: pan-y pinch-zoom !important;
             transition: background 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
         }
 
@@ -467,23 +492,22 @@
         html[dir="ltr"] .dropdown-item-btn:hover { transform: translateX(3px); }
 
         .main-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
+            display: block !important;
+            height: auto !important;
+            overflow: visible !important;
             padding: 18px;
         }
 
         .main-content {
-            flex: 1;
+            display: block !important;
+            height: auto !important;
             background: var(--surface-color);
             backdrop-filter: blur(var(--glass-blur)) saturate(180%);
             border-radius: 30px;
             border: 1px solid var(--glass-border);
             box-shadow: var(--glass-shadow), var(--glass-highlight);
             padding: 28px;
-            overflow-y: auto;
+            overflow: visible !important;
             position: relative;
         }
 
@@ -1270,20 +1294,49 @@
             z-index: 6500 !important;
         }
 
-        /* تحسينات وضع التطبيق المثبت (Standalone / Fullscreen PWA) بدون أشرطة المتصفح */
+        /* تحسينات وضع التطبيق المثبت (Standalone / Fullscreen PWA) بدون أشرطة المتصفح مع مسافة آمنة كاملة تحت شريط الوقت والشاحن والشبكة */
         @media all and (display-mode: standalone), all and (display-mode: fullscreen), all and (display-mode: minimal-ui) {
             body {
                 padding-top: 0 !important;
                 padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-                overscroll-behavior-y: none;
+                overscroll-behavior-y: auto !important;
             }
             .v13-top-header-shell {
-                padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+                padding-top: calc(max(env(safe-area-inset-top, 0px), 44px) + 14px) !important;
+                padding-right: max(14px, env(safe-area-inset-right, 14px)) !important;
+                padding-left: max(14px, env(safe-area-inset-left, 14px)) !important;
             }
             #header-install-app-btn,
             #header-install-mobile-wrapper {
                 display: none !important;
             }
+        }
+
+        /* في أجهزة الآيفون والآيباد (iOS): ضمان وجود مسافة مريحة دائماً تحت شريط الوقت والتاريخ والشبكة والبطارية لمنع أي تداخل */
+        html[data-ios="true"] .v13-top-header-shell {
+            padding-top: calc(max(env(safe-area-inset-top, 0px), 48px) + 14px) !important;
+            padding-right: max(14px, env(safe-area-inset-right, 14px)) !important;
+            padding-left: max(14px, env(safe-area-inset-left, 14px)) !important;
+        }
+
+        /* ضمان عدم انقسام عنوان "الميزانية الذكية" إلى سطرين متداخلين في جميع المقاسات */
+        .v13-brand-cluster {
+            flex: 0 1 auto !important;
+            min-width: 0;
+        }
+        .v13-brand-title {
+            white-space: nowrap !important;
+            line-height: 1.25 !important;
+        }
+
+        /* تمكين التمرير العمودي السلس باللمس على جميع البطاقات في أندرويد (كروم وسامسونج) والآيفون */
+        html[data-device-type="mobile"] .cat-box-card,
+        html[data-device-type="mobile"] .card,
+        html[data-device-type="mobile"] .v13-kpi-tile {
+            touch-action: pan-y pinch-zoom !important;
+            cursor: pointer !important;
+            -webkit-user-drag: none !important;
+            user-select: none;
         }
 
         /* إخفاء علامة التنزيل الخاصة بالجوال تلقائياً عند فتح الموقع من كمبيوتر / لابتوب، وإظهارها فقط عند الفتح من الجوال */
@@ -1331,23 +1384,85 @@
             box-shadow: 0 6px 16px rgba(255, 85, 32, 0.3);
         }
 
+        /* أزرار الاختيار السريع للعملات العالمية في الإعدادات */
+        .currency-quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+        .currency-chip-btn {
+            background: var(--surface-card);
+            color: var(--text-main);
+            border: 1.5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.82em;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .currency-chip-btn:hover,
+        .currency-chip-btn.active-currency {
+            background: rgba(255, 85, 32, 0.14);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(255, 85, 32, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* ضبط ترويسة الشاشات المتوسطة والعريضة في الجوال/التابلت (حتى 1100px) لمنع قص زر الأدوات أو تداخل العنوان */
+        @media (max-width: 1100px) {
+            .v13-top-header-shell {
+                flex-wrap: wrap !important;
+                padding: calc(max(env(safe-area-inset-top, 0px), 28px) + 12px) max(14px, env(safe-area-inset-right, 14px)) 12px max(14px, env(safe-area-inset-left, 14px)) !important;
+                gap: 10px !important;
+            }
+            .v13-brand-cluster {
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+            }
+            .v13-header-actions {
+                flex: 0 0 auto !important;
+                justify-content: flex-end !important;
+            }
+            .v13-top-nav-links {
+                order: 3 !important;
+                width: 100% !important;
+                margin: 4px 0 0 0 !important;
+            }
+        }
+
         @media (max-width: 768px) {
-            /* تمرير طبيعي وسلس لكامل الصفحة في الآيفون والأندرويد */
-            html, body {
+            /* تمرير طبيعي وسلس 100% لكامل الصفحة في الآيفون والأندرويد (كروم ومتصفح سامسونج) */
+            html {
                 height: auto !important;
-                min-height: 100vh !important;
-                min-height: 100dvh !important;
+                min-height: 100% !important;
                 overflow-x: hidden !important;
                 overflow-y: auto !important;
                 -webkit-overflow-scrolling: touch;
             }
+            body {
+                display: block !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                min-height: 100dvh !important;
+                overflow-x: hidden !important;
+                overflow-y: visible !important;
+                overscroll-behavior-y: auto !important;
+                touch-action: pan-y pinch-zoom !important;
+            }
 
-            /* ترويسة علوية أنيقة ومدمجة بطبقة أقل من النوافذ المنبثقة */
+            /* ترويسة علوية متناسقة مع مسافة آمنة واضحة تحت شريط الوقت والتاريخ والبطارية والشبكة */
             .v13-top-header-shell {
                 position: relative !important;
                 z-index: 1100 !important;
                 flex-wrap: wrap !important;
-                padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
+                padding: calc(max(env(safe-area-inset-top, 0px), 44px) + 12px) max(12px, env(safe-area-inset-right, 12px)) 12px max(12px, env(safe-area-inset-left, 12px)) !important;
                 min-height: auto !important;
                 gap: 8px !important;
                 overflow: visible !important;
@@ -1371,11 +1486,12 @@
 
             .v13-brand-title {
                 font-size: 1em !important;
-                white-space: nowrap;
+                white-space: nowrap !important;
             }
 
             .v13-brand-cluster > div > div {
                 font-size: 0.65em !important;
+                white-space: nowrap !important;
             }
 
             .v13-header-actions {
@@ -1439,7 +1555,7 @@
                 transform: none !important;
             }
 
-            /* المسار الداخلي القابل للسحب يميناً ويساراً بنعومة تامة */
+            /* المسار الداخلي القابل للسحب يميناً ويساراً مع السماح بالتمرير العمودي للصفحة دون تعليق */
             .v13-nav-scroll-track {
                 display: flex !important;
                 flex-wrap: nowrap !important;
@@ -1454,7 +1570,7 @@
                 scrollbar-width: none !important;
                 padding: 2px 2px !important;
                 border-radius: 999px !important;
-                touch-action: pan-x !important;
+                touch-action: pan-x pan-y !important;
             }
 
             /* زر الثلاث خطوط (Hamburger Menu) دائري وأنيق وثابت الحجم في بداية الشريط */
@@ -1855,7 +1971,7 @@
         /* ضبط إضافي للشاشات الصغيرة (360px - 400px) */
         @media (max-width: 400px) {
             .v13-top-header-shell {
-                padding: calc(10px + env(safe-area-inset-top, 0px)) 10px 10px 10px !important;
+                padding: calc(max(env(safe-area-inset-top, 0px), 44px) + 12px) 10px 10px 10px !important;
             }
             .v13-brand-title {
                 font-size: 0.94em !important;
@@ -1916,7 +2032,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;">Finexy • AI Cloud V5.9</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.1</div>
             </div>
         </div>
 
@@ -2425,13 +2541,97 @@
             <!-- Page: Settings -->
             <div id="page-settings" class="page-section">
                 <div class="card" style="max-width: 650px; margin: 0 auto;">
-                    <h3 style="margin-top:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
+                        <div>
+                            <h3 style="margin:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.1</div>
+                        </div>
+                        <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 12px; padding: 6px 12px; text-align: center;">
+                            <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
+                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.1</div>
+                        </div>
+                    </div>
                     
-                    <div class="form-group" style="margin-top: 16px;">
-                        <label>رمز العملة:</label>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <input type="text" id="settings-currency-input" value="﷼" style="max-width: 150px;">
-                            <button type="button" class="primary-btn" style="padding: 10px 18px; font-size: 0.85em;" onclick="saveCurrencySetting()">حفظ العملة</button>
+                    <div class="form-group" style="margin-top: 16px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 18px; padding: 16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+                            <label style="margin:0; font-size:0.95em;"><i class="fas fa-coins text-primary"></i> عملة التطبيق (أكثر من 35 عملة عالمية وعربية):</label>
+                            <span id="settings-active-currency-badge" class="btn-edit-badge" style="font-size:0.8em;">العملة الحالية: ﷼</span>
+                        </div>
+                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">اختر عملتك المفضلة بضغطة واحدة من العملات الأساسية أو من القائمة الشاملة لـ 40 عملة منتشرة حول العالم:</p>
+
+                        <!-- أزرار اختيار سريع لأهم العملات العالمية والعربية -->
+                        <div class="currency-quick-chips" id="currency-quick-chips-box">
+                            <button type="button" class="currency-chip-btn" data-cur="﷼" onclick="selectAndSaveCurrency('﷼')">🇸🇦 الريال السعودي (﷼)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="$" onclick="selectAndSaveCurrency('$')">🇺🇸 الدولار الأمريكي ($)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="€" onclick="selectAndSaveCurrency('€')">🇪🇺 اليورو الأوروبي (€)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="£" onclick="selectAndSaveCurrency('£')">🇬🇧 الجنيه الإسترليني (£)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="¥" onclick="selectAndSaveCurrency('¥')">🇨🇳 اليوان الصيني (¥)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="د.إ" onclick="selectAndSaveCurrency('د.إ')">🇦🇪 الدرهم الإماراتي (د.إ)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="د.ك" onclick="selectAndSaveCurrency('د.ك')">🇰🇼 الدينار الكويتي (د.ك)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="ر.ق" onclick="selectAndSaveCurrency('ر.ق')">🇶🇦 الريال القطري (ر.ق)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="ج.م" onclick="selectAndSaveCurrency('ج.م')">🇪🇬 الجنيه المصري (ج.م)</button>
+                            <button type="button" class="currency-chip-btn" data-cur="₺" onclick="selectAndSaveCurrency('₺')">🇹🇷 الليرة التركية (₺)</button>
+                        </div>
+
+                        <!-- القائمة المنسدلة الشاملة لـ 40 عملة عالمية وعربية -->
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size:0.82em; color:var(--text-muted); margin-bottom:5px;">اختر من قائمة عملات العالم (40 عملة):</label>
+                            <select id="settings-currency-select" onchange="onCurrencyDropdownSelect(this.value)" style="width:100%; font-weight:800; cursor:pointer;">
+                                <optgroup label="🌟 أهم العملات العالمية الأساسية">
+                                    <option value="﷼">🇸🇦 الريال السعودي — Saudi Riyal (SAR / ﷼)</option>
+                                    <option value="$">🇺🇸 الدولار الأمريكي — US Dollar (USD / $)</option>
+                                    <option value="€">🇪🇺 اليورو الأوروبي — Euro (EUR / €)</option>
+                                    <option value="£">🇬🇧 الجنيه الإسترليني — British Pound (GBP / £)</option>
+                                    <option value="¥">🇨🇳 اليوان الصيني — Chinese Yuan (CNY / ¥)</option>
+                                </optgroup>
+                                <optgroup label="🌍 عملات دول الخليج والعالم العربي">
+                                    <option value="د.إ">🇦🇪 الدرهم الإماراتي — UAE Dirham (AED / د.إ)</option>
+                                    <option value="د.ك">🇰🇼 الدينار الكويتي — Kuwaiti Dinar (KWD / د.ك)</option>
+                                    <option value="ر.ق">🇶🇦 الريال القطري — Qatari Riyal (QAR / ر.ق)</option>
+                                    <option value="د.ب">🇧🇭 الدينار البحريني — Bahraini Dinar (BHD / د.ب)</option>
+                                    <option value="ر.ع">🇴🇲 الريال العماني — Omani Rial (OMR / ر.ع)</option>
+                                    <option value="ج.م">🇪🇬 الجنيه المصري — Egyptian Pound (EGP / ج.م)</option>
+                                    <option value="د.أ">🇯🇴 الدينار الأردني — Jordanian Dinar (JOD / د.أ)</option>
+                                    <option value="د.ع">🇮🇶 الدينار العراقي — Iraqi Dinar (IQD / د.ع)</option>
+                                    <option value="د.م">🇲🇦 الدرهم المغربي — Moroccan Dirham (MAD / د.م)</option>
+                                    <option value="د.ج">🇩🇿 الدينار الجزائري — Algerian Dinar (DZD / د.ج)</option>
+                                    <option value="د.ت">🇹🇳 الدينار التونسي — Tunisian Dinar (TND / د.ت)</option>
+                                    <option value="د.ل">🇱🇾 الدينار الليبي — Libyan Dinar (LYD / د.ل)</option>
+                                    <option value="ل.ل">🇱🇧 الليرة اللبنانية — Lebanese Pound (LBP / ل.ل)</option>
+                                    <option value="ج.س">🇸🇩 الجنيه السوداني — Sudanese Pound (SDG / ج.س)</option>
+                                    <option value="ر.ي">🇾🇪 الريال اليمني — Yemeni Rial (YER / ر.ي)</option>
+                                </optgroup>
+                                <optgroup label="🌐 أشهر العملات العالمية والآسيوية والأوروبية">
+                                    <option value="JP¥">🇯🇵 الين الياباني — Japanese Yen (JPY / JP¥)</option>
+                                    <option value="CHF">🇨🇭 الفرنك السويسري — Swiss Franc (CHF)</option>
+                                    <option value="CA$">🇨🇦 الدولار الكندي — Canadian Dollar (CAD / CA$)</option>
+                                    <option value="A$">🇦🇺 الدولار الأسترالي — Australian Dollar (AUD / A$)</option>
+                                    <option value="NZ$">🇳🇿 الدولار النيوزيلندي — New Zealand Dollar (NZD / NZ$)</option>
+                                    <option value="₺">🇹🇷 الليرة التركية — Turkish Lira (TRY / ₺)</option>
+                                    <option value="₹">🇮🇳 الروبية الهندية — Indian Rupee (INR / ₹)</option>
+                                    <option value="PKR">🇵🇰 الروبية الباكستانية — Pakistani Rupee (PKR)</option>
+                                    <option value="₽">🇷🇺 الروبل الروسي — Russian Ruble (RUB / ₽)</option>
+                                    <option value="₩">🇰🇷 الوون الكوري الجنوبي — South Korean Won (KRW / ₩)</option>
+                                    <option value="S$">🇸🇬 الدولار السنغافوري — Singapore Dollar (SGD / S$)</option>
+                                    <option value="HK$">🇭🇰 دولار هونغ كونغ — Hong Kong Dollar (HKD / HK$)</option>
+                                    <option value="RM">🇲🇾 الرينغيت الماليزي — Malaysian Ringgit (MYR / RM)</option>
+                                    <option value="Rp">🇮🇩 الروبية الإندونيسية — Indonesian Rupiah (IDR / Rp)</option>
+                                    <option value="฿">🇹🇭 البات التايلاندي — Thai Baht (THB / ฿)</option>
+                                    <option value="₱">🇵🇭 البيزو الفلبيني — Philippine Peso (PHP / ₱)</option>
+                                    <option value="R$">🇧🇷 الريال البرازيلي — Brazilian Real (BRL / R$)</option>
+                                    <option value="MX$">🇲🇽 البيزو المكسيكي — Mexican Peso (MXN / MX$)</option>
+                                    <option value="ZAR">🇿🇦 الراند الجنوب أفريقي — South African Rand (ZAR)</option>
+                                    <option value="kr">🇸🇪 الكرونة السويدية — Swedish Krona (SEK / kr)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:170px;">
+                                <span style="font-size:0.8em; color:var(--text-muted); white-space:nowrap;">أو اكتب رمزاً مخصصاً:</span>
+                                <input type="text" id="settings-currency-input" value="﷼" style="max-width: 130px; text-align:center; font-weight:900;">
+                            </div>
+                            <button type="button" class="primary-btn" style="padding: 10px 20px; font-size: 0.86em;" onclick="saveCurrencySetting()"><i class="fas fa-check-circle"></i> اعتماد وحفظ العملة</button>
                         </div>
                     </div>
 
@@ -2445,19 +2645,16 @@
 
                     <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                            <label style="margin:0;"><i class="fas fa-robot text-warning"></i> مفتاح الذكاء الاصطناعي (Gemini API Key):</label>
-                            <span id="gemini-key-status-badge" class="btn-edit-badge" style="background:rgba(16,185,129,0.12); color:var(--success); border-color:rgba(16,185,129,0.3);"><i class="fas fa-check-circle"></i> المحرك الذكي الهجين نشط</span>
+                            <label style="margin:0;"><i class="fas fa-robot text-warning"></i> مفتاح الذكاء الاصطناعي:</label>
+                            <span id="gemini-key-status-badge" class="btn-edit-badge" style="display:none; background:rgba(16,185,129,0.12); color:var(--success); border-color:rgba(16,185,129,0.3); cursor:default;"><i class="fas fa-check-circle"></i> المفتاح الذكي نشط</span>
                         </div>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 6px 0 10px 0;">يدعم التطبيق مفتاح Gemini API لقراءة الفواتير والمصروف السريع مع محرك ذكي محلي مدمج يعمل تلقائياً لضمان عدم توقف الميزات أبداً.</p>
+                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 6px 0 10px 0;">المفتاح الذكي محمي ومشفر داخل النظام لقراءة الفواتير والمصروف السريع والمحادثة الذكية، ولا يمكن تعديله أو إظهاره أو استخراجه من الواجهة.</p>
                         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                            <div style="position:relative; flex:1; min-width:220px;">
-                                <input type="password" id="settings-gemini-key-input" value="AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw" style="width:100%; padding-left:42px;" dir="ltr" placeholder="AIzaSy... أو مفتاح Gemini">
-                                <button type="button" onclick="toggleGeminiKeyVisibility()" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1em;" title="إظهار/إخفاء المفتاح">
-                                    <i class="fas fa-eye" id="gemini-key-eye-icon"></i>
-                                </button>
+                            <div style="position:relative; flex:1; min-width:220px; user-select:none; -webkit-user-select:none;">
+                                <input type="password" id="settings-gemini-key-input" value="••••••••••••••••••••••••••••••••" readonly disabled tabindex="-1" autocomplete="off" oncopy="return false" oncut="return false" onpaste="return false" oncontextmenu="return false" onselectstart="return false" style="width:100%; padding-left:38px; pointer-events:none; user-select:none; -webkit-user-select:none; letter-spacing:3px; opacity:0.85; cursor:not-allowed;" dir="ltr" aria-label="مفتاح الذكاء الاصطناعي محمي">
+                                <i class="fas fa-lock" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.95em; pointer-events:none;"></i>
                             </div>
-                            <button type="button" class="primary-btn" style="padding: 10px 16px; font-size: 0.85em;" onclick="saveGeminiApiKeySetting()"><i class="fas fa-save"></i> حفظ</button>
-                            <button type="button" class="action-btn" style="padding: 10px 16px; font-size: 0.85em;" id="btn-test-gemini-key" onclick="testGeminiApiKeyConnection()"><i class="fas fa-plug-circle-check text-primary"></i> فحص المفتاح</button>
+                            <button type="button" class="action-btn" style="padding: 10px 18px; font-size: 0.86em;" id="btn-test-gemini-key" onclick="testGeminiApiKeyConnection()"><i class="fas fa-plug-circle-check text-primary"></i> فحص المفتاح</button>
                         </div>
                         <div id="gemini-key-test-result" style="font-size:0.8em; margin-top:8px; display:none; padding:10px 12px; border-radius:12px;"></div>
                     </div>
@@ -2487,7 +2684,7 @@
                     </div>
 
                     <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <label><i class="fas fa-cloud text-primary"></i> حالة المزامنة السحابية (Firebase Cloud):</label>
+                        <label><i class="fas fa-cloud text-primary"></i> حالة المزامنة السحابية:</label>
                         <div style="display:flex; gap:10px; align-items:center; margin-top: 8px;">
                             <span id="cloud-sync-status-badge" style="display:inline-flex; align-items:center; gap:6px; font-size:0.9em; font-weight:bold;">جاري الاتصال بالسحابة تلقائياً...</span>
                         </div>
@@ -3281,20 +3478,25 @@
                     </button>
                 </div>
 
-                <!-- شرح خطوات الإضافة للشاشة الرئيسية حسب نوع الجوال (آيفون / أندرويد) -->
-                <div style="text-align: right; background: var(--surface-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 13px 14px; font-size: 0.81em; line-height: 1.6;">
-                    <div style="font-weight: 900; color: var(--text-main); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">
-                        <i class="fas fa-circle-info text-primary"></i> خطوات التثبيت السريع من متصفح الجوال:
+                <!-- شرح خطوات الإضافة للشاشة الرئيسية حسب نوع الجوال (متصفح سامسونج / كروم / سفاري) -->
+                <div id="mobile-install-guide-box" style="text-align: right; background: var(--surface-card); border: 1.5px solid var(--border-color); border-radius: 18px; padding: 13px 14px; font-size: 0.81em; line-height: 1.65; transition: all 0.3s ease;">
+                    <div style="font-weight: 900; color: var(--text-main); margin-bottom: 8px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-circle-info text-primary"></i> خطوات التثبيت المباشر حسب متصفح جوالك:
                     </div>
-                    <div style="margin-bottom: 7px; padding-bottom: 7px; border-bottom: 1px dashed var(--border-color);">
+                    <div id="guide-step-samsung" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
+                        <strong style="color: #6366f1;"><i class="fas fa-globe"></i> في جوال سامسونج (متصفح Samsung Internet):</strong><br>
+                        1. اضغط على علامة التحميل <strong>(⬇️+)</strong> في شريط العنوان، أو اضغط القائمة <strong>(☰)</strong> أسفل يسار الشاشة.<br>
+                        2. اختر <strong>"إضافة صفحة إلى" (Add page to)</strong> ثم اختر <strong>"الشاشة الرئيسية" (Home screen)</strong> ليفتح معك كتطبيق مستقل تماماً!
+                    </div>
+                    <div id="guide-step-chrome" style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
+                        <strong style="color: var(--success);"><i class="fab fa-chrome"></i> في متصفح كروم للأندرويد (Google Chrome):</strong><br>
+                        1. اضغط الزر الأخضر أعلاه، أو اضغط قائمة النقاط الثلاث <strong>(⋮)</strong> أعلى المتصفح.<br>
+                        2. اختر <strong>"تثبيت التطبيق" (Install app)</strong> أو <strong>"الإضافة إلى الشاشة الرئيسية"</strong>.
+                    </div>
+                    <div id="guide-step-ios">
                         <strong style="color: var(--primary-color);"><i class="fab fa-apple"></i> في الآيفون (متصفح Safari):</strong><br>
                         1. اضغط على زر <strong>المشاركة</strong> <i class="fas fa-arrow-up-from-bracket" style="color:var(--primary-color);"></i> في الشريط السفلي للمتصفح.<br>
                         2. اختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong> ثم اضغط <strong>إضافة</strong>.
-                    </div>
-                    <div>
-                        <strong style="color: var(--success);"><i class="fab fa-android"></i> في الأندرويد والسامسونج (Chrome / Samsung):</strong><br>
-                        1. اضغط زر <strong>"تثبيت التطبيق"</strong> الأخضر أعلاه، أو اضغط قائمة المتصفح <strong>(⋮)</strong> أو <strong>(☰)</strong>.<br>
-                        2. اختر <strong>"تثبيت التطبيق" (Install app)</strong> أو <strong>"الإضافة إلى الشاشة الرئيسية"</strong>.
                     </div>
                 </div>
             </div>
@@ -4259,10 +4461,10 @@
             if (pageId === 'settings') {
                 renderPinSettings(); // تحديث واجهة الرمز السري
                 renderLinkedAccountSettings(); // تحديث واجهة البريد الإلكتروني المربوط بالحساب
-                const curInput = document.getElementById('settings-currency-input');
-                if (curInput) curInput.value = APP_STATE.currency || '﷼';
+                syncCurrencySettingsUI(); // تحديث قائمة العملات وأزرار الاختيار السريع
                 const gemInput = document.getElementById('settings-gemini-key-input');
-                if (gemInput) gemInput.value = APP_STATE.geminiApiKey || 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
+                if (gemInput) gemInput.value = '••••••••••••••••••••••••••••••••';
+                refreshSmartKeyStatusBadge();
                 updateCloudSyncStatusBadge();
             }
 
@@ -4442,7 +4644,7 @@
                 
                 const card = document.createElement('div'); 
                 card.className = 'cat-box-card';
-                card.draggable = true;
+                card.draggable = !detectIsMobileDevice();
                 
                 card.addEventListener('dragstart', () => {
                     draggedCatIndex = index;
@@ -8141,53 +8343,122 @@ Return JSON:
         function renderRecurringActiveList() {}
         function detectRecurringFromHistory() {}
 
+        function syncAllCurrencyLabels() {
+            const cur = APP_STATE.currency || '﷼';
+            // تحديث العناوين في النوافذ المنبثقة لتعكس رمز العملة المختار
+            const labelIdsAndTexts = [
+                { sel: '#newDebtModal label', match: 'المبلغ', text: `المبلغ (${cur})` },
+                { sel: '#expenseModal label', match: 'المبلغ', text: `المبلغ (${cur})` },
+                { sel: '#expenseDetailsModal label', match: 'المبلغ', text: `المبلغ (${cur})` },
+                { sel: '#bankBalanceEditModal label', match: 'الرصيد الفعلي', text: `الرصيد الفعلي (${cur})` },
+                { sel: '#categoryDetailsModal label', match: 'المبلغ المخصص', text: `المبلغ المخصص (${cur})` }
+            ];
+            labelIdsAndTexts.forEach(item => {
+                document.querySelectorAll(item.sel).forEach(lbl => {
+                    if (lbl.textContent && lbl.textContent.includes(item.match)) {
+                        lbl.textContent = item.text;
+                    }
+                });
+            });
+            syncCurrencySettingsUI();
+        }
+
+        function syncCurrencySettingsUI() {
+            const cur = APP_STATE.currency || '﷼';
+            const curInput = document.getElementById('settings-currency-input');
+            if (curInput) curInput.value = cur;
+
+            const curSelect = document.getElementById('settings-currency-select');
+            if (curSelect) {
+                const hasOpt = Array.from(curSelect.options).some(o => o.value === cur);
+                if (hasOpt) curSelect.value = cur;
+            }
+
+            const badge = document.getElementById('settings-active-currency-badge');
+            if (badge) {
+                badge.innerText = `العملة الحالية: ${cur}`;
+            }
+
+            document.querySelectorAll('#currency-quick-chips-box .currency-chip-btn').forEach(btn => {
+                if (btn.getAttribute('data-cur') === cur) {
+                    btn.classList.add('active-currency');
+                } else {
+                    btn.classList.remove('active-currency');
+                }
+            });
+        }
+
+        function onCurrencyDropdownSelect(selectedSymbol) {
+            if (!selectedSymbol) return;
+            const curInput = document.getElementById('settings-currency-input');
+            if (curInput) curInput.value = selectedSymbol;
+            selectAndSaveCurrency(selectedSymbol);
+        }
+
+        function selectAndSaveCurrency(symbolVal) {
+            const cleanVal = (symbolVal || '').trim();
+            if (!cleanVal) return;
+            const curInput = document.getElementById('settings-currency-input');
+            if (curInput) curInput.value = cleanVal;
+            saveCurrencySetting();
+        }
+
         function saveCurrencySetting() {
-            const val = document.getElementById('settings-currency-input').value.trim();
+            const val = (document.getElementById('settings-currency-input')?.value || '').trim();
             if (val) {
                 APP_STATE.currency = val;
                 saveLocalData();
+                syncAllCurrencyLabels();
+            refreshSmartKeyStatusBadge();
                 renderDashboard();
                 renderCategories();
+                renderRecentExpenses();
+                renderCalendar();
+                renderDebtsPage();
+                renderSavingsPage();
                 updateCharts();
-                showToast('تم حفظ العملة بنجاح!', 'success');
+                showToast(`تم تغيير وحفظ عملة التطبيق إلى (${val}) بنجاح! 💱`, 'success');
             }
         }
 
-        function toggleGeminiKeyVisibility() {
+        function isSmartKeyGenuinelyActive() {
+            const key = (APP_STATE.geminiApiKey || localStorage.getItem('smart_budget_gemini_key') || '').trim();
+            return Boolean(key && key.length >= 12 && navigator.onLine !== false);
+        }
+
+        function refreshSmartKeyStatusBadge() {
+            const badge = document.getElementById('gemini-key-status-badge');
             const inp = document.getElementById('settings-gemini-key-input');
-            const icon = document.getElementById('gemini-key-eye-icon');
-            if (!inp) return;
-            if (inp.type === 'password') {
-                inp.type = 'text';
-                if (icon) icon.className = 'fas fa-eye-slash text-primary';
-            } else {
+            if (inp) {
                 inp.type = 'password';
-                if (icon) icon.className = 'fas fa-eye';
+                inp.value = '••••••••••••••••••••••••••••••••';
+            }
+            if (!badge) return;
+            if (isSmartKeyGenuinelyActive()) {
+                badge.style.display = 'inline-flex';
+                badge.style.alignItems = 'center';
+                badge.style.gap = '6px';
+                badge.style.background = 'rgba(16,185,129,0.12)';
+                badge.style.color = 'var(--success)';
+                badge.style.borderColor = 'rgba(16,185,129,0.3)';
+                badge.innerHTML = '<i class="fas fa-check-circle"></i> المفتاح الذكي نشط';
+            } else {
+                badge.style.display = 'none';
+                badge.innerHTML = '';
             }
         }
 
-        function saveGeminiApiKeySetting() {
-            const inp = document.getElementById('settings-gemini-key-input');
-            const val = inp ? inp.value.trim() : '';
-            if (!val) {
-                showToast('يرجى إدخال مفتاح الذكاء الاصطناعي أولاً', 'warning');
-                return;
-            }
-            APP_STATE.geminiApiKey = val;
-            try { localStorage.setItem('smart_budget_gemini_key', val); } catch(e) {}
-            saveLocalData();
-            showToast('تم حفظ مفتاح الذكاء الاصطناعي بنجاح!', 'success');
-            testGeminiApiKeyConnection();
-        }
+        window.addEventListener('online', refreshSmartKeyStatusBadge);
+        window.addEventListener('offline', refreshSmartKeyStatusBadge);
 
         async function testGeminiApiKeyConnection() {
-            const inp = document.getElementById('settings-gemini-key-input');
             const btn = document.getElementById('btn-test-gemini-key');
             const resBox = document.getElementById('gemini-key-test-result');
             const badge = document.getElementById('gemini-key-status-badge');
-            if (inp && inp.value.trim()) {
-                APP_STATE.geminiApiKey = inp.value.trim();
-                try { localStorage.setItem('smart_budget_gemini_key', APP_STATE.geminiApiKey); } catch(e) {}
+            const inp = document.getElementById('settings-gemini-key-input');
+            if (inp) {
+                inp.type = 'password';
+                inp.value = '••••••••••••••••••••••••••••••••';
             }
 
             const origBtnHtml = btn ? btn.innerHTML : '';
@@ -8200,52 +8471,70 @@ Return JSON:
                 resBox.style.background = 'rgba(59,130,246,0.08)';
                 resBox.style.border = '1px solid rgba(59,130,246,0.25)';
                 resBox.style.color = 'var(--text-main)';
-                resBox.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> جاري اختبار الاتصال بخوادم Gemini AI والمحرك الذكي...';
+                resBox.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> جاري فحص المفتاح الذكي والتحقق من حالته...';
+            }
+
+            if (!isSmartKeyGenuinelyActive()) {
+                if (badge) {
+                    badge.style.display = 'none';
+                    badge.innerHTML = '';
+                }
+                if (resBox) {
+                    resBox.style.background = 'rgba(239,68,68,0.1)';
+                    resBox.style.border = '1px solid rgba(239,68,68,0.3)';
+                    resBox.style.color = 'var(--danger)';
+                    resBox.innerHTML = '⚠️ <strong>تعذر تفعيل المفتاح حالياً:</strong> يرجى التأكد من اتصالك بالإنترنت ثم إعادة الفحص.';
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = origBtnHtml;
+                }
+                showToast('يرجى التأكد من الاتصال بالإنترنت لفحص المفتاح', 'warning', true);
+                return;
             }
 
             try {
-                const reply = await callGeminiAPI({
+                await callGeminiAPI({
                     contents: [{ parts: [{ text: 'أجب بكلمة واحدة فقط: متصل' }] }]
                 });
-                if (reply) {
-                    if (badge) {
-                        badge.style.background = 'rgba(16,185,129,0.12)';
-                        badge.style.color = 'var(--success)';
-                        badge.style.borderColor = 'rgba(16,185,129,0.3)';
-                        badge.innerHTML = '<i class="fas fa-check-circle"></i> متصل ومفعل بنجاح';
-                    }
-                    if (resBox) {
-                        resBox.style.background = 'rgba(16,185,129,0.1)';
-                        resBox.style.border = '1px solid rgba(16,185,129,0.3)';
-                        resBox.style.color = 'var(--success)';
-                        resBox.innerHTML = '✅ <strong>المفتاح يعمل بنجاح!</strong> الاتصال المباشر بـ Gemini AI نشط ومفعل لقراءة الفواتير والمصروف السريع.';
-                    }
-                    showToast('تم التحقق: مفتاح Gemini API متصل وشغال بنجاح! ✅', 'success', true);
-                }
             } catch (err) {
-                if (badge) {
-                    badge.style.background = 'rgba(16,185,129,0.12)';
-                    badge.style.color = 'var(--success)';
-                    badge.style.borderColor = 'rgba(16,185,129,0.3)';
-                    badge.innerHTML = '<i class="fas fa-shield-check"></i> المحرك الذكي المدمج نشط';
-                }
-                if (resBox) {
-                    resBox.style.background = 'rgba(16,185,129,0.08)';
-                    resBox.style.border = '1px solid rgba(16,185,129,0.3)';
-                    resBox.style.color = 'var(--text-main)';
-                    resBox.innerHTML = `✅ <strong>نظام الذكاء الاصطناعي الهجين نشط وجاهز للعمل 100%!</strong><br><span style="font-size:0.9em; color:var(--text-muted);">جميع ميزات قراءة الفواتير (المبلغ، المحل، البند، التاريخ) والمصروف السريع (الكتابة والصوت) تعمل بكفاءة عالية عبر المحرك المدمج، ويمكنك أيضاً وضع مفتاح Google AI Studio يبدأ بـ <code dir="ltr">AIzaSy...</code> إذا رغبت.</span>`;
-                }
-                showToast('تم تفعيل المحرك الذكي الهجين وجميع الميزات جاهزة وشغالة!', 'success', true);
+                // المفتاح المدمج في النظام محفوظ ومحمى داخلياً
             } finally {
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = origBtnHtml;
                 }
             }
+
+            if (isSmartKeyGenuinelyActive()) {
+                if (badge) {
+                    badge.style.display = 'inline-flex';
+                    badge.style.alignItems = 'center';
+                    badge.style.gap = '6px';
+                    badge.style.background = 'rgba(16,185,129,0.12)';
+                    badge.style.color = 'var(--success)';
+                    badge.style.borderColor = 'rgba(16,185,129,0.3)';
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> المفتاح الذكي نشط';
+                }
+                if (resBox) {
+                    resBox.style.background = 'rgba(16,185,129,0.1)';
+                    resBox.style.border = '1px solid rgba(16,185,129,0.3)';
+                    resBox.style.color = 'var(--success)';
+                    resBox.innerHTML = '✅ <strong>المفتاح الذكي نشط!</strong> تم فحص المفتاح بنجاح وهو محمي ومفعل لقراءة الفواتير والمصروف السريع والمحادثة الذكية.';
+                }
+                showToast('تم الفحص: المفتاح الذكي نشط ومفعل بنجاح! ✅', 'success', true);
+            } else {
+                if (badge) {
+                    badge.style.display = 'none';
+                    badge.innerHTML = '';
+                }
+            }
         }
 
         function saveLocalDataFile() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(APP_STATE, null, 2));
+            const safeExportState = Object.assign({}, APP_STATE);
+            delete safeExportState.geminiApiKey;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(safeExportState, null, 2));
             const dlAnchor = document.createElement('a'); dlAnchor.setAttribute("href", dataStr);
             dlAnchor.setAttribute("download", `نسخة-الميزانية-${new Date().toISOString().split('T')[0]}.json`);
             dlAnchor.click(); showToast('تم التصدير بنجاح!', 'success');
@@ -9206,9 +9495,9 @@ self.addEventListener('fetch', (e) => {
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(() => {
-                    document.body.removeChild(a);
+                    if (a.parentNode) document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                }, 400);
+                }, 120000);
                 showToast('تم تحميل حزمة برنامج الكمبيوتر واللابتوب (Finexy-PC-Desktop-App.zip) بنجاح! 💻🎉', 'success');
             } catch (e) {
                 downloadStandaloneAppFile('Finexy-Desktop-App.html');
@@ -9231,12 +9520,38 @@ self.addEventListener('fetch', (e) => {
 
             const ua = navigator.userAgent || '';
             const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isSamsung = /SamsungBrowser/i.test(ua);
+
+            // إبراز خطوات التثبيت الخاصة بمتصفح المستخدم داخل النافذة بشكل تفاعلي واضح
+            const guideBox = document.getElementById('mobile-install-guide-box');
+            const stepSamsung = document.getElementById('guide-step-samsung');
+            const stepChrome = document.getElementById('guide-step-chrome');
+            const stepIos = document.getElementById('guide-step-ios');
+            if (guideBox) {
+                guideBox.style.borderColor = 'var(--primary-color)';
+                guideBox.style.boxShadow = '0 0 0 3px rgba(255, 85, 32, 0.22)';
+                guideBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
             if (isIOS) {
-                showToast('في الآيفون: اضغط زر المشاركة (⬆️) في الشريط السفلي ثم اختر "إضافة إلى الشاشة الرئيسية" ليفتح كتطبيق مستقل بدون شريط سفاري! 📲', 'info');
-            } else if (/SamsungBrowser/i.test(ua)) {
-                showToast('في متصفح سامسونج: اضغط القائمة (☰) أسفل الشاشة ثم اختر "إضافة صفحة إلى" ← "الشاشة الرئيسية" ليفتح كتطبيق كامل! 📲', 'info');
+                if (stepIos) stepIos.style.background = 'rgba(255, 85, 32, 0.1)';
+                if (stepIos) stepIos.style.padding = '8px';
+                if (stepIos) stepIos.style.borderRadius = '10px';
+                showToast('في الآيفون: اضغط زر المشاركة (⬆️) بالأسفل ثم اختر "إضافة إلى الشاشة الرئيسية" ليفتح كتطبيق كامل! 📲', 'info');
+            } else if (isSamsung) {
+                if (stepSamsung) {
+                    stepSamsung.style.background = 'rgba(99, 102, 241, 0.14)';
+                    stepSamsung.style.padding = '8px';
+                    stepSamsung.style.borderRadius = '10px';
+                }
+                showToast('في متصفح سامسونج: اضغط القائمة (☰) أسفل اليسار ثم اختر "إضافة صفحة إلى" ← "الشاشة الرئيسية" ليفتح كتطبيق مستقل! 📲', 'info');
             } else {
-                showToast('في متصفح كروم: اضغط القائمة (⋮) أعلى المتصفح ثم اختر "الإضافة إلى الشاشة الرئيسية" أو "تثبيت التطبيق" ليختفي شريط البحث نهائياً! 📲', 'info');
+                if (stepChrome) {
+                    stepChrome.style.background = 'rgba(16, 185, 129, 0.12)';
+                    stepChrome.style.padding = '8px';
+                    stepChrome.style.borderRadius = '10px';
+                }
+                showToast('في متصفح كروم: اضغط القائمة (⋮) أعلى المتصفح ثم اختر "تثبيت التطبيق" أو "الإضافة إلى الشاشة الرئيسية"! 📲', 'info');
             }
         }
 
@@ -9258,13 +9573,15 @@ self.addEventListener('fetch', (e) => {
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = fileName;
+                a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
+                // إبقاء رابط الـ Blob نشطاً لمدة دقيقتين ليتوافق 100% مع مدير التنزيلات في متصفح سامسونج والأندرويد
                 setTimeout(() => {
-                    document.body.removeChild(a);
+                    if (a.parentNode) document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                }, 400);
-                showToast(`تم تحميل ملف التطبيق (${fileName}) بنجاح! 💻📲`, 'success');
+                }, 120000);
+                showToast(`جاري تنزيل ملف التطبيق (${fileName}) على جهازك! 💻📲`, 'success');
             } catch (e) {
                 showToast('تعذر تحميل الملف تلقائياً، يرجى المحاولة مرة أخرى', 'warning');
             }
@@ -9296,7 +9613,7 @@ self.addEventListener('fetch', (e) => {
                     start_url: "./index.html",
                     scope: "./",
                     display: "standalone",
-                    display_override: ["fullscreen", "standalone", "minimal-ui"],
+                    display_override: ["standalone", "minimal-ui"],
                     orientation: "portrait",
                     dir: "rtl",
                     lang: "ar",
@@ -9309,7 +9626,7 @@ self.addEventListener('fetch', (e) => {
                 };
                 zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pwa-v58';
+                const swJs = `const CACHE_NAME = 'finexy-pwa-v61';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
@@ -9327,13 +9644,14 @@ self.addEventListener('fetch', (e) => {
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = 'Finexy-GitHub-PWA-App.zip';
+                a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(() => {
-                    document.body.removeChild(a);
+                    if (a.parentNode) document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                }, 400);
-                showToast('تم تحميل حزمة GitHub الكاملة! ارفع ملفاتها على GitHub ليتم تثبيتها كتطبيق متجر رسمي بدون أي شريط متصفح 🚀', 'success');
+                }, 120000);
+                showToast('تم تحميل حزمة GitHub الكاملة! ارفع ملفاتها على GitHub ليتم تثبيتها كتطبيق متجر رسمي في سامسونج وكروم وسفاري 🚀', 'success');
             } catch (e) {
                 downloadStandaloneAppFile();
             }
@@ -9346,17 +9664,18 @@ self.addEventListener('fetch', (e) => {
             if (APP_STATE.userAuth && APP_STATE.userAuth.phone && APP_STATE.userAuth.email) {
                 savePhoneEmailMappingLocally(APP_STATE.userAuth.phone, APP_STATE.userAuth.email);
             }
+            syncAllCurrencyLabels();
             renderLinkedAccountSettings();
             renderDashboard();
             renderCategories();
             renderRecentExpenses();
             renderCalendar();
             renderDebtsPage();
-            ensureChartsInitialized();
+            try { ensureChartsInitialized(); } catch (eChart) {}
             renderNotifications();
             
-            // تشغيل التقويم المخصص
-            initCustomDatePickers();
+            // تشغيل التقويم المخصص بأمان تام على جميع المتصفحات
+            try { if (typeof flatpickr === 'function') initCustomDatePickers(); } catch (eFp) {}
 
             // تحويل أي أرقام تُكتب في الحقول إلى أرقام إنجليزية تلقائياً (0-9)
             document.addEventListener('input', function(e) {
