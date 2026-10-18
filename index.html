@@ -10,25 +10,110 @@
 
     <title>الميزانية الذكية</title>
 
-    <!-- إعدادات تطبيق الويب للجوال PWA -->
-    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,{
-        &quot;name&quot;: &quot;الميزانية الذكية التفاعلية&quot;,
-        &quot;short_name&quot;: &quot;الميزانية&quot;,
-        &quot;start_url&quot;: &quot;./&quot;,
-        &quot;display&quot;: &quot;standalone&quot;,
-        &quot;background_color&quot;: &quot;%23f6f7f9&quot;,
-        &quot;theme_color&quot;: &quot;%23FF5520&quot;,
-        &quot;icons&quot;: [{
-            &quot;src&quot;: &quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/wallet.svg&quot;,
-            &quot;sizes&quot;: &quot;512x512&quot;,
-            &quot;type&quot;: &quot;image/svg+xml&quot;
-        }]
-    }">
-    <meta name="theme-color" content="#FF5520">
+    <!-- إعدادات تطبيق الويب المستقل للجوال (Standalone App Mode without Browser Bars V5.8) -->
+    <meta name="theme-color" content="#111115" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#111115">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="الميزانية الذكية">
+    <meta name="application-name" content="الميزانية الذكية">
+    <meta name="msapplication-TileColor" content="#ff5520">
+    <meta name="msapplication-navbutton-color" content="#111115">
+    <script>
+        // تهيئة فورية في <head> لوضع التطبيق الكامل (Standalone PWA) لإخفاء شريط المتصفح السفلي في سفاري وكروم وسامسونج عند الرفع على GitHub
+        (function() {
+            try {
+                function makeAppIconPng(size) {
+                    var c = document.createElement('canvas');
+                    c.width = size; c.height = size;
+                    var ctx = c.getContext('2d');
+                    var g = ctx.createLinearGradient(0, 0, size, size);
+                    g.addColorStop(0, '#ff5520');
+                    g.addColorStop(1, '#8b5cf6');
+                    ctx.fillStyle = g;
+                    var r = Math.round(size * 0.22);
+                    ctx.beginPath();
+                    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
+                    ctx.quadraticCurveTo(size, 0, size, r);
+                    ctx.lineTo(size, size - r);
+                    ctx.quadraticCurveTo(size, size, size - r, size);
+                    ctx.lineTo(r, size);
+                    ctx.quadraticCurveTo(0, size, 0, size - r);
+                    ctx.lineTo(0, r);
+                    ctx.quadraticCurveTo(0, 0, r, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '900 ' + Math.round(size * 0.5) + 'px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('F', size / 2, size / 2 + Math.round(size * 0.03));
+                    return c.toDataURL('image/png');
+                }
+                var icon180 = makeAppIconPng(180);
+                var icon192 = makeAppIconPng(192);
+                var icon512 = makeAppIconPng(512);
+                window.__FINEXY_ICONS__ = { icon180: icon180, icon192: icon192, icon512: icon512 };
+
+                var appleTouch = document.createElement('link');
+                appleTouch.rel = 'apple-touch-icon';
+                appleTouch.sizes = '180x180';
+                appleTouch.href = icon180;
+                document.head.appendChild(appleTouch);
+
+                var favIcon = document.createElement('link');
+                favIcon.rel = 'icon';
+                favIcon.type = 'image/png';
+                favIcon.href = icon192;
+                document.head.appendChild(favIcon);
+
+                var ua = navigator.userAgent || '';
+                var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                var isMobileUA = isIOS || /Android|webOS|BlackBerry|IEMobile|Opera Mini|Mobile|Phone/i.test(ua) || (navigator.userAgentData && navigator.userAgentData.mobile === true);
+                var isSmallTouch = false;
+                try {
+                    isSmallTouch = window.matchMedia('(max-width: 820px) and (pointer: coarse)').matches;
+                } catch (e) {}
+                var isMobileDevice = !!(isMobileUA || isSmallTouch);
+                window.__FINEXY_IS_MOBILE__ = isMobileDevice;
+                document.documentElement.setAttribute('data-device-type', isMobileDevice ? 'mobile' : 'desktop');
+
+                // في الآيفون (Safari / iOS): الاعتماد المباشر على apple-mobile-web-app-capable="yes" بدون رابط data/blob manifest
+                // يضمن فتح التطبيق من الشاشة الرئيسية بوضع ملء الشاشة الكامل واختفاء الشريط السفلي للبحث في سفاري 100%.
+                // أما في الأندرويد (Chrome / Samsung Internet) والكمبيوتر (Windows / Mac / Linux): نحقن manifest مخصص لنوع الجهاز.
+                if (!isIOS) {
+                    var cleanUrl = window.location.href.split('#')[0].split('?')[0];
+                    var scopeUrl = cleanUrl.substring(0, cleanUrl.lastIndexOf('/') + 1) || cleanUrl;
+                    var manifestData = {
+                        id: cleanUrl,
+                        name: "الميزانية الذكية • Finexy AI",
+                        short_name: "الميزانية الذكية",
+                        description: "تطبيق الميزانية الذكية وإدارة المصروفات والأهداف بالذكاء الاصطناعي للجوال والكمبيوتر",
+                        start_url: cleanUrl,
+                        scope: scopeUrl,
+                        display: "standalone",
+                        display_override: isMobileDevice ? ["fullscreen", "standalone", "minimal-ui"] : ["window-controls-overlay", "standalone"],
+                        orientation: isMobileDevice ? "portrait" : "any",
+                        dir: "rtl",
+                        lang: "ar",
+                        background_color: "#06050b",
+                        theme_color: "#111115",
+                        icons: [
+                            { src: icon192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+                            { src: icon512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+                        ]
+                    };
+                    var manifestLink = document.createElement('link');
+                    manifestLink.rel = 'manifest';
+                    manifestLink.id = 'finexy-manifest-link';
+                    manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestData));
+                    document.head.appendChild(manifestLink);
+                }
+            } catch (e) {}
+        })();
+    </script>
 
     <!-- الأيقونات والمكتبات الأساسية والخطوط -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -858,6 +943,968 @@
             .cal-day-number { font-size: 1.1em !important; }
             .cal-spent-badge, .cal-rem-badge, .cal-deficit-badge, .cal-zero-spent-badge { font-size: 1.1em !important; padding: 4px 6px; }
         }
+
+        /* --- زر ونافذة المساعد الذكي العائم (Floating AI Assistant V5.3) --- */
+        @keyframes assistantFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-3.5px) rotate(2deg); }
+        }
+        @keyframes assistantBlink {
+            0%, 44%, 48%, 96%, 100% { transform: scaleY(1); }
+            46%, 98% { transform: scaleY(0.12); }
+        }
+        @keyframes assistantPulseAura {
+            0%, 100% { box-shadow: 0 14px 34px rgba(139, 92, 246, 0.42), 0 6px 18px rgba(255, 85, 32, 0.32), 0 0 0 4px rgba(139, 92, 246, 0.16); }
+            50% { box-shadow: 0 18px 42px rgba(255, 85, 32, 0.52), 0 8px 24px rgba(139, 92, 246, 0.45), 0 0 0 7px rgba(255, 85, 32, 0.2); }
+        }
+        @keyframes antennaGlow {
+            0%, 100% { opacity: 0.75; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.25); }
+        }
+        .finexy-ai-fab {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 2800;
+            width: 64px;
+            height: 64px;
+            padding: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1a1630 0%, #311b47 48%, #ff5520 100%);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.48);
+            animation: assistantPulseAura 3.5s infinite ease-in-out;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(16px);
+        }
+        .finexy-ai-fab:hover {
+            transform: translateY(-5px) scale(1.08);
+            border-color: #ffffff;
+            box-shadow: 0 22px 48px rgba(139, 92, 246, 0.65), 0 0 0 7px rgba(255, 85, 32, 0.25);
+        }
+        .finexy-ai-fab-icon {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.28), rgba(139, 92, 246, 0.25) 60%, rgba(15, 23, 42, 0.45));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.35);
+        }
+        .finexy-cute-bot-svg {
+            width: 40px;
+            height: 40px;
+            animation: assistantFloat 3s ease-in-out infinite;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.28));
+            overflow: visible;
+        }
+        .finexy-cute-bot-eyes {
+            transform-origin: center 19px;
+            animation: assistantBlink 4.5s infinite;
+        }
+        .finexy-cute-bot-spark {
+            transform-origin: 18px 4px;
+            animation: antennaGlow 2s infinite ease-in-out;
+        }
+        .finexy-ai-fab-online-dot {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px #10b981;
+        }
+        .finexy-ai-chat-panel {
+            position: fixed;
+            bottom: 98px;
+            left: 24px;
+            width: 410px;
+            max-width: calc(100vw - 32px);
+            height: 570px;
+            max-height: calc(100vh - 130px);
+            background: var(--surface-glass-heavy);
+            backdrop-filter: blur(32px);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 28px;
+            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.42), var(--glass-highlight);
+            z-index: 2900;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalContentPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .finexy-ai-chat-panel.open {
+            display: flex;
+        }
+        .finexy-ai-chat-header {
+            background: linear-gradient(135deg, #121024 0%, #27173e 55%, #ff5520 140%);
+            color: #ffffff;
+            padding: 15px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+        }
+        .finexy-ai-header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 16px;
+            background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.25), rgba(139, 92, 246, 0.35) 65%, rgba(15, 23, 42, 0.5));
+            border: 1.5px solid rgba(255, 255, 255, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            flex-shrink: 0;
+        }
+        .finexy-ai-chat-messages {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--bg-color);
+        }
+        .ai-msg-bubble {
+            max-width: 88%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            font-size: 0.89em;
+            line-height: 1.65;
+            word-wrap: break-word;
+        }
+        .ai-msg-bot {
+            align-self: flex-start;
+            background: var(--surface-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-top-right-radius: 6px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+        }
+        .ai-msg-user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #ff5520, #ff7a45);
+            color: #ffffff;
+            font-weight: 700;
+            border-top-left-radius: 6px;
+            box-shadow: 0 6px 18px rgba(255, 85, 32, 0.28);
+        }
+        .ai-quick-chips-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 7px 8px;
+            background: var(--surface-card);
+            border-top: 1px solid var(--border-color);
+            position: relative;
+        }
+        .ai-chips-nav-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 85, 32, 0.32);
+            background: var(--surface-glass-heavy);
+            color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-size: 0.8em;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 2;
+        }
+        .ai-chips-nav-btn:hover {
+            background: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        .ai-chips-nav-btn:active {
+            transform: scale(0.94);
+        }
+        .ai-quick-chips-bar {
+            display: flex;
+            gap: 7px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 2px 4px;
+            flex: 1;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .ai-quick-chips-bar::-webkit-scrollbar { display: none; }
+        .ai-quick-chip {
+            background: rgba(255, 85, 32, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(255, 85, 32, 0.25);
+            border-radius: 999px;
+            padding: 6px 13px;
+            font-size: 0.77em;
+            font-weight: 800;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .ai-quick-chip:hover {
+            background: var(--primary-color);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+        .finexy-ai-chat-input-area {
+            padding: 10px 12px;
+            background: var(--surface-glass-heavy);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .finexy-ai-fab { bottom: 16px; left: 16px; width: 58px; height: 58px; padding: 0; }
+            .finexy-ai-fab-icon { width: 100%; height: 100%; }
+            .finexy-cute-bot-svg { width: 35px; height: 35px; }
+            .finexy-ai-chat-panel { bottom: 84px; left: 16px; width: calc(100vw - 32px); height: 72vh; }
+        }
+
+    
+        
+        
+        
+        /* =========================================================================
+           📱 تحسينات شاملة لتصميم الجوال والتقويم والشريط العلوي المتحرك ووضع التطبيق المستقل (Mobile & PWA UX V5.8)
+           ========================================================================= */
+        .mobile-bottom-nav {
+            display: none !important;
+        }
+
+        /* مسار التمرير الأفقي داخل كبسولة الأقسام العلوية */
+        .v13-nav-scroll-track {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            width: 100%;
+            border-radius: 999px;
+        }
+        .v13-nav-scroll-track::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        /* ترويسة أيام الأسبوع في التقويم متطابقة تماماً مع الأعمدة الـ 7 */
+        .calendar-weekdays-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 14px;
+            text-align: center;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+            font-size: 0.85em;
+            width: 100%;
+        }
+        .calendar-weekdays-grid > div {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 6px 2px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        #calendar-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .calendar-cell-box {
+            min-width: 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+        }
+
+        /* ضمان ظهور جميع النوافذ المنبثقة (بما فيها تسجيل الدخول) فوق الشريط العلوي وكافة عناصر الصفحة دائماً */
+        .v13-top-header-shell {
+            z-index: 1100 !important;
+        }
+        .top-glass-dropdown-menu {
+            z-index: 1500 !important;
+        }
+        .finexy-ai-fab {
+            z-index: 1800 !important;
+        }
+        .finexy-ai-chat-panel {
+            z-index: 1900 !important;
+        }
+        .modal {
+            z-index: 4500 !important;
+        }
+        #receiptLightboxModal {
+            z-index: 5000 !important;
+        }
+        #pinLockScreen {
+            z-index: 6000 !important;
+        }
+        #confirmResetPinModal {
+            z-index: 6500 !important;
+        }
+
+        /* تحسينات وضع التطبيق المثبت (Standalone / Fullscreen PWA) بدون أشرطة المتصفح */
+        @media all and (display-mode: standalone), all and (display-mode: fullscreen), all and (display-mode: minimal-ui) {
+            body {
+                padding-top: 0 !important;
+                padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+                overscroll-behavior-y: none;
+            }
+            .v13-top-header-shell {
+                padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+            }
+            #header-install-app-btn,
+            #header-install-mobile-wrapper {
+                display: none !important;
+            }
+        }
+
+        /* إخفاء علامة التنزيل الخاصة بالجوال تلقائياً عند فتح الموقع من كمبيوتر / لابتوب، وإظهارها فقط عند الفتح من الجوال */
+        html[data-device-type="desktop"] #header-install-mobile-wrapper {
+            display: none !important;
+        }
+        html[data-device-type="mobile"] #header-install-mobile-wrapper {
+            display: inline-flex !important;
+        }
+        @media (min-width: 821px) and (hover: hover) and (pointer: fine) {
+            #header-install-mobile-wrapper {
+                display: none !important;
+            }
+        }
+
+        /* أزرار التبديل بين نسخة الكمبيوتر (PC/Laptop) ونسخة الجوال داخل نافذة التثبيت */
+        .install-platform-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            background: var(--surface-card);
+            padding: 6px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        .install-platform-tab-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.85em;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: all 0.22s ease;
+        }
+        .install-platform-tab-btn.active {
+            background: linear-gradient(135deg, #ff5520, #8b5cf6);
+            color: #ffffff;
+            box-shadow: 0 6px 16px rgba(255, 85, 32, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            /* تمرير طبيعي وسلس لكامل الصفحة في الآيفون والأندرويد */
+            html, body {
+                height: auto !important;
+                min-height: 100vh !important;
+                min-height: 100dvh !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* ترويسة علوية أنيقة ومدمجة بطبقة أقل من النوافذ المنبثقة */
+            .v13-top-header-shell {
+                position: relative !important;
+                z-index: 1100 !important;
+                flex-wrap: wrap !important;
+                padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
+                min-height: auto !important;
+                gap: 8px !important;
+                overflow: visible !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+
+            .v13-brand-cluster {
+                flex: 1 1 auto !important;
+                gap: 8px !important;
+                min-width: 0;
+            }
+
+            .finexy-logo-circle {
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 11px !important;
+                font-size: 1.05em !important;
+                flex-shrink: 0;
+            }
+
+            .v13-brand-title {
+                font-size: 1em !important;
+                white-space: nowrap;
+            }
+
+            .v13-brand-cluster > div > div {
+                font-size: 0.65em !important;
+            }
+
+            .v13-header-actions {
+                flex: 0 0 auto !important;
+                gap: 4px !important;
+                justify-content: flex-end !important;
+                align-items: center !important;
+                position: static !important;
+            }
+
+            .v13-header-actions > .primary-btn {
+                padding: 6px 10px !important;
+                font-size: 0.73em !important;
+                gap: 4px !important;
+                white-space: nowrap;
+            }
+
+            .header-icon-btn {
+                width: 33px !important;
+                height: 33px !important;
+                font-size: 0.9em !important;
+                flex-shrink: 0;
+            }
+
+            #top-notifications-dropdown,
+            #top-tools-dropdown {
+                position: static !important;
+            }
+
+            /* تحويل زر الأدوات في الجوال إلى أيقونة دائرية أنيقة لتوفير المساحة ومنع التكدس */
+            #top-tools-dropdown > .action-btn {
+                width: 33px !important;
+                height: 33px !important;
+                padding: 0 !important;
+                border-radius: 50% !important;
+                justify-content: center !important;
+                background: rgba(255, 255, 255, 0.08) !important;
+                border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                color: #f8fafc !important;
+            }
+            #top-tools-dropdown > .action-btn .tools-btn-text,
+            #top-tools-dropdown > .action-btn .tools-btn-Caret {
+                display: none !important;
+            }
+
+            /* شريط الأقسام العلوي كبسولة انسيابية قابلة للتمرير يميناً ويساراً باللمس (Swipe Scrollable Pill Bar) */
+            .v13-top-nav-links {
+                order: 3;
+                width: 100% !important;
+                margin: 4px 0 0 0 !important;
+                padding: 6px 8px !important;
+                border-radius: 999px !important;
+                display: block !important;
+                position: relative !important;
+                background: rgba(255, 255, 255, 0.07) !important;
+                border: 1.5px solid rgba(255, 255, 255, 0.14) !important;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+                overflow: visible !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                transform: none !important;
+            }
+
+            /* المسار الداخلي القابل للسحب يميناً ويساراً بنعومة تامة */
+            .v13-nav-scroll-track {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                gap: 8px !important;
+                width: 100% !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                -webkit-overflow-scrolling: touch !important;
+                scroll-behavior: smooth !important;
+                scrollbar-width: none !important;
+                padding: 2px 2px !important;
+                border-radius: 999px !important;
+                touch-action: pan-x !important;
+            }
+
+            /* زر الثلاث خطوط (Hamburger Menu) دائري وأنيق وثابت الحجم في بداية الشريط */
+            #nav-dashboard-menu-btn {
+                width: 38px !important;
+                height: 38px !important;
+                border-radius: 50% !important;
+                font-size: 0.98em !important;
+                flex: 0 0 38px !important;
+                background: rgba(255, 85, 32, 0.22) !important;
+                border: 1.5px solid rgba(255, 85, 32, 0.6) !important;
+                color: #ffffff !important;
+                position: relative !important;
+                z-index: 15 !important;
+                cursor: pointer !important;
+                touch-action: manipulation;
+            }
+
+            #nav-dashboard-dropdown.open #nav-dashboard-menu-btn {
+                background: var(--primary-color) !important;
+                border-color: #ffffff !important;
+                box-shadow: 0 0 14px rgba(255, 85, 32, 0.7) !important;
+            }
+
+            /* أزرار التبويبات داخل الكبسولة بحجم واضح ومريح بدون تداخل نصوص أبداً */
+            #nav-dashboard-main-btn,
+            .v13-nav-scroll-track > .v13-nav-tab {
+                flex: 0 0 auto !important;
+                width: auto !important;
+                justify-content: center !important;
+                padding: 9px 18px !important;
+                font-size: 0.9em !important;
+                font-weight: 800 !important;
+                border-radius: 999px !important;
+                gap: 7px !important;
+                white-space: nowrap !important;
+                display: inline-flex !important;
+                align-items: center !important;
+            }
+
+            .v13-nav-scroll-track .v13-nav-tab i,
+            .v13-nav-scroll-track .v13-nav-tab svg {
+                display: inline-block !important;
+                font-size: 0.95em !important;
+            }
+
+            /* القوائم المنسدلة العلوية تفتح مباشرة أسفل الكبسولة / الترويسة بعرض متناسق */
+            #nav-dashboard-dropdown > .top-glass-dropdown-menu {
+                position: absolute !important;
+                top: calc(100% + 8px) !important;
+                right: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: none !important;
+                max-height: 72dvh !important;
+                overflow-y: auto !important;
+                z-index: 1500 !important;
+                border-radius: 20px !important;
+                padding: 12px !important;
+                background: var(--surface-glass-heavy) !important;
+                backdrop-filter: blur(30px) !important;
+                -webkit-backdrop-filter: blur(30px) !important;
+                border: 1.5px solid var(--primary-color) !important;
+                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55) !important;
+                pointer-events: none;
+            }
+
+            #top-notifications-dropdown > .top-glass-dropdown-menu,
+            #top-tools-dropdown > .top-glass-dropdown-menu {
+                position: absolute !important;
+                top: calc(100% + 6px) !important;
+                right: 12px !important;
+                left: 12px !important;
+                width: calc(100% - 24px) !important;
+                min-width: 0 !important;
+                max-width: none !important;
+                max-height: 72dvh !important;
+                overflow-y: auto !important;
+                z-index: 1500 !important;
+                border-radius: 20px !important;
+                padding: 12px !important;
+                background: var(--surface-glass-heavy) !important;
+                backdrop-filter: blur(30px) !important;
+                -webkit-backdrop-filter: blur(30px) !important;
+                border: 1.5px solid var(--primary-color) !important;
+                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55) !important;
+                pointer-events: none;
+            }
+
+            .top-dropdown-wrapper.open > .top-glass-dropdown-menu {
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                transform: translateY(0) scale(1) !important;
+            }
+
+            .dropdown-item-btn {
+                padding: 12px 14px !important;
+                font-size: 0.92em !important;
+                border-radius: 14px !important;
+            }
+
+            /* مساحة واسعة ومريحة للمحتوى تتأقلم مع شاشات iPhone و Android */
+            .main-wrapper {
+                padding: 8px 8px 24px 8px !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .main-content {
+                margin: 0 !important;
+                padding: 16px 12px calc(95px + env(safe-area-inset-bottom, 0px)) 12px !important;
+                border-radius: 24px !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            /* شبكة المؤشرات العلوية (Bento KPIs) رحبة ومرتبة */
+            .v13-bento-kpi-strip {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
+                margin-bottom: 18px !important;
+            }
+
+            .v13-kpi-tile {
+                padding: 16px 12px !important;
+                border-radius: 20px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                min-height: 112px !important;
+            }
+
+            .v13-kpi-number {
+                font-size: 1.38em !important;
+                margin-bottom: 6px !important;
+            }
+
+            .v13-kpi-tile.tile-green > div:first-child {
+                flex-direction: column !important;
+                gap: 6px !important;
+                margin-bottom: 6px !important;
+                width: 100%;
+            }
+
+            #bento-kpi-total-budgets {
+                font-size: 1.35em !important;
+            }
+
+            #bento-unused-wrapper {
+                width: 100%;
+                padding: 4px 8px !important;
+            }
+
+            .v13-kpi-label {
+                font-size: 0.78em !important;
+                line-height: 1.4 !important;
+            }
+
+            /* أزرار إضافة المصروف السريع والعادي */
+            #dashboard-quick-actions {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 10px !important;
+                margin-bottom: 20px !important;
+            }
+
+            #dashboard-quick-actions > button {
+                width: 100% !important;
+                justify-content: center !important;
+                padding: 13px 12px !important;
+                font-size: 0.9em !important;
+                border-radius: 16px !important;
+            }
+
+            /* البطاقات الرئيسية بعرض كامل ومساحة داخلية مريحة */
+            .dashboard-grid {
+                grid-template-columns: 1fr !important;
+                gap: 14px !important;
+                margin-bottom: 20px !important;
+            }
+
+            .card {
+                padding: 20px 16px !important;
+                border-radius: 22px !important;
+            }
+
+            .card:hover, .cat-box-card:hover, .v13-kpi-tile:hover {
+                transform: none !important;
+            }
+
+            /* البنود والمخصصات بعرض كامل ومريح على الجوال */
+            .categories-grid {
+                grid-template-columns: 1fr !important;
+                gap: 14px !important;
+            }
+
+            .cat-box-card {
+                padding: 18px 16px !important;
+                border-radius: 20px !important;
+                gap: 10px !important;
+            }
+
+            .cat-box-card strong {
+                font-size: 1em !important;
+            }
+
+            .cat-box-card > div:nth-child(2) {
+                font-size: 1.3em !important;
+            }
+
+            /* =========================================================================
+               📅 ضبط التقويم الشهري (#page-calendar) ليتناسب 100% مع شاشة الجوال دون خروج أي عمود
+               ========================================================================= */
+            #page-calendar .card {
+                padding: 14px 8px !important;
+                border-radius: 20px !important;
+                overflow: hidden !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .calendar-weekdays-grid {
+                display: grid !important;
+                grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+                gap: 4px !important;
+                margin-bottom: 8px !important;
+                font-size: 0.72em !important;
+                font-weight: 800 !important;
+                width: 100% !important;
+            }
+
+            .calendar-weekdays-grid > div {
+                padding: 5px 1px !important;
+                border-radius: 8px !important;
+                background: rgba(255, 255, 255, 0.04) !important;
+                text-align: center !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+
+            #calendar-days-grid {
+                display: grid !important;
+                grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+                gap: 4px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .calendar-cell-box {
+                min-width: 0 !important;
+                width: 100% !important;
+                min-height: 74px !important;
+                padding: 5px 2px !important;
+                border-radius: 11px !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+            }
+
+            .cal-day-number {
+                font-size: 0.88em !important;
+                margin-bottom: 2px !important;
+                line-height: 1.1 !important;
+            }
+
+            .cal-spent-badge,
+            .cal-rem-badge,
+            .cal-deficit-badge,
+            .cal-zero-spent-badge {
+                font-size: 0.56em !important;
+                font-weight: 800 !important;
+                padding: 2px 2px !important;
+                border-radius: 6px !important;
+                margin: 1px 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                text-align: center !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: clip !important;
+                letter-spacing: -0.3px !important;
+                line-height: 1.25 !important;
+            }
+
+            .calendar-cell-box.is-future > div:last-child {
+                font-size: 0.6em !important;
+                line-height: 1.2 !important;
+                white-space: nowrap !important;
+            }
+
+            /* النوافذ المنبثقة (Modals) فوق كل شيء مع توسيط نافذة تسجيل الدخول والقفل وتثبيت التطبيق */
+            .modal {
+                z-index: 4500 !important;
+                align-items: flex-end !important;
+                padding: 0 !important;
+            }
+
+            #userAuthModal.modal,
+            #pinLockScreen.modal,
+            #confirmResetPinModal.modal,
+            #installAppModal.modal {
+                align-items: center !important;
+                padding: 16px !important;
+            }
+
+            .modal-content {
+                max-width: 100% !important;
+                width: 100% !important;
+                max-height: 90dvh !important;
+                border-radius: 26px 26px 0 0 !important;
+                padding: 22px 18px calc(24px + env(safe-area-inset-bottom, 0px)) 18px !important;
+                margin: 0 !important;
+            }
+
+            #userAuthModal .modal-content,
+            #pinLockScreen .modal-content,
+            #confirmResetPinModal .modal-content,
+            #installAppModal .modal-content {
+                border-radius: 26px !important;
+                max-width: 410px !important;
+                padding: 22px 18px !important;
+            }
+
+            /* منع التكبير التلقائي (Auto-Zoom) في الآيفون والأندرويد */
+            .form-group input,
+            .form-group select,
+            .form-group textarea,
+            #finexy-ai-chat-input,
+            #early-debt-select-existing {
+                font-size: 16px !important;
+                padding: 13px 15px !important;
+            }
+
+            .modal-actions {
+                gap: 10px !important;
+                margin-top: 18px !important;
+            }
+
+            .modal-actions button {
+                padding: 12px 18px !important;
+                font-size: 0.92em !important;
+            }
+
+            /* إشعارات التوست في الجوال */
+            #toast-container {
+                top: calc(16px + env(safe-area-inset-top, 0px)) !important;
+                left: 12px !important;
+                right: 12px !important;
+            }
+
+            .toast {
+                width: 100%;
+                max-width: 100%;
+                padding: 12px 16px !important;
+                font-size: 0.86em !important;
+                border-radius: 16px !important;
+            }
+
+            /* تقويم Flatpickr في الجوال */
+            .flatpickr-calendar {
+                width: calc(100vw - 24px) !important;
+                max-width: 340px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+            }
+
+            /* موقع زر ونافذة المساعد الذكي finex */
+            .finexy-ai-fab {
+                bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+                left: 16px !important;
+                width: 56px !important;
+                height: 56px !important;
+            }
+
+            .finexy-cute-bot-svg {
+                width: 34px !important;
+                height: 34px !important;
+            }
+
+            .finexy-ai-chat-panel {
+                bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+                left: 12px !important;
+                right: 12px !important;
+                width: calc(100vw - 24px) !important;
+                height: calc(100dvh - 110px) !important;
+                max-height: 550px !important;
+                border-radius: 24px !important;
+            }
+        }
+
+        /* ضبط إضافي للشاشات الصغيرة (360px - 400px) */
+        @media (max-width: 400px) {
+            .v13-top-header-shell {
+                padding: calc(10px + env(safe-area-inset-top, 0px)) 10px 10px 10px !important;
+            }
+            .v13-brand-title {
+                font-size: 0.94em !important;
+            }
+            .header-icon-btn,
+            #top-tools-dropdown > .action-btn {
+                width: 31px !important;
+                height: 31px !important;
+                font-size: 0.85em !important;
+            }
+            .v13-header-actions > .primary-btn {
+                padding: 5px 8px !important;
+                font-size: 0.7em !important;
+            }
+            #nav-dashboard-menu-btn {
+                width: 35px !important;
+                height: 35px !important;
+                flex: 0 0 35px !important;
+                font-size: 0.92em !important;
+            }
+            #nav-dashboard-main-btn,
+            .v13-nav-scroll-track > .v13-nav-tab {
+                font-size: 0.85em !important;
+                padding: 8px 15px !important;
+            }
+            .calendar-weekdays-grid {
+                font-size: 0.66em !important;
+                gap: 3px !important;
+            }
+            #calendar-days-grid {
+                gap: 3px !important;
+            }
+            .calendar-cell-box {
+                min-height: 68px !important;
+                padding: 4px 1.5px !important;
+                border-radius: 10px !important;
+            }
+            .cal-day-number {
+                font-size: 0.82em !important;
+            }
+            .cal-spent-badge,
+            .cal-rem-badge,
+            .cal-deficit-badge,
+            .cal-zero-spent-badge {
+                font-size: 0.52em !important;
+                padding: 2px 1px !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -869,14 +1916,15 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;">Finexy • AI Cloud V5.1</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;">Finexy • AI Cloud V5.9</div>
             </div>
         </div>
 
-        <nav class="v13-top-nav-links" id="v13-top-nav-links">
-            <div class="top-dropdown-wrapper" id="nav-dashboard-dropdown" style="display: inline-flex; align-items: center; gap: 6px;">
+        <nav class="v13-top-nav-links top-dropdown-wrapper" id="nav-dashboard-dropdown">
+            <!-- مسار التمرير الأفقي السلس (يمين ويسار باللمس أو الماوس) داخل الكبسولة -->
+            <div class="v13-nav-scroll-track" id="v13-nav-scroll-track">
                 <!-- زر القائمة الدائري المستقل (Hamburger Menu) على يمين زر لوحة التحكم في تخطيط RTL -->
-                <button type="button" class="header-icon-btn" id="nav-dashboard-menu-btn" onclick="toggleTopDropdown(event, 'nav-dashboard-dropdown')" title="خيارات لوحة التحكم" style="width: 38px; height: 38px; font-size: 0.9em; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+                <button type="button" class="header-icon-btn" id="nav-dashboard-menu-btn" onclick="toggleTopDropdown(event, 'nav-dashboard-dropdown')" title="خيارات لوحة التحكم" style="width: 38px; height: 38px; font-size: 0.9em; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); flex-shrink: 0;">
                     <i class="fas fa-bars"></i>
                 </button>
 
@@ -885,46 +1933,55 @@
                     <i class="fas fa-th-large"></i> <span id="nav-dashboard-main-label">لوحة التحكم</span>
                 </button>
 
-                <div class="top-glass-dropdown-menu" onclick="event.stopPropagation()">
-                    <button type="button" class="dropdown-item-btn active-sub" data-page="dashboard" onclick="switchPage('dashboard'); closeAllTopDropdowns();">
-                        <span><i class="fas fa-th-large text-primary" style="width:22px;"></i> لوحة التحكم (الرئيسية)</span>
-                        <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
-                    </button>
-                    <button type="button" class="dropdown-item-btn" data-page="analytics" onclick="switchPage('analytics'); closeAllTopDropdowns();">
-                        <span><i class="fas fa-chart-pie text-warning" style="width:22px;"></i> تحليل الأداء المالي</span>
-                        <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
-                    </button>
-                    <button type="button" class="dropdown-item-btn" data-page="simulator" onclick="switchPage('simulator'); closeAllTopDropdowns();">
-                        <span><i class="fas fa-brain text-primary" style="width:22px;"></i> المحاكي والأتمتة</span>
-                        <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
-                    </button>
-                    <button type="button" class="dropdown-item-btn" data-page="debts" onclick="switchPage('debts'); closeAllTopDropdowns();">
-                        <span><i class="fas fa-handshake text-danger" style="width:22px;"></i> الديون والسداد</span>
-                        <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
-                    </button>
-                    <button type="button" class="dropdown-item-btn" data-page="recurring" onclick="switchPage('recurring'); closeAllTopDropdowns();">
-                        <span><i class="fas fa-sync-alt text-primary" style="width:22px;"></i> النفقات والفواتير</span>
-                        <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
-                    </button>
-                </div>
+                <button type="button" class="v13-nav-tab" data-page="savings" onclick="switchPage('savings'); closeAllTopDropdowns();">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-left:4px;">
+                        <rect x="3" y="6" width="18" height="15" rx="3"></rect>
+                        <line x1="8" y1="10" x2="16" y2="10"></line>
+                        <circle cx="12" cy="3.5" r="2.5" fill="currentColor"></circle>
+                    </svg>
+                    <span>الأهداف والادخار</span>
+                </button>
+                <button type="button" class="v13-nav-tab" data-page="calendar" onclick="switchPage('calendar'); closeAllTopDropdowns();"><i class="fas fa-calendar-alt"></i> <span>التقويم</span></button>
+                <button type="button" class="v13-nav-tab" data-page="reports" onclick="switchPage('reports'); closeAllTopDropdowns();"><i class="fas fa-file-export"></i> <span>الملخص والتقارير</span></button>
             </div>
 
-            <button type="button" class="v13-nav-tab" data-page="savings" onclick="switchPage('savings');">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-left:4px;">
-                    <rect x="3" y="6" width="18" height="15" rx="3"></rect>
-                    <line x1="8" y1="10" x2="16" y2="10"></line>
-                    <circle cx="12" cy="3.5" r="2.5" fill="currentColor"></circle>
-                </svg>
-                <span>الأهداف والادخار</span>
-            </button>
-            <button type="button" class="v13-nav-tab" data-page="calendar" onclick="switchPage('calendar');"><i class="fas fa-calendar-alt"></i> <span>التقويم</span></button>
-            <button type="button" class="v13-nav-tab" data-page="reports" onclick="switchPage('reports');"><i class="fas fa-file-export"></i> <span>الملخص والتقارير</span></button>
+            <!-- القائمة المنسدلة للثلاث خطوط (خارج مسار التمرير لكي تفتح بحرية تامة دون أي قص) -->
+            <div class="top-glass-dropdown-menu" id="dashboard-sub-dropdown-menu" onclick="event.stopPropagation()">
+                <button type="button" class="dropdown-item-btn active-sub" data-page="dashboard" onclick="switchPage('dashboard'); closeAllTopDropdowns();">
+                    <span><i class="fas fa-th-large text-primary" style="width:22px;"></i> لوحة التحكم (الرئيسية)</span>
+                    <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
+                </button>
+                <button type="button" class="dropdown-item-btn" data-page="analytics" onclick="switchPage('analytics'); closeAllTopDropdowns();">
+                    <span><i class="fas fa-chart-pie text-warning" style="width:22px;"></i> تحليل الأداء المالي</span>
+                    <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
+                </button>
+                <button type="button" class="dropdown-item-btn" data-page="simulator" onclick="switchPage('simulator'); closeAllTopDropdowns();">
+                    <span><i class="fas fa-brain text-primary" style="width:22px;"></i> المحاكي والأتمتة</span>
+                    <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
+                </button>
+                <button type="button" class="dropdown-item-btn" data-page="debts" onclick="switchPage('debts'); closeAllTopDropdowns();">
+                    <span><i class="fas fa-handshake text-danger" style="width:22px;"></i> الديون والسداد</span>
+                    <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
+                </button>
+                <button type="button" class="dropdown-item-btn" data-page="recurring" onclick="switchPage('recurring'); closeAllTopDropdowns();">
+                    <span><i class="fas fa-sync-alt text-primary" style="width:22px;"></i> النفقات والفواتير</span>
+                    <i class="fas fa-chevron-left" style="font-size:0.7em; opacity:0.5;"></i>
+                </button>
+            </div>
         </nav>
 
         <div class="v13-header-actions">
             <button type="button" class="primary-btn" style="padding: 10px 18px; font-size: 0.9em; background: linear-gradient(135deg, #8b5cf6, #ff5520);" onclick="openUserAuthModal()">
                 <i class="fas fa-user-circle" style="font-size: 1.1em;"></i> <span id="header-auth-btn-label" dir="ltr">تسجيل الدخول</span>
             </button>
+
+                        <!-- يظهر زر علامة الجوال تلقائياً عند فتح الموقع من الجوال فقط، ويختفي تماماً عند الفتح من الكمبيوتر أو اللابتوب -->
+            <div class="tooltip-wrapper" id="header-install-mobile-wrapper">
+                <button type="button" class="header-icon-btn" id="header-install-app-btn" onclick="openInstallAppModal('mobile')" style="background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.45); color: #34d399;" title="تثبيت التطبيق على الجوال">
+                    <i class="fas fa-mobile-screen-button"></i>
+                </button>
+                <span class="tooltip-text">تثبيت للجوال</span>
+            </div>
 
             <div class="tooltip-wrapper">
                 <button type="button" class="header-icon-btn" id="theme-toggle-btn" onclick="toggleThemeMode()">
@@ -954,10 +2011,16 @@
 
             <div class="top-dropdown-wrapper" id="top-tools-dropdown">
                 <button type="button" class="action-btn" style="border-radius:999px;" onclick="toggleTopDropdown(event, 'top-tools-dropdown')">
-                    <i class="fas fa-layer-group text-primary"></i> الأدوات <i class="fas fa-chevron-down" style="font-size:0.7em;"></i>
+                    <i class="fas fa-layer-group text-primary"></i> <span class="tools-btn-text">الأدوات</span> <i class="fas fa-chevron-down tools-btn-Caret" style="font-size:0.7em;"></i>
                 </button>
                 <div class="top-glass-dropdown-menu" onclick="event.stopPropagation()">
                     <div style="padding: 6px 10px; font-size: 0.75em; color: var(--text-muted); font-weight: 800; border-bottom: 1px solid var(--border-color);">الأدوات والمظهر</div>
+                    <button type="button" class="dropdown-item-btn" id="tools-install-pc-btn" onclick="openInstallAppModal('pc'); closeAllTopDropdowns();" style="background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.28);">
+                        <span><i class="fas fa-laptop-code" style="color:#a855f7;"></i> تطبيق الكمبيوتر واللابتوب (PC App)</span>
+                    </button>
+                    <button type="button" class="dropdown-item-btn" id="tools-install-mobile-btn" onclick="openInstallAppModal('mobile'); closeAllTopDropdowns();" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+                        <span><i class="fas fa-mobile-screen-button text-success"></i> تثبيت / تحميل تطبيق الجوال</span>
+                    </button>
                     <button type="button" class="dropdown-item-btn" onclick="saveLocalDataFile(); closeAllTopDropdowns();">
                         <span><i class="fas fa-download text-success"></i> تصدير نسخة احتياطية</span>
                     </button>
@@ -1003,7 +2066,7 @@
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
+                <div id="dashboard-quick-actions" style="display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap;">
                     <button type="button" class="primary-btn" style="padding: 12px 24px; font-size: 0.95em;" onclick="openExpenseModal();"><i class="fas fa-plus-circle"></i> إضافة مصروف</button>
                     <button type="button" class="action-btn" style="padding: 12px 22px; font-size: 0.95em; border-color: #ff5520; color: #ff5520; background: rgba(255,85,32,0.06);" onclick="openQuickExpenseModal();"><i class="fas fa-bolt"></i> إضافة مصروف سريع</button>
                 </div>
@@ -1322,14 +2385,14 @@
             <!-- Page: Calendar -->
             <div id="page-calendar" class="page-section">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3 id="calendar-month-year" style="margin:0; font-size:1.1em; font-weight:900;"></h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                        <h3 id="calendar-month-year" style="margin:0; font-size:1.12em; font-weight:900;"></h3>
                         <div style="display: flex; gap: 8px;">
-                            <button class="action-btn" onclick="changeCalendarMonth(-1)"><i class="fas fa-chevron-right"></i></button>
-                            <button class="action-btn" onclick="changeCalendarMonth(1)"><i class="fas fa-chevron-left"></i></button>
+                            <button type="button" class="action-btn" style="padding: 8px 13px;" onclick="changeCalendarMonth(-1)"><i class="fas fa-chevron-right"></i></button>
+                            <button type="button" class="action-btn" style="padding: 8px 13px;" onclick="changeCalendarMonth(1)"><i class="fas fa-chevron-left"></i></button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; margin-bottom: 8px; color: var(--text-muted); font-size:0.85em;">
+                    <div id="calendar-weekdays-header" class="calendar-weekdays-grid">
                         <div>أحد</div><div>إثنين</div><div>ثلاثاء</div><div>أربعاء</div><div>خميس</div><div>جمعة</div><div>سبت</div>
                     </div>
                     <div id="calendar-days-grid"></div>
@@ -1400,9 +2463,42 @@
                     </div>
 
                     <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+                            <label style="margin:0;"><i class="fas fa-envelope-circle-check text-primary"></i> البريد الإلكتروني المربوط بالحساب ورقم الجوال:</label>
+                            <span id="settings-linked-account-badge" class="btn-edit-badge" style="font-size:0.75em;">غير مسجل</span>
+                        </div>
+                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 12px 0;">يمكنك هنا تغيير أو تحديث البريد الإلكتروني المربوط برقم جوالك ليتم اعتماده فوراً في الحساب والسحابة واستقبال رموز التحقق عليه.</p>
+                        <div style="background:var(--surface-color); border:1px solid var(--border-color); border-radius:16px; padding:14px;">
+                            <div class="form-group" style="margin-bottom:10px;">
+                                <label style="font-size:0.82em; color:var(--text-muted);">رقم الجوال المربوط بالحساب:</label>
+                                <input type="tel" id="settings-linked-phone-input" placeholder="05xxxxxxxx" dir="ltr" style="text-align:right; font-weight:800;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label style="font-size:0.82em; color:var(--text-muted);">البريد الإلكتروني المربوط (الجديد أو الحالي):</label>
+                                <input type="email" id="settings-linked-email-input" placeholder="name@gmail.com" dir="ltr" style="text-align:right; font-weight:800;">
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <button type="button" class="primary-btn" style="padding:10px 18px; font-size:0.86em;" id="btn-save-linked-email" onclick="saveUpdatedLinkedEmail()">
+                                    <i class="fas fa-sync-alt"></i> تحديث وربط البريد الإلكتروني بالرقم
+                                </button>
+                            </div>
+                            <div id="settings-email-update-status" style="display:none; margin-top:10px; padding:10px 12px; border-radius:12px; font-size:0.82em; font-weight:700;"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                         <label><i class="fas fa-cloud text-primary"></i> حالة المزامنة السحابية (Firebase Cloud):</label>
                         <div style="display:flex; gap:10px; align-items:center; margin-top: 8px;">
                             <span id="cloud-sync-status-badge" style="display:inline-flex; align-items:center; gap:6px; font-size:0.9em; font-weight:bold;">جاري الاتصال بالسحابة تلقائياً...</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <label><i class="fas fa-laptop-code text-primary"></i> تطبيق اللابتوب والكمبيوتر (PC) وتطبيق الجوال:</label>
+                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">ثبّت التطبيق كبرنامج مستقل على سطح المكتب في اللابتوب أو الـ PC (Windows / Mac) أو على جوالك:</p>
+                        <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+                            <button type="button" class="primary-btn" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);" onclick="openInstallAppModal('pc')"><i class="fas fa-laptop"></i> تحميل / تثبيت تطبيق اللابتوب والـ PC</button>
+                            <button type="button" class="action-btn" style="border-color: var(--success); color: var(--success);" onclick="openInstallAppModal('mobile')"><i class="fas fa-mobile-screen-button"></i> تثبيت تطبيق الجوال</button>
                         </div>
                     </div>
 
@@ -1435,18 +2531,44 @@
             <!-- الخطوة 1: إدخال رقم الجوال والإيميل -->
             <div id="auth-step-input">
                 <h3 style="margin: 0 0 8px 0;">تسجيل الدخول والملف التعريفي</h3>
-                <p style="font-size: 0.88em; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">أدخل رقم جوالك وبريدك الإلكتروني لإرسال رمز التحقق (OTP) وربط ميزانيتك سحابياً.</p>
+                <p style="font-size: 0.88em; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;">أدخل رقم جوالك وبريدك الإلكتروني لإرسال رمز التحقق (OTP) وربط ميزانيتك سحابياً.</p>
                 
                 <div class="form-group">
                     <label>رقم الجوال (المعرّف الأساسي في السحابة)</label>
                     <input type="tel" id="auth-input-phone" placeholder="05xxxxxxxx" dir="ltr" style="text-align:center; font-weight:bold;">
                 </div>
-                <div class="form-group">
-                    <label>البريد الإلكتروني (لاستلام رمز التحقق)</label>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label style="margin:0;">البريد الإلكتروني (لاستلام رمز التحقق)</label>
+                        <button type="button" onclick="lookupForgottenEmailByPhone()" style="background:none; border:none; color:var(--primary-color); font-size:0.8em; font-weight:800; cursor:pointer; padding:0; text-decoration:underline;">
+                            <i class="fas fa-key"></i> نسيت البريد الإلكتروني؟
+                        </button>
+                    </div>
                     <input type="email" id="auth-input-email" placeholder="name@domain.com" dir="ltr" style="text-align:center; font-weight:bold;">
                 </div>
 
-                <div class="modal-actions" style="justify-content: center; gap: 12px; margin-top: 20px;">
+                <!-- بطاقة التلميح الأمني عند نسيان البريد الإلكتروني (تظهر أول 3 حروف + الدومين) -->
+                <div id="auth-forgot-email-box" style="display:none; background:rgba(255,85,32,0.06); border:1.5px dashed rgba(255,85,32,0.4); border-radius:18px; padding:14px; margin:12px 0; text-align:center;">
+                    <div style="font-size:0.82em; font-weight:800; color:var(--text-main); margin-bottom:6px;">
+                        <i class="fas fa-shield-halved text-primary"></i> التلميح الأمني للبريد المربوط برقمك:
+                    </div>
+                    <div id="auth-masked-email-hint" dir="ltr" style="font-family:'Plus Jakarta Sans',sans-serif !important; font-size:1.15em; font-weight:900; color:var(--primary-color); background:var(--surface-card); padding:8px 14px; border-radius:12px; border:1px solid var(--border-color); display:inline-block; margin-bottom:8px; letter-spacing:0.5px;">
+                        ---*****@gmail.com
+                    </div>
+                    <div style="font-size:0.88em; font-weight:800; color:var(--text-main); margin-bottom:10px;">
+                        هل هذا هو بريدك الإلكتروني؟
+                    </div>
+                    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                        <button type="button" class="primary-btn" id="btn-confirm-masked-email" style="padding:8px 16px; font-size:0.84em; background:var(--success); border-color:var(--success); box-shadow:0 6px 16px rgba(16,185,129,0.35);" onclick="confirmMaskedEmailAndSendOtp()">
+                            <i class="fas fa-check-circle"></i> نعم، أرسل الرمز للبريد
+                        </button>
+                        <button type="button" class="btn-cancel" style="padding:8px 14px; font-size:0.82em;" onclick="hideForgotEmailBox()">
+                            لا / محاولة رقم آخر
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="justify-content: center; gap: 12px; margin-top: 18px;">
                     <button type="button" class="btn-cancel" onclick="closeModal('userAuthModal')">إلغاء</button>
                     <button type="button" class="primary-btn" id="btn-send-otp" onclick="sendAuthOtpEmail()"><i class="fas fa-paper-plane"></i> إرسال رمز التحقق</button>
                 </div>
@@ -1455,7 +2577,7 @@
             <!-- الخطوة 2: إدخال رمز التحقق OTP المرسل للإيميل -->
             <div id="auth-step-otp" style="display: none;">
                 <h3 style="margin: 0 0 8px 0;">تأكيد رمز التحقق (OTP)</h3>
-                <p style="font-size: 0.88em; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;">تم إرسال رمز التحقق المكون من 4 أرقام إلى بريدك الإلكتروني. أدخله أدناه لتأكيد الدخول:</p>
+                <p id="auth-otp-sent-subtitle" style="font-size: 0.88em; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5;">تم إرسال رمز التحقق المكون من 4 أرقام إلى بريدك الإلكتروني. أدخله أدناه لتأكيد الدخول:</p>
                 
                 <div class="form-group">
                     <input type="text" id="auth-input-otp" placeholder="----" maxlength="4" dir="ltr" style="text-align:center; font-size: 1.6em; font-weight:900; letter-spacing: 8px; padding: 14px;">
@@ -1467,12 +2589,12 @@
                 </div>
             </div>
 
-            <!-- الخطوة 3: عرض بيانات الحساب المسجل وخيار تسجيل الخروج -->
+            <!-- الخطوة 3: عرض بيانات الحساب المسجل وخيار تغيير البريد أو تسجيل الخروج -->
             <div id="auth-step-logged-in" style="display: none;">
                 <h3 style="margin: 0 0 8px 0; color: var(--success);">الحساب متصل ومحفوظ</h3>
                 <p style="font-size: 0.86em; color: var(--text-muted); margin-bottom: 16px;">جلستك محفوظة تلقائياً على هذا الجهاز ومرتبطة بالسحابة.</p>
                 
-                <div style="background: var(--surface-card); padding: 14px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 20px; text-align: right;">
+                <div style="background: var(--surface-card); padding: 14px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 14px; text-align: right;">
                     <div class="stat-row">
                         <span>رقم الجوال المعرّف:</span>
                         <span class="stat-value text-primary" id="logged-in-phone-display" dir="ltr"></span>
@@ -1483,7 +2605,11 @@
                     </div>
                 </div>
 
-                <div class="modal-actions" style="justify-content: center; gap: 12px;">
+                <button type="button" class="action-btn" style="width:100%; justify-content:center; margin-bottom:14px; border-color:var(--primary-color); color:var(--primary-color); font-size:0.86em;" onclick="closeModal('userAuthModal'); switchPage('settings'); setTimeout(() => document.getElementById('settings-linked-email-input')?.focus(), 150);">
+                    <i class="fas fa-envelope-open-text"></i> تغيير البريد الإلكتروني المربوط من الإعدادات
+                </button>
+
+                <div class="modal-actions" style="justify-content: center; gap: 12px; margin-top: 6px;">
                     <button type="button" class="btn-cancel" onclick="closeModal('userAuthModal')">إغلاق</button>
                     <button type="button" class="primary-btn" style="background: var(--danger); border-color: var(--danger); box-shadow: 0 8px 20px -4px rgba(239, 68, 68, 0.4);" onclick="logoutUserSession()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
                 </div>
@@ -2057,6 +3183,245 @@
         </div>
     </div>
 
+    <!-- نافذة تثبيت وتحميل التطبيق للكمبيوتر (Laptop / PC) وللجوال (V5.9) -->
+    <div id="installAppModal" class="modal">
+        <div class="modal-content" style="max-width: 490px; text-align: center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:14px;">
+                <h3 style="margin:0; font-size:1.1em;" id="install-modal-header-title"><i class="fas fa-laptop-code text-primary"></i> تثبيت وتحميل التطبيق</h3>
+                <button type="button" class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('installAppModal')"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- شريط التبديل الذكي بين نسخة اللابتوب/PC ونسخة الجوال -->
+            <div class="install-platform-tabs">
+                <button type="button" class="install-platform-tab-btn active" id="tab-btn-install-pc" onclick="switchInstallModalTab('pc')">
+                    <i class="fas fa-laptop"></i> <span>تطبيق اللابتوب و PC</span>
+                </button>
+                <button type="button" class="install-platform-tab-btn" id="tab-btn-install-mobile" onclick="switchInstallModalTab('mobile')">
+                    <i class="fas fa-mobile-screen-button"></i> <span>تطبيق الجوال</span>
+                </button>
+            </div>
+
+            <!-- =========================================================
+                 💻 القسم الأول: تطبيق اللابتوب والكمبيوتر المكتبي (PC & Laptop App)
+                 ========================================================= -->
+            <div id="install-panel-pc" style="display: block;">
+                <div style="width: 62px; height: 62px; border-radius: 20px; background: linear-gradient(135deg, #8b5cf6, #ff5520); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.75em; margin: 0 auto 10px auto; box-shadow: 0 10px 25px rgba(139, 92, 246, 0.35);">
+                    <i class="fas fa-laptop-code"></i>
+                </div>
+                <h4 style="margin: 0 0 6px 0; font-size: 1.08em;">تطبيق الميزانية الذكية للكمبيوتر واللابتوب (PC)</h4>
+                <p style="font-size: 0.83em; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.55;">
+                    شغّل الموقع كبرنامج سطح مكتب مستقل على اللابتوب أو الـ PC (Windows / Mac) بأيقونة خاصة على سطح المكتب وشريط المهام بدون أشرطة المتصفح:
+                </p>
+
+                <!-- خيار 1 للكمبيوتر: التثبيت المباشر كتطبيق سطح مكتب (Desktop PWA) -->
+                <button type="button" id="btn-trigger-pc-pwa" class="primary-btn" style="width:100%; justify-content:center; padding:13px 18px; font-size:0.94em; margin-bottom:9px; background: linear-gradient(135deg, #8b5cf6, #6366f1); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.38);" onclick="triggerPcDesktopInstall()">
+                    <i class="fas fa-download"></i> <span id="btn-trigger-pc-pwa-text">تثبيت مباشر كتطبيق سطح مكتب (Windows / Mac)</span>
+                </button>
+
+                <!-- خيار 2 للكمبيوتر: تحميل حزمة برنامج ويندوز (تشغيل بضغطة زر + اختصار سطح المكتب) -->
+                <button type="button" class="action-btn" style="width:100%; justify-content:center; padding:12px 16px; font-size:0.9em; margin-bottom:9px; border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.1); font-weight: 800;" onclick="downloadPcDesktopAppBundleZip()">
+                    <i class="fab fa-windows" style="font-size:1.15em;"></i> تحميل حزمة برنامج الكمبيوتر (أيقونة سطح مكتب + مشغل تلقائي)
+                </button>
+
+                <!-- خيار 3 للكمبيوتر: فتح في نافذة برنامج مستقلة الآن أو تحميل ملف سطح المكتب -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+                    <button type="button" class="action-btn" style="width:100%; justify-content:center; padding:10px 8px; font-size:0.8em; border-color: var(--primary-color); color: var(--primary-color); background: rgba(255, 85, 32, 0.08); font-weight: 800;" onclick="launchDesktopStandaloneWindow()">
+                        <i class="fas fa-window-restore"></i> فتح في نافذة تطبيق مستقلة
+                    </button>
+                    <button type="button" class="action-btn" style="width:100%; justify-content:center; padding:10px 8px; font-size:0.8em; border-color: var(--border-color); color: var(--text-main); background: var(--surface-card); font-weight: 800;" onclick="downloadStandaloneAppFile('Finexy-Desktop-App.html')">
+                        <i class="fas fa-desktop"></i> ملف تطبيق للكمبيوتر
+                    </button>
+                </div>
+
+                <!-- شرح التثبيت على اللابتوب والـ PC -->
+                <div style="text-align: right; background: var(--surface-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 13px 14px; font-size: 0.81em; line-height: 1.6;">
+                    <div style="font-weight: 900; color: var(--text-main); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-circle-info text-primary"></i> كيف تثبته كبرنامج على اللابتوب أو الـ PC؟
+                    </div>
+                    <div style="margin-bottom: 7px; padding-bottom: 7px; border-bottom: 1px dashed var(--border-color);">
+                        <strong style="color: #8b5cf6;"><i class="fab fa-windows"></i> الطريقة 1 (حزمة برنامج الكمبيوتر الجاهزة):</strong><br>
+                        اضغط زر <strong>"تحميل حزمة برنامج الكمبيوتر"</strong> الأخضر أعلاه، ثم فك الضغط واضغط مرتين على <strong>"إنشاء-اختصار-سطح-المكتب"</strong> لتظهر أيقونة البرنامج على سطح مكتبك وتفتحه كبرنامج مستقل تماماً.
+                    </div>
+                    <div>
+                        <strong style="color: var(--primary-color);"><i class="fab fa-chrome"></i> الطريقة 2 (من متصفح Chrome أو Edge على الكمبيوتر):</strong><br>
+                        اضغط زر <strong>"تثبيت مباشر"</strong> البنفسجي أعلاه، أو اضغط أيقونة تثبيت التطبيق <i class="fas fa-display" style="color:var(--primary-color);"></i> في يمين/يسار شريط العنوان العلوي للمتصفح ثم اختر <strong>تثبيت (Install)</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 📱 القسم الثاني: تطبيق الجوال (آيفون وأندرويد)
+                 ========================================================= -->
+            <div id="install-panel-mobile" style="display: none;">
+                <div style="width: 62px; height: 62px; border-radius: 20px; background: linear-gradient(135deg, #10b981, #ff5520); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.75em; margin: 0 auto 10px auto; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);">
+                    <i class="fas fa-mobile-screen-button"></i>
+                </div>
+                <h4 style="margin: 0 0 6px 0; font-size: 1.08em;">تطبيق الميزانية الذكية للجوال</h4>
+                <p style="font-size: 0.83em; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.55;">
+                    ثبّت التطبيق مباشرة على شاشة جوالك (آيفون أو أندرويد) ليفتح بشاشة كاملة بدون شريط المتصفح السفلي:
+                </p>
+
+                <!-- خيار 1 للجوال: التثبيت المباشر كتطبيق ويب (PWA) -->
+                <button type="button" id="btn-trigger-native-pwa" class="primary-btn" style="width:100%; justify-content:center; padding:13px 18px; font-size:0.94em; margin-bottom:9px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);" onclick="triggerNativePwaInstall()">
+                    <i class="fas fa-mobile-screen-button"></i> <span id="btn-trigger-native-pwa-text">تثبيت التطبيق على الجوال بدون شريط المتصفح</span>
+                </button>
+
+                <!-- خيار 2 للجوال: وضع ملء الشاشة الفوري -->
+                <button type="button" class="action-btn" style="width:100%; justify-content:center; padding:11px 16px; font-size:0.88em; margin-bottom:9px; border-color: rgba(139, 92, 246, 0.45); color: #a855f7; background: rgba(139, 92, 246, 0.1); font-weight: 800;" onclick="toggleAppFullscreenMode()">
+                    <i class="fas fa-expand"></i> تشغيل وضع ملء الشاشة الكامل الآن
+                </button>
+
+                <!-- خيار 3 للجوال: حزمة GitHub أو ملف HTML -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+                    <button type="button" class="action-btn" style="width:100%; justify-content:center; padding:10px 8px; font-size:0.8em; border-color: var(--primary-color); color: var(--primary-color); background: rgba(255, 85, 32, 0.08); font-weight: 800;" onclick="downloadGithubPwaBundleZip()">
+                        <i class="fas fa-box-open"></i> حزمة GitHub (تطبيق متجر)
+                    </button>
+                    <button type="button" class="action-btn" style="width:100%; justify-content:center; padding:10px 8px; font-size:0.8em; border-color: var(--border-color); color: var(--text-main); background: var(--surface-card); font-weight: 800;" onclick="downloadStandaloneAppFile('index.html')">
+                        <i class="fas fa-file-code"></i> ملف HTML مستقل
+                    </button>
+                </div>
+
+                <!-- شرح خطوات الإضافة للشاشة الرئيسية حسب نوع الجوال (آيفون / أندرويد) -->
+                <div style="text-align: right; background: var(--surface-card); border: 1px solid var(--border-color); border-radius: 18px; padding: 13px 14px; font-size: 0.81em; line-height: 1.6;">
+                    <div style="font-weight: 900; color: var(--text-main); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">
+                        <i class="fas fa-circle-info text-primary"></i> خطوات التثبيت السريع من متصفح الجوال:
+                    </div>
+                    <div style="margin-bottom: 7px; padding-bottom: 7px; border-bottom: 1px dashed var(--border-color);">
+                        <strong style="color: var(--primary-color);"><i class="fab fa-apple"></i> في الآيفون (متصفح Safari):</strong><br>
+                        1. اضغط على زر <strong>المشاركة</strong> <i class="fas fa-arrow-up-from-bracket" style="color:var(--primary-color);"></i> في الشريط السفلي للمتصفح.<br>
+                        2. اختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong> ثم اضغط <strong>إضافة</strong>.
+                    </div>
+                    <div>
+                        <strong style="color: var(--success);"><i class="fab fa-android"></i> في الأندرويد والسامسونج (Chrome / Samsung):</strong><br>
+                        1. اضغط زر <strong>"تثبيت التطبيق"</strong> الأخضر أعلاه، أو اضغط قائمة المتصفح <strong>(⋮)</strong> أو <strong>(☰)</strong>.<br>
+                        2. اختر <strong>"تثبيت التطبيق" (Install app)</strong> أو <strong>"الإضافة إلى الشاشة الرئيسية"</strong>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="justify-content: center; margin-top: 14px;">
+                <button type="button" class="btn-cancel" style="width:100%;" onclick="closeModal('installAppModal')">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- الزر العائم ونافذة محادثة المساعد الذكي (Finexy AI Assistant V5.3) -->
+    <button type="button" class="finexy-ai-fab" id="finexy-ai-fab" onclick="toggleFinexyAiChat(event)" title="تحدث مع المساعد finex">
+        <div class="finexy-ai-fab-icon">
+            <svg class="finexy-cute-bot-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="botHeadGrad" x1="4" y1="6" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#ffffff"/>
+                        <stop offset="55%" stop-color="#f3e8ff"/>
+                        <stop offset="100%" stop-color="#ffd8cc"/>
+                    </linearGradient>
+                    <linearGradient id="botVisorGrad" x1="8" y1="13" x2="28" y2="25" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#0f172a"/>
+                        <stop offset="100%" stop-color="#2e1065"/>
+                    </linearGradient>
+                    <linearGradient id="botAccentGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#ff5520"/>
+                        <stop offset="100%" stop-color="#8b5cf6"/>
+                    </linearGradient>
+                </defs>
+                <!-- الهوائي الذكي المضيء -->
+                <line x1="18" y1="5" x2="18" y2="9.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+                <circle class="finexy-cute-bot-spark" cx="18" cy="4.2" r="2.6" fill="#34d399"/>
+                <!-- سماعات الجانبين -->
+                <rect x="2.2" y="15" width="3.5" height="8" rx="1.75" fill="url(#botAccentGrad)"/>
+                <rect x="30.3" y="15" width="3.5" height="8" rx="1.75" fill="url(#botAccentGrad)"/>
+                <!-- الرأس ثلاثي الأبعاد -->
+                <rect x="5" y="9" width="26" height="20" rx="10" fill="url(#botHeadGrad)" stroke="rgba(255,255,255,0.9)" stroke-width="1.2"/>
+                <!-- الشاشة الزجاجية للوجه -->
+                <rect x="8" y="12.5" width="20" height="13" rx="6.5" fill="url(#botVisorGrad)"/>
+                <!-- لمعان زجاجي علوي -->
+                <path d="M11 14.3C13.5 13.5 17 13.5 21 14.3" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" stroke-linecap="round"/>
+                <!-- العيون المضيئة المتحركة -->
+                <g class="finexy-cute-bot-eyes">
+                    <circle cx="13.5" cy="18.2" r="2.2" fill="#38bdf8"/>
+                    <circle cx="14.1" cy="17.6" r="0.7" fill="#ffffff"/>
+                    <circle cx="22.5" cy="18.2" r="2.2" fill="#38bdf8"/>
+                    <circle cx="23.1" cy="17.6" r="0.7" fill="#ffffff"/>
+                </g>
+                <!-- ابتسامة لطيفة مضيئة -->
+                <path d="M15.2 21.8C16.2 23 19.8 23 20.8 21.8" stroke="#34d399" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span class="finexy-ai-fab-online-dot"></span>
+        </div>
+    </button>
+
+    <div class="finexy-ai-chat-panel" id="finexy-ai-chat-panel" onclick="event.stopPropagation()">
+        <div class="finexy-ai-chat-header">
+            <div style="display:flex; align-items:center; gap:11px;">
+                <div class="finexy-ai-header-avatar">
+                    <svg class="finexy-cute-bot-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="18" y1="5" x2="18" y2="9.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+                        <circle class="finexy-cute-bot-spark" cx="18" cy="4.2" r="2.6" fill="#34d399"/>
+                        <rect x="2.2" y="15" width="3.5" height="8" rx="1.75" fill="url(#botAccentGrad)"/>
+                        <rect x="30.3" y="15" width="3.5" height="8" rx="1.75" fill="url(#botAccentGrad)"/>
+                        <rect x="5" y="9" width="26" height="20" rx="10" fill="url(#botHeadGrad)" stroke="rgba(255,255,255,0.9)" stroke-width="1.2"/>
+                        <rect x="8" y="12.5" width="20" height="13" rx="6.5" fill="url(#botVisorGrad)"/>
+                        <path d="M11 14.3C13.5 13.5 17 13.5 21 14.3" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" stroke-linecap="round"/>
+                        <g class="finexy-cute-bot-eyes">
+                            <circle cx="13.5" cy="18.2" r="2.2" fill="#38bdf8"/>
+                            <circle cx="14.1" cy="17.6" r="0.7" fill="#ffffff"/>
+                            <circle cx="22.5" cy="18.2" r="2.2" fill="#38bdf8"/>
+                            <circle cx="23.1" cy="17.6" r="0.7" fill="#ffffff"/>
+                        </g>
+                        <path d="M15.2 21.8C16.2 23 19.8 23 20.8 21.8" stroke="#34d399" stroke-width="1.6" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div>
+                    <div style="font-weight:900; font-size:1.05em; display:flex; align-items:center; gap:6px;">
+                        <span>المساعد <span dir="ltr" style="color:#ff9b7a; font-family:'Plus Jakarta Sans',sans-serif !important;">finex</span></span>
+                        <span style="font-size:0.68em; background:rgba(255,255,255,0.16); padding:2px 8px; border-radius:999px; font-weight:800;">AI</span>
+                    </div>
+                    <div style="font-size:0.74em; color:rgba(255,255,255,0.78); display:flex; align-items:center; gap:5px; margin-top:2px;">
+                        <span style="width:7px; height:7px; border-radius:50%; background:#10b981; display:inline-block; box-shadow:0 0 6px #10b981;"></span>
+                        مطلع لحظياً على كامل ميزانيتك وبنودك
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <button type="button" onclick="resetFinexyAiChat()" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.15); color:#fff; width:34px; height:34px; border-radius:11px; cursor:pointer;" title="بدء محادثة جديدة">
+                    <i class="fas fa-rotate-right" style="font-size:0.85em;"></i>
+                </button>
+                <button type="button" onclick="toggleFinexyAiChat(event)" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.15); color:#fff; width:34px; height:34px; border-radius:11px; cursor:pointer;" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="finexy-ai-chat-messages" id="finexy-ai-chat-messages"></div>
+
+        <!-- شريط الأسئلة السريعة مع أزرار التنقل يمين ويسار -->
+        <div class="ai-quick-chips-wrapper">
+            <button type="button" class="ai-chips-nav-btn" onclick="scrollAiQuickChips('right')" title="التنقل لليمين">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="ai-quick-chips-bar" id="ai-quick-chips-bar">
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('حلل لي وضع ميزانيتي اليوم وكم باقي لي؟')">📊 وضع ميزانيتي</button>
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('إيش أكثر بند وأكثر محل صرفت فيه؟')">🔥 أعلى بند ومحل</button>
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('كم صرفت كاش وكم شبكة وكم رصيدي بالبنك؟')">💳 الكاش والشبكة والبنك</button>
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('متى تخلص ميزانيتي لو استمريت بنفس معدل الصرف؟')">⏳ توقع نهاية الشهر</button>
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('عطني خطة عملية للتوفير وتسديد الديون والأهداف')">💡 خطة توفير ذكية</button>
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('كم إجمالي مدخراتي في صندوق الطوارئ والأهداف؟')">🐷 الادخار والطوارئ</button>
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('حلل لي الديون والالتزامات الي علي وكم السلف؟')">🤝 الديون والالتزامات</button>
+                <button type="button" class="ai-quick-chip" onclick="askQuickAiQuestion('رتب لي كل البنود وكم باقي في كل بند؟')">📂 تفاصيل البنود</button>
+            </div>
+            <button type="button" class="ai-chips-nav-btn" onclick="scrollAiQuickChips('left')" title="التنقل لليسار">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <div class="finexy-ai-chat-input-area">
+            <input type="text" id="finexy-ai-chat-input" placeholder="اسأل المساعد finex عن ميزانيتك، البنود، المحلات، الديون..." style="flex:1; padding:11px 14px; border-radius:999px; border:1px solid var(--border-color); background:var(--surface-card); color:var(--text-main); font-size:0.88em; outline:none;" onkeydown="if(event.key==='Enter'){event.preventDefault(); sendFinexyAiChatMessage();}">
+            <button type="button" class="primary-btn" id="btn-send-ai-chat" style="padding:10px 16px; border-radius:999px;" onclick="sendFinexyAiChatMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
     <input type="file" id="import-file" style="display:none" accept=".json,application/json" onchange="importLocalDataFile(event)">
 
     <script>
@@ -2247,10 +3612,244 @@
             }
         }
 
+        let pendingRecoveredAccount = { phone: '', email: '' };
+
+        // حفظ واسترجاع ربط رقم الجوال بالبريد الإلكتروني محلياً كنسخة مساندة للسحابة
+        function savePhoneEmailMappingLocally(phone, email) {
+            if (!phone || !email) return;
+            try {
+                const phoneKey = String(phone).replace(/[^0-9+]/g, '');
+                const raw = localStorage.getItem('smart_budget_phone_email_map') || '{}';
+                const map = JSON.parse(raw);
+                map[phoneKey] = String(email).trim().toLowerCase();
+                localStorage.setItem('smart_budget_phone_email_map', JSON.stringify(map));
+            } catch (e) {}
+        }
+
+        function getPhoneEmailMappingLocally(phone) {
+            if (!phone) return '';
+            try {
+                const phoneKey = String(phone).replace(/[^0-9+]/g, '');
+                const raw = localStorage.getItem('smart_budget_phone_email_map') || '{}';
+                const map = JSON.parse(raw);
+                if (map[phoneKey]) return map[phoneKey];
+                if (APP_STATE.userAuth && APP_STATE.userAuth.phone && APP_STATE.userAuth.phone.replace(/[^0-9+]/g, '') === phoneKey) {
+                    return (APP_STATE.userAuth.email || '').trim().toLowerCase();
+                }
+            } catch (e) {}
+            return '';
+        }
+
+        // دالة إخفاء البريد الإلكتروني بالطريقة الأمنية: إظهار أول 3 حروف فقط ثم نجوم ثم الدومين (مثل: moh*****@gmail.com)
+        function maskEmailSecurityHint(email) {
+            const clean = (email || '').trim().toLowerCase();
+            if (!clean || !clean.includes('@')) return '';
+            const [localPart, domainPart] = clean.split('@');
+            const firstThree = localPart.slice(0, 3);
+            return `${firstThree}*****@${domainPart}`;
+        }
+
+        function hideForgotEmailBox() {
+            const box = document.getElementById('auth-forgot-email-box');
+            if (box) box.style.display = 'none';
+            pendingRecoveredAccount = { phone: '', email: '' };
+        }
+
+        // البحث عن البريد الإلكتروني المربوط برقم الجوال عند نسيان البريد وعرض أول 3 حروف + الدومين
+        async function lookupForgottenEmailByPhone() {
+            const phoneInput = document.getElementById('auth-input-phone');
+            const phone = phoneInput ? toEnglishDigitsClean(phoneInput.value).trim() : '';
+            if (!phone || phone.length < 7) {
+                showToast('أدخل رقم جوالك أولاً في خانة رقم الجوال لنعرض لك تلميح البريد المربوط به 📱', 'warning');
+                if (phoneInput) phoneInput.focus();
+                return;
+            }
+
+            const phoneKey = phone.replace(/[^0-9+]/g, '');
+            let foundEmail = '';
+
+            // 1. البحث في السحابة (Firebase Cloud)
+            if (firestoreDb && FB) {
+                try {
+                    const docRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
+                    const docSnap = await FB.getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        foundEmail = (data.email || (data.state && data.state.userAuth && data.state.userAuth.email) || '').trim().toLowerCase();
+                    }
+                } catch (err) {
+                    console.error("Lookup cloud email error:", err);
+                }
+            }
+
+            // 2. البحث في السجل المحلي المساند إذا لم يتوفر اتصال سحابي لحظي
+            if (!foundEmail) {
+                foundEmail = getPhoneEmailMappingLocally(phoneKey);
+            }
+
+            if (!foundEmail || !foundEmail.includes('@')) {
+                showToast('لم نجد بريداً إلكترونياً مسجلاً مسبقاً لهذا الرقم. يمكنك كتابة بريدك الجديد مباشرة لتسجيله وربطه!', 'info');
+                document.getElementById('auth-input-email')?.focus();
+                return;
+            }
+
+            savePhoneEmailMappingLocally(phoneKey, foundEmail);
+            pendingRecoveredAccount = { phone, email: foundEmail };
+            const masked = maskEmailSecurityHint(foundEmail);
+            const hintEl = document.getElementById('auth-masked-email-hint');
+            const boxEl = document.getElementById('auth-forgot-email-box');
+            if (hintEl) hintEl.innerText = masked;
+            if (boxEl) boxEl.style.display = 'block';
+            showToast(`تم العثور على البريد المربوط برقمك (${masked}) 🔒`, 'info', true);
+        }
+
+        // عند ضغط المستخدم على "نعم، أرسل الرمز للبريد" بعد رؤية التلميح الأمني
+        async function confirmMaskedEmailAndSendOtp() {
+            if (!pendingRecoveredAccount.phone || !pendingRecoveredAccount.email) {
+                await lookupForgottenEmailByPhone();
+                if (!pendingRecoveredAccount.email) return;
+            }
+            const { phone, email } = pendingRecoveredAccount;
+            const masked = maskEmailSecurityHint(email);
+            const btn = document.getElementById('btn-confirm-masked-email');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إرسال الرمز...';
+            }
+
+            const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+            pendingAuthData = { phone, email, otp: generatedOtp };
+
+            try {
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                    user_email: email,
+                    to_email: email,
+                    email: email,
+                    passcode: generatedOtp,
+                    phone: phone,
+                    title: 'رمز التحقق واستعادة الدخول - الميزانية الذكية'
+                }, EMAILJS_PUBLIC_KEY);
+
+                if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+                hideForgotEmailBox();
+                document.getElementById('auth-step-input').style.display = 'none';
+                document.getElementById('auth-step-otp').style.display = 'block';
+                document.getElementById('auth-input-otp').value = '';
+                const subEl = document.getElementById('auth-otp-sent-subtitle');
+                if (subEl) {
+                    subEl.innerHTML = `تم إرسال رمز التحقق المكون من 4 أرقام إلى بريدك المربوط (<strong dir="ltr">${masked}</strong>). أدخله أدناه للدخول مباشرة:`;
+                }
+                showToast(`تم إرسال رمز التحقق إلى بريدك (${masked}) بنجاح ✉️`, 'success');
+            } catch (err) {
+                if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+                showToast('تعذر إرسال البريد الإلكتروني، تأكد من اتصال الإنترنت', 'danger');
+            }
+        }
+
+        // تحديث واجهة البريد الإلكتروني المربوط داخل الإعدادات
+        function renderLinkedAccountSettings() {
+            const phoneInp = document.getElementById('settings-linked-phone-input');
+            const emailInp = document.getElementById('settings-linked-email-input');
+            const badge = document.getElementById('settings-linked-account-badge');
+            const statusBox = document.getElementById('settings-email-update-status');
+            if (statusBox) statusBox.style.display = 'none';
+
+            if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                if (phoneInp) phoneInp.value = APP_STATE.userAuth.phone;
+                if (emailInp) emailInp.value = APP_STATE.userAuth.email || '';
+                if (badge) {
+                    badge.style.background = 'rgba(16,185,129,0.12)';
+                    badge.style.color = 'var(--success)';
+                    badge.style.borderColor = 'rgba(16,185,129,0.3)';
+                    badge.innerHTML = `<i class="fas fa-link"></i> مربوط بـ <span dir="ltr">${APP_STATE.userAuth.phone}</span>`;
+                }
+            } else {
+                if (phoneInp && !phoneInp.value) phoneInp.value = '';
+                if (emailInp && !emailInp.value) emailInp.value = '';
+                if (badge) {
+                    badge.style.background = 'rgba(245,158,11,0.12)';
+                    badge.style.color = 'var(--warning)';
+                    badge.style.borderColor = 'rgba(245,158,11,0.3)';
+                    badge.innerHTML = '<i class="fas fa-circle-info"></i> أدخل الرقم والبريد للربط';
+                }
+            }
+        }
+
+        // حفظ وتحديث البريد الإلكتروني المربوط بالحساب ورقم الجوال من داخل الإعدادات
+        async function saveUpdatedLinkedEmail() {
+            const phoneInp = document.getElementById('settings-linked-phone-input');
+            const emailInp = document.getElementById('settings-linked-email-input');
+            const statusBox = document.getElementById('settings-email-update-status');
+            const btn = document.getElementById('btn-save-linked-email');
+
+            const phone = toEnglishDigitsClean(phoneInp?.value || (APP_STATE.userAuth && APP_STATE.userAuth.phone) || '').trim();
+            const newEmail = (emailInp?.value || '').trim().toLowerCase();
+
+            if (!phone || phone.length < 7) {
+                showToast('يرجى إدخال رقم الجوال المربوط بالحساب أولاً', 'warning');
+                if (phoneInp) phoneInp.focus();
+                return;
+            }
+            if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+                showToast('يرجى إدخال بريد إلكتروني صحيح (مثال: name@gmail.com)', 'warning');
+                if (emailInp) emailInp.focus();
+                return;
+            }
+
+            const origBtnHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تحديث وربط البريد...';
+            }
+
+            APP_STATE.userAuth = {
+                phone: phone,
+                email: newEmail,
+                linkedAt: new Date().toISOString()
+            };
+
+            savePhoneEmailMappingLocally(phone, newEmail);
+            localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
+            saveLocalData(false);
+            updateAuthHeaderLabel();
+
+            // تحديث الوثيقة السحابية فوراً لربط البريد الجديد برقم الجوال في Firebase
+            if (firestoreDb && FB) {
+                try {
+                    const phoneKey = phone.replace(/[^0-9+]/g, '');
+                    await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), {
+                        phone: phone,
+                        email: newEmail,
+                        state: APP_STATE,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                    await subscribeToActiveCloudDocument();
+                } catch (e) {}
+            }
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = origBtnHtml;
+            }
+
+            renderLinkedAccountSettings();
+            if (statusBox) {
+                statusBox.style.display = 'block';
+                statusBox.style.background = 'rgba(16,185,129,0.1)';
+                statusBox.style.border = '1px solid rgba(16,185,129,0.3)';
+                statusBox.style.color = 'var(--success)';
+                statusBox.innerHTML = `✅ تم تحديث البريد الإلكتروني إلى (<span dir="ltr">${newEmail}</span>) وربطه برقم الجوال (<span dir="ltr">${phone}</span>) في الحساب والسحابة بنجاح!`;
+            }
+            addNotification(`✉️ تم تحديث البريد الإلكتروني المربوط برقم الجوال (${phone}) إلى ${newEmail}`, 'success');
+            showToast('تم تحديث البريد الإلكتروني وربطه برقم الجوال بنجاح! ✅', 'success', true);
+        }
+
         function openUserAuthModal() {
             const stepInput = document.getElementById('auth-step-input');
             const stepOtp = document.getElementById('auth-step-otp');
             const stepLoggedIn = document.getElementById('auth-step-logged-in');
+            hideForgotEmailBox();
 
             if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
                 stepInput.style.display = 'none';
@@ -2274,11 +3873,16 @@
         }
 
         async function sendAuthOtpEmail() {
-            const phone = document.getElementById('auth-input-phone').value.trim();
+            const phone = toEnglishDigitsClean(document.getElementById('auth-input-phone').value).trim();
             const email = document.getElementById('auth-input-email').value.trim().toLowerCase();
 
-            if (!phone || phone.length < 7 || !email || !email.includes('@')) {
-                showToast('يرجى إدخال رقم جوال صحيح وبريد إلكتروني صالح', 'warning');
+            if (!phone || phone.length < 7) {
+                showToast('يرجى إدخال رقم جوال صحيح أولاً', 'warning');
+                return;
+            }
+            // إذا ترك المستخدم البريد فارغاً وضغط إرسال، نساعده تلقائياً بميزة "نسيت البريد الإلكتروني"
+            if (!email || !email.includes('@')) {
+                await lookupForgottenEmailByPhone();
                 return;
             }
 
@@ -2296,10 +3900,20 @@
                     if (docSnap.exists()) {
                         const existingData = docSnap.data();
                         const existingEmail = (existingData.email || (existingData.state && existingData.state.userAuth && existingData.state.userAuth.email) || '').trim().toLowerCase();
+                        if (existingEmail) {
+                            savePhoneEmailMappingLocally(phoneKey, existingEmail);
+                        }
                         if (existingEmail && existingEmail !== email) {
                             sendBtn.disabled = false;
                             sendBtn.innerHTML = origBtnHtml;
-                            showToast('عذراً، البريد الإلكتروني لا يطابق البريد المرتبط برقم الجوال هذا في السحابة!', 'danger');
+                            // إظهار التلميح الأمني تلقائياً لمساعدة المستخدم إذا أخطأ في تذكر بريده
+                            pendingRecoveredAccount = { phone, email: existingEmail };
+                            const masked = maskEmailSecurityHint(existingEmail);
+                            const hintEl = document.getElementById('auth-masked-email-hint');
+                            const boxEl = document.getElementById('auth-forgot-email-box');
+                            if (hintEl) hintEl.innerText = masked;
+                            if (boxEl) boxEl.style.display = 'block';
+                            showToast(`البريد المدخل لا يطابق البريد المربوط برقمك (${masked}). هل تود الإرسال لبريدك المربوط؟`, 'warning');
                             return;
                         }
                     }
@@ -2326,6 +3940,10 @@
                 document.getElementById('auth-step-input').style.display = 'none';
                 document.getElementById('auth-step-otp').style.display = 'block';
                 document.getElementById('auth-input-otp').value = '';
+                const subEl = document.getElementById('auth-otp-sent-subtitle');
+                if (subEl) {
+                    subEl.innerHTML = `تم إرسال رمز التحقق المكون من 4 أرقام إلى بريدك الإلكتروني (<strong dir="ltr">${email}</strong>). أدخله أدناه لتأكيد الدخول:`;
+                }
                 showToast(`تم إرسال رمز التحقق إلى بريدك (${email}) بنجاح ✉️`, 'success');
             } catch (err) {
                 console.error("EmailJS Error:", err);
@@ -2336,7 +3954,7 @@
         }
 
         async function verifyOtpAndCompleteLogin() {
-            const enteredOtp = document.getElementById('auth-input-otp').value.trim();
+            const enteredOtp = toEnglishDigitsClean(document.getElementById('auth-input-otp').value).trim();
             if (!enteredOtp || enteredOtp !== pendingAuthData.otp) {
                 showToast('رمز التحقق غير صحيح! يرجى التأكد والمحاولة مرة أخرى', 'danger');
                 return;
@@ -2344,11 +3962,13 @@
 
             const { phone, email } = pendingAuthData;
             APP_STATE.userAuth = { phone, email, linkedAt: new Date().toISOString() };
+            savePhoneEmailMappingLocally(phone, email);
             
             // حفظ الجلسة بشكل مستمر في LocalStorage ليبقى متصلاً دائماً
             localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
             saveLocalData(true);
             updateAuthHeaderLabel();
+            renderLinkedAccountSettings();
             closeModal('userAuthModal');
 
             // إعادة ربط المستمع السحابي بملف رقم الجوال الخاص بالمستخدم
@@ -2597,11 +4217,36 @@
                 if (parentTab) parentTab.classList.add('active');
                 const subBtn = document.querySelector(`#nav-dashboard-dropdown .dropdown-item-btn[data-page="${pageId}"]`);
                 if (subBtn) subBtn.classList.add('active-sub');
+                const mainLbl = document.getElementById('nav-dashboard-main-label');
+                if (mainLbl) {
+                    const namesMap = {
+                        'dashboard': 'لوحة التحكم',
+                        'analytics': 'تحليل الأداء المالي',
+                        'simulator': 'المحاكي والأتمتة',
+                        'debts': 'الديون والسداد',
+                        'recurring': 'النفقات والفواتير'
+                    };
+                    mainLbl.innerText = namesMap[pageId] || 'لوحة التحكم';
+                }
             }
 
-            const directTab = document.querySelector(`.v13-top-nav-links > .v13-nav-tab[data-page="${pageId}"]`);
+            const directTab = document.querySelector(`.v13-nav-scroll-track > .v13-nav-tab[data-page="${pageId}"], .v13-top-nav-links > .v13-nav-tab[data-page="${pageId}"]`);
             if (directTab) directTab.classList.add('active');
 
+            // تمرير التبويب النشط تلقائياً إلى منتصف الشريط العلوي بنعومة
+            const activeTabToCenter = directTab || document.getElementById('nav-dashboard-main-btn');
+            if (activeTabToCenter && typeof activeTabToCenter.scrollIntoView === 'function') {
+                try {
+                    activeTabToCenter.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } catch (e) {}
+            }
+
+            document.querySelectorAll('#mobile-bottom-nav .mob-nav-item').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-mob-page') === pageId);
+            });
+
+            const mainContentEl = document.querySelector('.main-content');
+            if (mainContentEl) mainContentEl.scrollTo({ top: 0, behavior: 'smooth' });
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
             if (pageId === 'analytics') { setTimeout(() => { ensureChartsInitialized(); updateCharts(); runFinancialLeakDetector(false); }, 60); }
@@ -2613,6 +4258,7 @@
             if (pageId === 'reports') { generateWeeklyFinancialSummary(); renderReportLivePreview(); }
             if (pageId === 'settings') {
                 renderPinSettings(); // تحديث واجهة الرمز السري
+                renderLinkedAccountSettings(); // تحديث واجهة البريد الإلكتروني المربوط بالحساب
                 const curInput = document.getElementById('settings-currency-input');
                 if (curInput) curInput.value = APP_STATE.currency || '﷼';
                 const gemInput = document.getElementById('settings-gemini-key-input');
@@ -2644,15 +4290,25 @@
         }
 
         function toggleTopDropdown(e, dropdownId) {
-            e.stopPropagation();
+            if (e) {
+                e.stopPropagation();
+            }
             const w = document.getElementById(dropdownId);
+            if (!w) return;
             const isOpen = w.classList.contains('open');
-            closeAllTopDropdowns();
-            if (!isOpen) w.classList.add('open');
+            document.querySelectorAll('.top-dropdown-wrapper').forEach(el => el.classList.remove('open'));
+            if (!isOpen) {
+                w.classList.add('open');
+            }
             if (dropdownId === 'top-notifications-dropdown' && !isOpen) renderNotifications();
         }
 
-        function closeAllTopDropdowns() { document.querySelectorAll('.top-dropdown-wrapper').forEach(w => w.classList.remove('open')); }
+        function closeAllTopDropdowns(e) {
+            if (e && e.target && e.target.closest && e.target.closest('.top-dropdown-wrapper')) {
+                return;
+            }
+            document.querySelectorAll('.top-dropdown-wrapper').forEach(w => w.classList.remove('open'));
+        }
         document.addEventListener('click', closeAllTopDropdowns);
 
         function toggleThemeMode() {
@@ -2711,7 +4367,7 @@
                 addNotification(message, type);
             }
         }
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function openModal(id) { closeAllTopDropdowns(); if (typeof closeFinexyAiChat === 'function') closeFinexyAiChat(); const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         function calculateMonthlySpent() {
@@ -3886,7 +5542,7 @@
                 .replace(/ou/g, 'و')
                 .replace(/ai/g, 'ي')
                 .replace(/ay/g, 'ي')
-                .replace(/([bcdfghjklmnpqrstvwxyz])+/g, '$1');
+                .replace(/([bcdfghjklmnpqrstvwxyz])\1+/g, '$1');
 
             const charMap = {
                 'a': 'ا', 'b': 'ب', 'c': 'ك', 'd': 'د', 'e': 'ي',
@@ -4014,7 +5670,7 @@
             const pureGenericWordRx = /^(?:فاتورة|ضريبية|مبسطة|إشعار|اشعار|نسخة|العميل|شراء|مدى|مقبولة|نقدا|نقداً|شبكة|الرياض|جدة|مكة|المدينة|ينبع|الدمام|الخبر|الطائف|تبوك|أبها|القصيم|حائل|جازان|نجران|الباحة|الجبيل|شارع|طريق|حي|فرع|هاتف|جوال|تلفون|ص\.ب|invoice|receipt|tax|welcome|copy|mada|purchase|approved|date|time|tel|phone|vat|cr|trn|pos|branch|street|road|dist|yanbu|riyadh|jeddah|makkah|madinah|dammam|khobar|[0-9\s\-\/\:\.\*\+\#\|\~_=@]+)$/i;
 
             const businessKeywordArRx = /(?:صالون|حلاقة|سوبرماركت|تموينات|بقالة|أسواق|اسواق|هايبر|صيدلية|مطعم|مطبخ|مقهى|كافيه|قهوة|مخبز|مخابز|حلويات|محطة|مغسلة|مكتبة|قرطاسية|عيادة|مجمع|بصريات|عطور|زهور|هدايا|إلكترونيات|الكترونيات|اتصالات|جوالات|ورشة|مركز|شركة|مؤسسة|متجر|محل|فندق|أجنحة|نادي)/;
-            const businessKeywordEnRx = /(?:salon|saloon|barber|supermarket|hypermarket|market|mart|grocery|pharmacy|restaurant|kitchen|grill|cafe|coffee|roastery|bakery|sweets|pastry|laundry|station|fuel|petrol|clinic|medical|dental|optics|optical|bookstore|stationery|electronics|mobile|telecom|perfume|oud|flowers|gifts|fashion|tailor|hotel|suites|fitness|gym|auto|workshop|store|shop|center|centre|mall|trading|company|est)/i;
+            const businessKeywordEnRx = /\b(?:salon|saloon|barber|supermarket|hypermarket|market|mart|grocery|pharmacy|restaurant|kitchen|grill|cafe|coffee|roastery|bakery|sweets|pastry|laundry|station|fuel|petrol|clinic|medical|dental|optics|optical|bookstore|stationery|electronics|mobile|telecom|perfume|oud|flowers|gifts|fashion|tailor|hotel|suites|fitness|gym|auto|workshop|store|shop|center|centre|mall|trading|company|est)\b/i;
 
             // 2. فحص السطور العلوية من قراءة اللغة العربية (أول 10 سطور في الفاتورة)
             let bestArabicCandidate = '';
@@ -4023,7 +5679,7 @@
 
             for (let idx = 0; idx < topAraSlice.length; idx++) {
                 const rawLine = topAraSlice[idx];
-                if (nonStoreLineRx.test(rawLine) || /(?:300\d{12}|05\d{8}|\d{6,})/.test(rawLine)) continue;
+                if (nonStoreLineRx.test(rawLine) || /\b(?:300\d{12}|05\d{8}|\d{6,})\b/.test(rawLine)) continue;
                 // استخراج الكلمات العربية النظيفة فقط (مع استبعاد الكلمات المشوشة ذات الحرف الواحد)
                 const arWords = (rawLine.match(/[؀-ۿ]{2,}/g) || []).filter(w => !pureGenericWordRx.test(w));
                 if (arWords.length === 0) continue;
@@ -4050,7 +5706,7 @@
 
             for (let idx = 0; idx < topEngSlice.length; idx++) {
                 const rawLine = topEngSlice[idx];
-                if (nonStoreLineRx.test(rawLine) || /(?:300\d{12}|05\d{8}|\d{6,})/.test(rawLine)) continue;
+                if (nonStoreLineRx.test(rawLine) || /\b(?:300\d{12}|05\d{8}|\d{6,})\b/.test(rawLine)) continue;
                 const cleanEn = rawLine.replace(/[^a-zA-Z0-9\s\&\-']/g, ' ').replace(/\s+/g, ' ').trim();
                 const enWords = cleanEn.split(' ').filter(w => /^[A-Za-z]{2,}$/.test(w) && !pureGenericWordRx.test(w));
                 if (enWords.length === 0) continue;
@@ -6768,9 +8424,929 @@ Return JSON:
             });
         }
 
+
+        // =========================================================================
+        // 🤖 نظام المساعد والروبوت المالي الذكي العائم (مطلع على كامل الميزانية والبنود)
+        // =========================================================================
+        let finexyAiChatHistory = [];
+        let finexyAiAngleCounter = {};
+
+        function toggleFinexyAiChat(e) {
+            if (e && typeof e.stopPropagation === 'function') {
+                e.stopPropagation();
+            }
+            const panel = document.getElementById('finexy-ai-chat-panel');
+            if (!panel) return;
+            const isOpen = panel.classList.contains('open');
+            if (isOpen) {
+                panel.classList.remove('open');
+            } else {
+                panel.classList.add('open');
+                const msgBox = document.getElementById('finexy-ai-chat-messages');
+                if (msgBox && msgBox.children.length === 0) {
+                    renderWelcomeAiChatMessage();
+                }
+                setTimeout(() => document.getElementById('finexy-ai-chat-input')?.focus(), 120);
+            }
+        }
+
+        function closeFinexyAiChat() {
+            const panel = document.getElementById('finexy-ai-chat-panel');
+            if (panel && panel.classList.contains('open')) {
+                panel.classList.remove('open');
+            }
+        }
+
+        function scrollAiQuickChips(direction) {
+            const bar = document.getElementById('ai-quick-chips-bar');
+            if (!bar) return;
+            const step = 190;
+            // في تخطيط RTL، التحرك لليسار يكون بقيمة سالبة ولليمين بقيمة موجبة
+            const delta = direction === 'left' ? -step : step;
+            try {
+                bar.scrollBy({ left: delta, behavior: 'smooth' });
+            } catch (err) {
+                bar.scrollLeft += delta;
+            }
+        }
+
+        function resetFinexyAiChat() {
+            finexyAiChatHistory = [];
+            const msgBox = document.getElementById('finexy-ai-chat-messages');
+            if (msgBox) msgBox.innerHTML = '';
+            renderWelcomeAiChatMessage();
+        }
+
+        function collectLiveFinancialSnapshot() {
+            const cur = APP_STATE.currency || '﷼';
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const dayOfMonth = Math.max(1, now.getDate());
+            const daysRemainingInMonth = Math.max(0, daysInMonth - dayOfMonth);
+
+            const mBudget = parseFloat(APP_STATE.monthlyBudget || 0);
+            const mSpent = calculateMonthlySpent();
+            const mRem = mBudget - mSpent;
+            const mPct = mBudget > 0 ? Math.round((mSpent / mBudget) * 100) : 0;
+
+            const dBudget = parseFloat(APP_STATE.dailyBudget || 0);
+            const dSpent = calculateDailySpent();
+            const dRem = dBudget - dSpent;
+
+            const bankBal = parseFloat(APP_STATE.bankBalance || 0);
+            const exps = APP_STATE.expenses || [];
+            const todayExps = exps.filter(e => e.date && e.date.startsWith(todayStr));
+
+            // تفصيل البنود
+            const categoriesStats = (APP_STATE.categories || []).map(cat => {
+                const catExps = exps.filter(e => e.category === cat.name);
+                const spent = catExps.reduce((s, e) => s + parseFloat(e.amount || 0), 0);
+                const budget = parseFloat(cat.budget || 0);
+                const rem = budget - spent;
+                const pct = budget > 0 ? Math.round((spent / budget) * 100) : 0;
+                return {
+                    name: cat.name,
+                    budget,
+                    spent,
+                    rem,
+                    pct,
+                    txCount: catExps.length,
+                    isOver: spent > budget
+                };
+            }).sort((a, b) => b.spent - a.spent);
+
+            // تفصيل المتاجر / المحلات
+            const storeMap = {};
+            let maxSingleExp = null;
+            let cashSpent = 0, cardSpent = 0, transferSpent = 0;
+            const bankSpendMap = {};
+
+            exps.forEach(e => {
+                const amt = parseFloat(e.amount || 0);
+                const st = (e.store || 'غير محدد').trim();
+                if (!storeMap[st]) storeMap[st] = { name: st, total: 0, count: 0, category: e.category || '' };
+                storeMap[st].total += amt;
+                storeMap[st].count += 1;
+
+                if (!maxSingleExp || amt > parseFloat(maxSingleExp.amount || 0)) {
+                    maxSingleExp = e;
+                }
+
+                const m = e.method || 'بطاقة / شبكة';
+                if (m.includes('كاش')) cashSpent += amt;
+                else if (m.includes('تحويل')) transferSpent += amt;
+                else cardSpent += amt;
+
+                if (e.bank && m !== 'كاش') {
+                    bankSpendMap[e.bank] = (bankSpendMap[e.bank] || 0) + amt;
+                }
+            });
+
+            const topStores = Object.values(storeMap).sort((a, b) => b.total - a.total);
+
+            // الادخار والأهداف
+            const emergencySaved = parseFloat(APP_STATE.emergencySaved || 0);
+            const goals = APP_STATE.savingsGoals || [];
+            const goalsSaved = goals.reduce((s, g) => s + parseFloat(g.savedAmount || 0), 0);
+            const goalsTarget = goals.reduce((s, g) => s + parseFloat(g.target || 0), 0);
+            const totalSaved = emergencySaved + goalsSaved;
+
+            // الديون والالتزامات
+            const debts = APP_STATE.debts || [];
+            const owedDebts = debts.filter(d => d.type === 'owed');
+            const dueDebts = debts.filter(d => d.type !== 'owed');
+            const totalOwed = owedDebts.reduce((s, d) => s + parseFloat(d.amount || 0), 0);
+            const totalDue = dueDebts.reduce((s, d) => s + parseFloat(d.amount || 0), 0);
+
+            // معدل الصرف اليومي الفعلي والتوقعات
+            const dailyBurnRate = dayOfMonth > 0 ? (mSpent / dayOfMonth) : 0;
+            const projectedMonthEndSpent = Math.round(dailyBurnRate * daysInMonth);
+            const daysUntilBudgetExhausted = dailyBurnRate > 0 && mRem > 0 ? Math.floor(mRem / dailyBurnRate) : (mRem <= 0 ? 0 : 99);
+
+            return {
+                cur, todayStr, dayOfMonth, daysInMonth, daysRemainingInMonth,
+                mBudget, mSpent, mRem, mPct,
+                dBudget, dSpent, dRem,
+                bankBal, exps, todayExps,
+                categoriesStats, topStores, maxSingleExp,
+                cashSpent, cardSpent, transferSpent, bankSpendMap,
+                emergencySaved, goals, goalsSaved, goalsTarget, totalSaved,
+                debts, owedDebts, dueDebts, totalOwed, totalDue,
+                dailyBurnRate, projectedMonthEndSpent, daysUntilBudgetExhausted,
+                splitBillsCount: (APP_STATE.splitBills || []).filter(s => s.status === 'active').length
+            };
+        }
+
+        function renderWelcomeAiChatMessage() {
+            const snap = collectLiveFinancialSnapshot();
+            const welcomeHtml = `
+                <div style="font-weight:900; color:var(--primary-color); margin-bottom:4px;">
+                    👋 أهلاً بك! أنا المساعد <strong dir="ltr">finex</strong> الذكي لميزانيتك
+                </div>
+                <div>
+                    أنا مطّلع الآن بشكل مباشر على كامل ميزانيتك:
+                    <ul style="margin:6px 0; padding-right:18px;">
+                        <li>الميزانية الشهرية: <strong dir="ltr">${formatEn(snap.mBudget)}</strong> (صرفت منها <strong dir="ltr" class="text-danger">${formatEn(snap.mSpent)}</strong> ومتبقي <strong dir="ltr" class="text-success">${formatEn(snap.mRem)}</strong>).</li>
+                        <li>عدد البنود النشطة: <strong>${snap.categoriesStats.length} بنود</strong> • والعمليات المسجلة: <strong>${snap.exps.length} عملية</strong>.</li>
+                    </ul>
+                    اسألني عن أي بند، أو محل، أو خطة توفير، أو ديونك وأهدافك وسأجيبك فوراً بأرقامك الحقيقية!
+                </div>
+            `;
+            appendAiChatBubble(welcomeHtml, 'bot');
+        }
+
+        function appendAiChatBubble(htmlContent, sender = 'bot') {
+            const msgBox = document.getElementById('finexy-ai-chat-messages');
+            if (!msgBox) return null;
+            const div = document.createElement('div');
+            div.className = `ai-msg-bubble ${sender === 'user' ? 'ai-msg-user' : 'ai-msg-bot'}`;
+            div.innerHTML = htmlContent;
+            msgBox.appendChild(div);
+            msgBox.scrollTop = msgBox.scrollHeight;
+            return div;
+        }
+
+        function askQuickAiQuestion(questionText) {
+            const inp = document.getElementById('finexy-ai-chat-input');
+            if (inp) inp.value = questionText;
+            sendFinexyAiChatMessage();
+        }
+
+        // محرك ذكي محلي متعدد الزوايا يضمن إجابات دقيقة ومفصلة وغير متكررة أبداً
+        function generateSmartNonRepetitiveLocalAnswer(userQuery) {
+            const q = normalizeArabicDigitsAndWords(toEnglishDigitsClean(userQuery || '')).toLowerCase().trim();
+            const s = collectLiveFinancialSnapshot();
+
+            const nextAngle = (key, totalVariants) => {
+                const curIdx = finexyAiAngleCounter[key] || 0;
+                finexyAiAngleCounter[key] = (curIdx + 1) % totalVariants;
+                return curIdx;
+            };
+
+            // 1. فحص ما إذا كان المستخدم يسأل عن بند معين بالاسم
+            for (const cat of s.categoriesStats) {
+                const catSimple = cat.name.replace(/^ال/, '').trim().toLowerCase();
+                const catWords = cat.name.toLowerCase().split(/\s+/).filter(w => w.length >= 3).map(w => w.replace(/^ال/, ''));
+                if (q.includes(cat.name.toLowerCase()) || (catSimple.length >= 3 && q.includes(catSimple)) || catWords.some(w => w.length >= 4 && q.includes(w))) {
+                    const v = nextAngle('cat_' + cat.name, 3);
+                    const catExps = s.exps.filter(e => e.category === cat.name);
+                    const lastExp = catExps[0];
+                    if (v === 0) {
+                        return `📂 <strong>تفصيل بند "${cat.name}":</strong><br>
+                        • المخصص الشهري: <strong dir="ltr">${formatEn(cat.budget)}</strong><br>
+                        • المنصرف حتى الآن: <strong class="text-danger" dir="ltr">${formatEn(cat.spent)}</strong> (${cat.pct}% من المخصص عبر ${cat.txCount} عمليات)<br>
+                        • المتبقي في البند: <strong class="${cat.rem >= 0 ? 'text-success' : 'text-danger'}" dir="ltr">${formatEn(cat.rem)}</strong><br>
+                        ${lastExp ? `• آخر عملية في هذا البند كانت عند <strong>${lastExp.store}</strong> بقيمة <strong dir="ltr">${formatEn(lastExp.amount)}</strong>.` : '• لم تسجل أي عملية صرف في هذا البند بعد.'}`;
+                    } else if (v === 1) {
+                        const avgPerTx = cat.txCount > 0 ? Math.round(cat.spent / cat.txCount) : 0;
+                        const safeDaily = s.daysRemainingInMonth > 0 && cat.rem > 0 ? Math.round(cat.rem / s.daysRemainingInMonth) : 0;
+                        return `📊 <strong>نظرة تحليلية على بند "${cat.name}":</strong><br>
+                        استهلكت حتى اليوم <strong>${cat.pct}%</strong> من ميزانية هذا البند. ${cat.txCount > 0 ? `متوسط الصرف في العملية الواحدة هو <strong dir="ltr">${formatEn(avgPerTx)}</strong>.` : ''}<br>
+                        ${cat.rem > 0 ? `💡 لكي يكفيك المتبقي (<strong dir="ltr">${formatEn(cat.rem)}</strong>) حتى نهاية الشهر، يُفضل ألا يتجاوز صرفك في هذا البند <strong dir="ltr">${formatEn(safeDaily)}</strong> يومياً.` : `⚠️ لقد تجاوزت مخصص هذا البند بمقدار <strong dir="ltr">${formatEn(Math.abs(cat.rem))}</strong>، أنصحك بتغطية الفرق من البنود الأقل استهلاكاً.`}`;
+                    } else {
+                        const topStoreInCat = catExps.length > 0 ? catExps.reduce((acc, e) => { acc[e.store] = (acc[e.store] || 0) + parseFloat(e.amount); return acc; }, {}) : {};
+                        const bestSt = Object.entries(topStoreInCat).sort((a, b) => b[1] - a[1])[0];
+                        return `🔍 <strong>ملخص حركة بند "${cat.name}":</strong><br>
+                        تبلغ حصة هذا البند <strong>${s.mSpent > 0 ? Math.round((cat.spent / s.mSpent) * 100) : 0}%</strong> من إجمالي مصروفاتك هذا الشهر.<br>
+                        ${bestSt ? `أكثر جهة صرفت فيها ضمن هذا البند هي <strong>${bestSt[0]}</strong> بإجمالي <strong dir="ltr">${formatEn(bestSt[1])}</strong>.` : 'البند لا يزال بكامل رصيده المتاح.'}`;
+                    }
+                }
+            }
+
+            // 2. فحص ما إذا كان المستخدم يسأل عن محل مسجل في مصروفاته
+            for (const st of s.topStores) {
+                if (st.name.length >= 3 && q.includes(st.name.toLowerCase())) {
+                    return `🏪 <strong>سجل صرفك في "${st.name}":</strong><br>
+                    • إجمالي ما صرفته فيه: <strong class="text-danger" dir="ltr">${formatEn(st.total)}</strong><br>
+                    • عدد مرات الشراء: <strong>${st.count} ${st.count === 1 ? 'مرة' : 'مرات'}</strong> (ضمن بند <strong>${st.category}</strong>)<br>
+                    • يشكل هذا المحل <strong>${s.mSpent > 0 ? ((st.total / s.mSpent) * 100).toFixed(1) : 0}%</strong> من إجمالي منصرفك الشهري.`;
+                }
+            }
+
+            // 3. السؤال عن الديون والالتزامات والسلف
+            if (/دين|ديون|سلف|التزام|اقساط|أقساط|سداد/.test(q)) {
+                const v = nextAngle('debts', 3);
+                if (s.debts.length === 0) {
+                    return `🤝 <strong>حالة الديون والالتزامات:</strong><br>سجلك خالٍ تماماً من أي ديون أو التزامات مسجلة حالياً! يمكنك إضافة أي التزام أو سلفة من صفحة <strong>الديون والسداد</strong> وتجربة حاسبة السداد المبكر.`;
+                }
+                if (v === 0) {
+                    const owedList = s.owedDebts.slice(0, 3).map(d => `${d.person} (<strong dir="ltr">${formatEn(d.amount)}</strong>)`).join('، ');
+                    return `🤝 <strong>ملخص التزاماتك وديونك:</strong><br>
+                    • إجمالي الديون التي عليك: <strong class="text-danger" dir="ltr">${formatEn(s.totalOwed)}</strong> (${s.owedDebts.length} التزامات)${owedList ? `: ${owedList}` : ''}.<br>
+                    • إجمالي السلف المستحقة لك عند الآخرين: <strong class="text-success" dir="ltr">${formatEn(s.totalDue)}</strong>.<br>
+                    💡 لو خصصت <strong>15%</strong> من فائض ميزانيتك الحالي (<strong dir="ltr">${formatEn(Math.max(0, Math.round(s.mRem * 0.15)))}</strong>) كدفعة إضافية، ستتخلص من ديونك بوقت أسرع بكثير!`;
+                } else {
+                    return `📉 <strong>خطة سداد ذكية لديونك:</strong><br>
+                    لديك التزامات بقيمة <strong dir="ltr">${formatEn(s.totalOwed)}</strong>. في حاسبة السداد المبكر بصفحة الديون، زيادة قسطك الشهري بمقدار <strong>250 إلى 500 ${s.cur}</strong> فقط تختصر عليك أشهر عديدة من الالتزام.`;
+                }
+            }
+
+            // 4. السؤال عن الادخار وصندوق الطوارئ والأهداف
+            if (/ادخار|مدخرات|طوارئ|هدف|اهداف|أهداف|صندوق|وفرت/.test(q)) {
+                const v = nextAngle('savings', 3);
+                if (v === 0) {
+                    const goalsText = s.goals.length > 0
+                        ? s.goals.map(g => `<strong>${g.title}</strong> (<span dir="ltr">${formatEn(g.savedAmount)} من ${formatEn(g.target)}</span>)`).join('، ')
+                        : 'لم تنشئ أهدافاً مستقبلية بعد';
+                    return `🐷 <strong>تفصيل صناديق الادخار والأهداف:</strong><br>
+                    • إجمالي مدخراتك الكلي: <strong class="text-success" dir="ltr">${formatEn(s.totalSaved)}</strong><br>
+                    • رصيد صندوق الطوارئ: <strong dir="ltr">${formatEn(s.emergencySaved)}</strong><br>
+                    • الأهداف الادخارية (${s.goals.length}): ${goalsText}.`;
+                } else {
+                    const recEm = Math.round(s.mBudget * 0.5);
+                    return `🛡️ <strong>تحليل الأمان المالي والادخار:</strong><br>
+                    تمتلك حالياً <strong dir="ltr" class="text-success">${formatEn(s.totalSaved)}</strong> في صناديق الادخار. يُنصح بأن يصل صندوق الطوارئ إلى <strong dir="ltr">${formatEn(recEm)}</strong> (نصف ميزانيتك الشهرية). لديك حالياً فائض يومي قدره <strong dir="ltr">${formatEn(Math.max(0, s.dRem))}</strong> يمكنك ترحيله بضغطة زر من صفحة الأهداف!`;
+                }
+            }
+
+            // 5. السؤال عن طرق الدفع (كاش / شبكة / تحويل) والرصيد البنكي
+            if (/كاش|شبكة|شبكه|بطاقة|تحويل|بنك|رصيد/.test(q)) {
+                const v = nextAngle('payment_methods', 3);
+                const topBank = Object.entries(s.bankSpendMap).sort((a, b) => b[1] - a[1])[0];
+                if (v === 0) {
+                    return `💳 <strong>تحليل طرق الدفع والرصيد البنكي:</strong><br>
+                    • الرصيد الحالي في البنك: <strong class="text-success" dir="ltr">${formatEn(s.bankBal)}</strong><br>
+                    • مصروفات البطاقة / الشبكة: <strong dir="ltr">${formatEn(s.cardSpent)}</strong><br>
+                    • مصروفات الكاش (النقدي): <strong dir="ltr">${formatEn(s.cashSpent)}</strong><br>
+                    • التحويلات البنكية: <strong dir="ltr">${formatEn(s.transferSpent)}</strong>
+                    ${topBank ? `<br>• أكثر بنك استخدمته للصرف: <strong>${topBank[0]}</strong> بإجمالي <strong dir="ltr">${formatEn(topBank[1])}</strong>.` : ''}`;
+                } else {
+                    const cashPct = s.mSpent > 0 ? Math.round((s.cashSpent / s.mSpent) * 100) : 0;
+                    const netPct = s.mSpent > 0 ? Math.round(((s.cardSpent + s.transferSpent) / s.mSpent) * 100) : 0;
+                    return `🏦 <strong>توزيع الكاش مقابل العمليات البنكية:</strong><br>
+                    تشكل عمليات الشبكة والتحويل <strong>${netPct}%</strong> من إنفاقك، بينما يمثل الكاش <strong>${cashPct}%</strong> (<strong dir="ltr">${formatEn(s.cashSpent)}</strong>). رصيدك البنكي المسجل حالياً هو <strong dir="ltr" class="text-success">${formatEn(s.bankBal)}</strong>.`;
+                }
+            }
+
+            // 6. السؤال عن أعلى بند أو أكثر محل استهلاكاً
+            if (/اكثر|أكثر|اعلى|أعلى|وين تروح|محل|بند|توزيع/.test(q)) {
+                const v = nextAngle('top_spend', 3);
+                const topCat = s.categoriesStats[0];
+                const topSt = s.topStores[0];
+                if (v === 0) {
+                    return `🔥 <strong>أعلى جهات وبنود الصرف لديك:</strong><br>
+                    • <strong>أعلى بند استهلاكاً:</strong> ${topCat && topCat.spent > 0 ? `<strong>${topCat.name}</strong> بصرف <strong class="text-danger" dir="ltr">${formatEn(topCat.spent)}</strong> (${topCat.pct}% من مخصصه)` : 'لا توجد مصروفات مسجلة بعد'}<br>
+                    • <strong>أكثر محل صرفت فيه:</strong> ${topSt ? `<strong>${topSt.name}</strong> بإجمالي <strong class="text-danger" dir="ltr">${formatEn(topSt.total)}</strong> (${topSt.count} عمليات)` : 'لا يوجد'}<br>
+                    • <strong>أكبر فاتورة مفردة:</strong> ${s.maxSingleExp ? `<strong>${s.maxSingleExp.store}</strong> بقيمة <strong dir="ltr">${formatEn(s.maxSingleExp.amount)}</strong>` : 'لا يوجد'}.`;
+                } else {
+                    const catSummary = s.categoriesStats.map(c => `${c.name}: <strong dir="ltr">${formatEn(c.spent)}</strong> من <span dir="ltr">${formatEn(c.budget)}</span>`).join('<br>• ');
+                    return `📋 <strong>ترتيب جميع بنودك من الأعلى للأقل صرفاً:</strong><br>• ${catSummary || 'لا توجد بنود'}`;
+                }
+            }
+
+            // 7. السؤال عن التوقعات ونهاية الشهر ومعدل الحرق اليومي
+            if (/متى|توقع|نهاية الشهر|يخلص|يكفي|معدل/.test(q)) {
+                const v = nextAngle('forecast', 3);
+                const safeDailyRest = s.daysRemainingInMonth > 0 ? Math.max(0, Math.round(s.mRem / s.daysRemainingInMonth)) : 0;
+                if (v === 0) {
+                    return `⏳ <strong>توقعات ميزانيتك حتى نهاية الشهر:</strong><br>
+                    • معدل صرفك اليومي الفعلي حالياً: <strong dir="ltr">${formatEn(Math.round(s.dailyBurnRate))} / يوم</strong> (بينما المخصص اليومي <strong dir="ltr">${formatEn(s.dBudget)}</strong>).<br>
+                    • إذا استمررت بنفس المعدل، سيصل إجمالي صرفك بنهاية الشهر إلى <strong dir="ltr">${formatEn(s.projectedMonthEndSpent)}</strong>.<br>
+                    • لكي يكفيك المتبقي (<strong dir="ltr" class="text-success">${formatEn(s.mRem)}</strong>) خلال الـ <strong>${s.daysRemainingInMonth} يوماً</strong> القادمة، اجعل سقف صرفك اليومي <strong dir="ltr">${formatEn(safeDailyRest)}</strong>.`;
+                } else {
+                    return `📈 <strong>قراءة سرعة الإنفاق:</strong><br>
+                    انقضى <strong>${s.dayOfMonth} يوم</strong> من الشهر واستهلكت <strong>${s.mPct}%</strong> من ميزانيتك الشهرية. ${s.dailyBurnRate <= s.dBudget ? '🎉 وتيرة صرفك ممتازة وأقل من الحد اليومي المسموح!' : `⚠️ وتيرة صرفك اليومية أعلى من الحد المقرر بـ <strong dir="ltr">${formatEn(Math.round(s.dailyBurnRate - s.dBudget))}</strong> يومياً.`}`;
+                }
+            }
+
+            // 8. السؤال عن خطة أو نصيحة للتوفير
+            if (/نصيح|خطة|خطه|وفر|أوفر|اوفر|حل|رتب/.test(q)) {
+                const v = nextAngle('advice', 3);
+                const topCat = s.categoriesStats[0];
+                const save10 = Math.round(s.mBudget * 0.1);
+                if (v === 0) {
+                    return `💡 <strong>خطة ذكية مخصصة لأرقامك الحالية:</strong><br>
+                    1. <strong>قاعدة سقف اليوم:</strong> التزم بعدم تجاوز <strong dir="ltr">${formatEn(s.dBudget)}</strong> يومياً؛ اليوم صرفت <strong dir="ltr">${formatEn(s.dSpent)}</strong> ومتبقي لك <strong dir="ltr" class="text-success">${formatEn(s.dRem)}</strong>.<br>
+                    2. <strong>ضبط البند الأعلى:</strong> ${topCat && topCat.spent > 0 ? `بند <strong>${topCat.name}</strong> هو الأعلى صرفاً (<span dir="ltr">${formatEn(topCat.spent)}</span>)؛ تخفيضه بنسبة 15% يوفر لك <strong dir="ltr">${formatEn(Math.round(topCat.spent * 0.15))}</strong> فوراً.` : 'حافظ على توازن البنود الأربعة.'}<br>
+                    3. <strong>الترحيل الفوري:</strong> رحّل فائض الأيام التي لا تصرف فيها إلى <strong>صندوق الطوارئ</strong> لتجميع <strong dir="ltr">${formatEn(save10)}</strong> إضافية هذا الشهر.`;
+                } else {
+                    return `🚀 <strong>3 خطوات عملية لتحسين فائضك هذا الشهر:</strong><br>
+                    • لديك حالياً <strong dir="ltr" class="text-success">${formatEn(s.mRem)}</strong> متبقية للشهر.<br>
+                    • خصص منها <strong dir="ltr">${formatEn(Math.round(Math.max(0, s.mRem) * 0.2))}</strong> للادخار المباشر، وقسّم الباقي على <strong>${Math.max(1, s.daysRemainingInMonth)} يوم</strong> متبقي في الشهر.`;
+                }
+            }
+
+            // 9. إجابة شاملة ومتغيرة للأسئلة العامة (وضع الميزانية / اليوم / كم باقي)
+            const vGen = nextAngle('general_overview', 4);
+            const topCat = s.categoriesStats[0];
+            if (vGen === 0) {
+                return `📊 <strong>ملخص ميزانيتك اللحظي:</strong><br>
+                • <strong>الميزانية الشهرية:</strong> <strong dir="ltr">${formatEn(s.mBudget)}</strong> | صرفت: <strong class="text-danger" dir="ltr">${formatEn(s.mSpent)}</strong> (${s.mPct}%) | المتبقي: <strong class="${s.mRem >= 0 ? 'text-success' : 'text-danger'}" dir="ltr">${formatEn(s.mRem)}</strong>.<br>
+                • <strong>ميزانية اليوم:</strong> صرفت اليوم <strong class="text-danger" dir="ltr">${formatEn(s.dSpent)}</strong> من أصل <strong dir="ltr">${formatEn(s.dBudget)}</strong> (متبقي لليوم: <strong class="${s.dRem >= 0 ? 'text-success' : 'text-danger'}" dir="ltr">${formatEn(s.dRem)}</strong>).<br>
+                • <strong>الرصيد البنكي والادخار:</strong> في البنك <strong dir="ltr">${formatEn(s.bankBal)}</strong> وفي صناديق الادخار <strong dir="ltr" class="text-success">${formatEn(s.totalSaved)}</strong>.`;
+            } else if (vGen === 1) {
+                return `✨ <strong>قراءة ذكية لوضعك المالي الآن:</strong><br>
+                سجلت حتى الآن <strong>${s.exps.length} عملية صرف</strong> موزعة على <strong>${s.categoriesStats.length} بنود</strong>.<br>
+                • وضعك اليومي: ${s.dRem >= 0 ? `ممتاز! لا يزال لديك وفر اليوم قدره <strong class="text-success" dir="ltr">${formatEn(s.dRem)}</strong>.` : `تجاوزت مخصص اليوم بمقدار <strong class="text-danger" dir="ltr">${formatEn(Math.abs(s.dRem))}</strong>.`}<br>
+                • أعلى بند نشاطاً هو <strong>${topCat ? topCat.name : '-'}</strong> بمبلغ <strong dir="ltr">${formatEn(topCat ? topCat.spent : 0)}</strong>.<br>
+                اسألني عن أي بند بالاسم (مثل: <em>كم صرفت في المطاعم؟</em> أو <em>حلل لي الديون</em>) لمزيد من التفاصيل!`;
+            } else if (vGen === 2) {
+                const overCats = s.categoriesStats.filter(c => c.isOver);
+                return `🧭 <strong>مؤشر التوازن المالي في حسابك:</strong><br>
+                • نسبة استهلاك الراتب/الميزانية: <strong>${s.mPct}%</strong> (${s.mPct <= 75 ? 'ضمن النطاق الآمن جداً 🟢' : (s.mPct <= 95 ? 'قريب من الحد الأقصى 🟡' : 'تجاوزت الميزانية 🔴')}).<br>
+                • حالة البنود: ${overCats.length === 0 ? 'جميع بنودك ضمن المخصص المسموح بدون أي تجاوزات ✅.' : `لديك تجاوز في (${overCats.map(c => c.name).join('، ')}) ⚠️.`}<br>
+                • إجمالي الالتزامات/الديون المسجلة: <strong dir="ltr">${formatEn(s.totalOwed)}</strong>.`;
+            } else {
+                const last3 = s.exps.slice(0, 3).map(e => `${e.store} (<span dir="ltr">${formatEn(e.amount)}</span>)`).join('، ');
+                return `📌 <strong>نظرة سريعة على آخر تحركاتك المالية:</strong><br>
+                • المتبقي الصافي للشهر: <strong class="text-success" dir="ltr">${formatEn(s.mRem)}</strong> يكفيك بمعدل <strong dir="ltr">${formatEn(s.daysRemainingInMonth > 0 ? Math.round(s.mRem / s.daysRemainingInMonth) : s.mRem)}</strong> يومياً.<br>
+                • آخر العمليات المسجلة: ${last3 || 'لا توجد عمليات مسجلة بعد'}.`;
+            }
+        }
+
+        async function sendFinexyAiChatMessage() {
+            const inp = document.getElementById('finexy-ai-chat-input');
+            const btn = document.getElementById('btn-send-ai-chat');
+            const userText = inp ? inp.value.trim() : '';
+            if (!userText) return;
+
+            inp.value = '';
+            appendAiChatBubble(userText.replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'user');
+
+            const loadingBubble = appendAiChatBubble('<i class="fas fa-spinner fa-spin text-primary"></i> جاري تحليل بيانات ميزانيتك للإجابة بدقة...', 'bot');
+            if (btn) btn.disabled = true;
+
+            const s = collectLiveFinancialSnapshot();
+            const catsDetailText = s.categoriesStats.map(c => `- بند "${c.name}": المخصص ${c.budget} ${s.cur}، المنصرف ${c.spent} ${s.cur} (${c.pct}%)، المتبقي ${c.rem} ${s.cur}، عدد العمليات ${c.txCount}`).join('\n');
+            const recentExpsText = s.exps.slice(0, 15).map(e => `- ${e.store}: ${e.amount} ${s.cur} | البند: ${e.category} | الدفع: ${e.method || 'شبكة'}${e.bank ? ' (' + e.bank + ')' : ''} | التاريخ: ${(e.date || '').slice(0, 16)}`).join('\n') || 'لا توجد مصروفات مسجلة';
+            const goalsText = s.goals.map(g => `- هدف "${g.title}": المدخر ${g.savedAmount} من أصل ${g.target} ${s.cur}`).join('\n') || 'لا توجد أهداف مسجلة';
+            const debtsText = s.debts.map(d => `- ${d.type === 'owed' ? 'دين عليّ' : 'سلف لي'}: ${d.person} بمبلغ ${d.amount} ${s.cur} (تاريخ السداد: ${d.dueDate || 'غير محدد'})`).join('\n') || 'لا توجد ديون مسجلة';
+
+            const prevAssistantReplies = finexyAiChatHistory.filter(m => m.role === 'model').slice(-3).map(m => m.text).join(' | ');
+
+            const systemContextPrompt = `أنت "finex"، المساعد المالي الذكي والودود المدمج داخل تطبيق الميزانية الذكية.
+أنت مطلع بالكامل ولحظياً على جميع أرقام وعمليات وبنود العميل التالية:
+1. الميزانية الشهرية: ${s.mBudget} ${s.cur} | المنصرف الشهري: ${s.mSpent} ${s.cur} (${s.mPct}%) | المتبقي للشهر: ${s.mRem} ${s.cur}.
+2. الميزانية اليومية: ${s.dBudget} ${s.cur} | المنصرف اليوم (${s.todayStr}): ${s.dSpent} ${s.cur} | المتبقي لليوم: ${s.dRem} ${s.cur}.
+3. الرصيد البنكي الحالي: ${s.bankBal} ${s.cur} | صرف الكاش: ${s.cashSpent} ${s.cur} | صرف الشبكة: ${s.cardSpent} ${s.cur} | التحويلات: ${s.transferSpent} ${s.cur}.
+4. تفصيل البنود والمخصصات:
+${catsDetailText}
+5. أحدث العمليات والمحلات:
+${recentExpsText}
+6. صناديق الادخار والطوارئ (الإجمالي ${s.totalSaved} ${s.cur}، صندوق الطوارئ ${s.emergencySaved} ${s.cur}):
+${goalsText}
+7. الديون والالتزامات (ديون عليّ: ${s.totalOwed} ${s.cur}، سلف لي: ${s.totalDue} ${s.cur}):
+${debtsText}
+
+تعليمات صارمة للإجابة:
+- أجب باللغة العربية بأسلوب ذكي، واضح، سهل الفهم، ومباشر من أرقام العميل الحقيقية أعلاه.
+- إياك أن تكرر نفس الصياغة أو الإجابات السابقة! (الإجابات السابقة التي يجب عدم تكرارها: ${prevAssistantReplies || 'لا يوجد'}).
+- قدم دائماً زاوية تحليلية جديدة أو نصيحة عملية مخصصة لأرقامه بدون مقدمات إنشائية مكررة.`;
+
+            finexyAiChatHistory.push({ role: 'user', text: userText });
+
+            try {
+                const contentsPayload = finexyAiChatHistory.slice(-6).map(m => ({
+                    role: m.role === 'model' ? 'model' : 'user',
+                    parts: [{ text: m.text }]
+                }));
+
+                const aiReply = await callGeminiAPI({
+                    contents: contentsPayload,
+                    systemInstruction: { parts: [{ text: systemContextPrompt }] }
+                });
+
+                const formattedReply = aiReply
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n/g, '<br>');
+
+                if (loadingBubble) loadingBubble.innerHTML = formattedReply;
+                finexyAiChatHistory.push({ role: 'model', text: aiReply });
+            } catch (err) {
+                const localReply = generateSmartNonRepetitiveLocalAnswer(userText);
+                if (loadingBubble) loadingBubble.innerHTML = localReply;
+                finexyAiChatHistory.push({ role: 'model', text: localReply.replace(/<[^>]+>/g, ' ') });
+            } finally {
+                if (btn) btn.disabled = false;
+                const msgBox = document.getElementById('finexy-ai-chat-messages');
+                if (msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+            }
+        }
+
+        
+        // =========================================================================
+        // 📲 نظام تثبيت التطبيق على الجهاز (PWA) وإخفاء شريط المتصفح السفلي في سفاري وكروم وسامسونج (V5.8)
+        // =========================================================================
+        let deferredPwaPrompt = null;
+
+        function generateDynamicAppIconDataUrl(size = 512) {
+            if (window.__FINEXY_ICONS__) {
+                if (size === 180 && window.__FINEXY_ICONS__.icon180) return window.__FINEXY_ICONS__.icon180;
+                if (size === 192 && window.__FINEXY_ICONS__.icon192) return window.__FINEXY_ICONS__.icon192;
+                if (size === 512 && window.__FINEXY_ICONS__.icon512) return window.__FINEXY_ICONS__.icon512;
+            }
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                const grad = ctx.createLinearGradient(0, 0, size, size);
+                grad.addColorStop(0, '#ff5520');
+                grad.addColorStop(1, '#8b5cf6');
+                ctx.fillStyle = grad;
+                const r = Math.round(size * 0.22);
+                ctx.beginPath();
+                ctx.moveTo(r, 0);
+                ctx.lineTo(size - r, 0);
+                ctx.quadraticCurveTo(size, 0, size, r);
+                ctx.lineTo(size, size - r);
+                ctx.quadraticCurveTo(size, size, size - r, size);
+                ctx.lineTo(r, size);
+                ctx.quadraticCurveTo(0, size, 0, size - r);
+                ctx.lineTo(0, r);
+                ctx.quadraticCurveTo(0, 0, r, 0);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `900 ${Math.round(size * 0.5)}px "Plus Jakarta Sans", "Tajawal", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('F', size / 2, size / 2 + Math.round(size * 0.03));
+                return canvas.toDataURL('image/png');
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function detectIsMobileDevice() {
+            const ua = navigator.userAgent || '';
+            const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isMobileUA = isIOS || /Android|webOS|BlackBerry|IEMobile|Opera Mini|Mobile|Phone/i.test(ua) || (navigator.userAgentData && navigator.userAgentData.mobile === true);
+            let isSmallTouch = false;
+            try {
+                isSmallTouch = window.matchMedia('(max-width: 820px) and (pointer: coarse)').matches;
+            } catch (e) {}
+            return !!(isMobileUA || isSmallTouch);
+        }
+
+        function syncDevicePlatformUI() {
+            const isMobile = detectIsMobileDevice();
+            window.__FINEXY_IS_MOBILE__ = isMobile;
+            document.documentElement.setAttribute('data-device-type', isMobile ? 'mobile' : 'desktop');
+
+            // إخفاء علامة التنزيل للجوال من الهيدر إذا كان الموقع مفتوحاً من كمبيوتر/لابتوب، وإظهارها فقط في الجوال
+            const mobileHeaderWrapper = document.getElementById('header-install-mobile-wrapper');
+            if (mobileHeaderWrapper) {
+                const isStandalone = window.matchMedia('(display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui)').matches || window.navigator.standalone === true;
+                if (isMobile && !isStandalone) {
+                    mobileHeaderWrapper.style.setProperty('display', 'inline-flex', 'important');
+                } else {
+                    mobileHeaderWrapper.style.setProperty('display', 'none', 'important');
+                }
+            }
+        }
+
+        function switchInstallModalTab(mode) {
+            const pcPanel = document.getElementById('install-panel-pc');
+            const mobPanel = document.getElementById('install-panel-mobile');
+            const pcTabBtn = document.getElementById('tab-btn-install-pc');
+            const mobTabBtn = document.getElementById('tab-btn-install-mobile');
+            const headerTitle = document.getElementById('install-modal-header-title');
+
+            if (mode === 'mobile') {
+                if (pcPanel) pcPanel.style.display = 'none';
+                if (mobPanel) mobPanel.style.display = 'block';
+                if (pcTabBtn) pcTabBtn.classList.remove('active');
+                if (mobTabBtn) mobTabBtn.classList.add('active');
+                if (headerTitle) headerTitle.innerHTML = '<i class="fas fa-mobile-screen-button text-success"></i> تثبيت وتحميل تطبيق الجوال';
+            } else {
+                if (pcPanel) pcPanel.style.display = 'block';
+                if (mobPanel) mobPanel.style.display = 'none';
+                if (pcTabBtn) pcTabBtn.classList.add('active');
+                if (mobTabBtn) mobTabBtn.classList.remove('active');
+                if (headerTitle) headerTitle.innerHTML = '<i class="fas fa-laptop-code text-primary"></i> تطبيق اللابتوب والكمبيوتر (PC)';
+            }
+        }
+
+        function initInstallablePwaSetup() {
+            syncDevicePlatformUI();
+            window.addEventListener('resize', syncDevicePlatformUI);
+
+            // تسجيل Service Worker تلقائياً عند وجود sw.js على GitHub Pages لتفعيل التثبيت المباشر للجوال والكمبيوتر
+            if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+                fetch('./sw.js', { method: 'HEAD' }).then(res => {
+                    if (res && res.ok) {
+                        navigator.serviceWorker.register('./sw.js').catch(() => {});
+                    }
+                }).catch(() => {});
+                fetch('./manifest.json', { method: 'HEAD' }).then(res => {
+                    if (res && res.ok) {
+                        let mLink = document.querySelector('link[rel="manifest"]');
+                        if (!mLink) {
+                            mLink = document.createElement('link');
+                            mLink.rel = 'manifest';
+                            document.head.appendChild(mLink);
+                        }
+                        mLink.href = './manifest.json';
+                    }
+                }).catch(() => {});
+            }
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPwaPrompt = e;
+                const btnText = document.getElementById('btn-trigger-native-pwa-text');
+                if (btnText) btnText.innerText = 'تثبيت التطبيق الآن مباشرة (بدون شريط المتصفح)';
+                const pcBtnText = document.getElementById('btn-trigger-pc-pwa-text');
+                if (pcBtnText) pcBtnText.innerText = 'تثبيت مباشر الآن كتطبيق سطح مكتب (Windows / Mac)';
+            });
+
+            window.addEventListener('appinstalled', () => {
+                deferredPwaPrompt = null;
+                closeModal('installAppModal');
+                syncDevicePlatformUI();
+                showToast('تم تثبيت تطبيق الميزانية الذكية على جهازك بنجاح! 🎉', 'success');
+            });
+
+            // دعم السحب بالماوس واللمس للشريط العلوي (#v13-nav-scroll-track)
+            const navTrack = document.getElementById('v13-nav-scroll-track');
+            if (navTrack) {
+                navTrack.addEventListener('wheel', function(evt) {
+                    if (evt.deltaY !== 0) {
+                        evt.preventDefault();
+                        navTrack.scrollBy({ left: evt.deltaY < 0 ? 120 : -120, behavior: 'smooth' });
+                    }
+                }, { passive: false });
+            }
+        }
+
+        function toggleAppFullscreenMode() {
+            try {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    const docEl = document.documentElement;
+                    if (docEl.requestFullscreen) {
+                        docEl.requestFullscreen();
+                    } else if (docEl.webkitRequestFullscreen) {
+                        docEl.webkitRequestFullscreen();
+                    }
+                    closeModal('installAppModal');
+                    showToast('تم تفعيل وضع ملء الشاشة الكامل بدون أشرطة المتصفح! ✨', 'success');
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            } catch (e) {
+                showToast('لتشغيل التطبيق بدون شريط المتصفح دائماً، أضفه إلى جهازك من نافذة التثبيت 📲', 'info');
+            }
+        }
+
+        function openInstallAppModal(preferredMode) {
+            const mode = preferredMode || (detectIsMobileDevice() ? 'mobile' : 'pc');
+            switchInstallModalTab(mode);
+            openModal('installAppModal');
+        }
+
+        async function triggerPcDesktopInstall() {
+            if (deferredPwaPrompt) {
+                try {
+                    deferredPwaPrompt.prompt();
+                    const { outcome } = await deferredPwaPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        deferredPwaPrompt = null;
+                        closeModal('installAppModal');
+                        showToast('جاري تثبيت تطبيق سطح المكتب على اللابتوب / الـ PC...', 'success');
+                    }
+                } catch (e) {}
+                return;
+            }
+            showToast('لتثبيت التطبيق كبرنامج مستقل على الكمبيوتر: اضغط زر "تحميل حزمة برنامج الكمبيوتر" الأخضر بالأسفل، أو اضغط أيقونة التثبيت في شريط العنوان أعلى المتصفح 💻', 'info');
+        }
+
+        function launchDesktopStandaloneWindow() {
+            try {
+                const cleanUrl = window.location.href;
+                const w = Math.min(1340, Math.round(window.screen.availWidth * 0.9));
+                const h = Math.min(860, Math.round(window.screen.availHeight * 0.88));
+                const left = Math.max(0, Math.round((window.screen.availWidth - w) / 2));
+                const top = Math.max(0, Math.round((window.screen.availHeight - h) / 2));
+                const win = window.open(
+                    cleanUrl,
+                    'FinexyDesktopAppWindow',
+                    `width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`
+                );
+                if (win) {
+                    closeModal('installAppModal');
+                    win.focus();
+                } else {
+                    toggleAppFullscreenMode();
+                }
+            } catch (e) {
+                toggleAppFullscreenMode();
+            }
+        }
+
+        async function downloadPcDesktopAppBundleZip() {
+            if (!window.JSZip) {
+                downloadStandaloneAppFile('Finexy-Desktop-App.html');
+                return;
+            }
+            try {
+                const zip = new window.JSZip();
+                const htmlContent = getCleanStandaloneHtmlString();
+                const appFolder = zip.folder('app');
+                appFolder.file('index.html', htmlContent);
+
+                const icon192DataUrl = generateDynamicAppIconDataUrl(192);
+                const icon512DataUrl = generateDynamicAppIconDataUrl(512);
+                if (icon192DataUrl) {
+                    appFolder.file('icon-192.png', icon192DataUrl.split(',')[1], { base64: true });
+                }
+                if (icon512DataUrl) {
+                    appFolder.file('icon-512.png', icon512DataUrl.split(',')[1], { base64: true });
+                }
+
+                const desktopManifest = {
+                    name: "الميزانية الذكية • Finexy Desktop App",
+                    short_name: "الميزانية الذكية",
+                    description: "تطبيق الميزانية الذكية لسطح المكتب (Laptop & PC)",
+                    start_url: "./index.html",
+                    scope: "./",
+                    display: "standalone",
+                    display_override: ["window-controls-overlay", "standalone"],
+                    orientation: "any",
+                    dir: "rtl",
+                    lang: "ar",
+                    background_color: "#06050b",
+                    theme_color: "#111115",
+                    icons: [
+                        { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+                        { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+                    ]
+                };
+                appFolder.file('manifest.json', JSON.stringify(desktopManifest, null, 2));
+
+                const swJs = `const CACHE_NAME = 'finexy-pc-v59';
+self.addEventListener('install', (e) => {
+    self.skipWaiting();
+    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
+});
+self.addEventListener('activate', (e) => {
+    e.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', (e) => {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+});`;
+                appFolder.file('sw.js', swJs);
+
+                // مشغل برنامج سطح المكتب لنظام Windows (يفتح التطبيق في نافذة برنامج مستقلة بدون شريط عنوان أو تبويبات)
+                const batContent = [
+                    '@echo off',
+                    'chcp 65001 >nul',
+                    'title Finexy Desktop App - الميزانية الذكية',
+                    'set "APP_PATH=%~dp0app\index.html"',
+                    'set "APP_URL=file:///%APP_PATH:\=/%"',
+                    'where msedge >nul 2>nul',
+                    'if %errorlevel%==0 (',
+                    '    start "" msedge --app="%APP_URL%" --window-size=1280,820',
+                    '    exit',
+                    ')',
+                    'if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (',
+                    '    start "" "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" --app="%APP_URL%" --window-size=1280,820',
+                    '    exit',
+                    ')',
+                    'if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" (',
+                    '    start "" "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" --app="%APP_URL%" --window-size=1280,820',
+                    '    exit',
+                    ')',
+                    'where chrome >nul 2>nul',
+                    'if %errorlevel%==0 (',
+                    '    start "" chrome --app="%APP_URL%" --window-size=1280,820',
+                    '    exit',
+                    ')',
+                    'if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (',
+                    '    start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --app="%APP_URL%" --window-size=1280,820',
+                    '    exit',
+                    ')',
+                    'start "" "%APP_PATH%"',
+                    'exit'
+                ].join('\r\n');
+                zip.file('تشغيل-تطبيق-الميزانية-Finexy.bat', batContent);
+
+                // أداة إنشاء اختصار البرنامج مباشرة على سطح المكتب في ويندوز (Desktop Shortcut Creator)
+                const vbsContent = [
+                    'Set WshShell = CreateObject("WScript.Shell")',
+                    'Set fso = CreateObject("Scripting.FileSystemObject")',
+                    'currentDir = fso.GetParentFolderName(WScript.ScriptFullName)',
+                    'desktopPath = WshShell.SpecialFolders("Desktop")',
+                    'Set shortcut = WshShell.CreateShortcut(desktopPath & "\Finexy - الميزانية الذكية.lnk")',
+                    'shortcut.TargetPath = currentDir & "\تشغيل-تطبيق-الميزانية-Finexy.bat"',
+                    'shortcut.WorkingDirectory = currentDir',
+                    'shortcut.WindowStyle = 7',
+                    'shortcut.IconLocation = "shell32.dll,43"',
+                    'shortcut.Description = "تطبيق الميزانية الذكية Finexy للكمبيوتر واللابتوب"',
+                    'shortcut.Save',
+                    'MsgBox "تم إنشاء أيقونة تطبيق (Finexy - الميزانية الذكية) على سطح المكتب بنجاح!", 64, "Finexy Desktop App"'
+                ].join('\r\n');
+                zip.file('إنشاء-اختصار-سطح-المكتب.vbs', vbsContent);
+
+                const readmeTxt = [
+                    '==============================================================',
+                    '   💻 تطبيق الميزانية الذكية للكمبيوتر واللابتوب (Finexy PC App)',
+                    '==============================================================',
+                    '',
+                    'طريقة التشغيل والتثبيت على سطح المكتب (Windows PC / Laptop):',
+                    '1. فك الضغط عن هذا الملف المضغوط في أي مجلد على جهازك.',
+                    '2. اضغط مرتين على ملف (تشغيل-تطبيق-الميزانية-Finexy.bat) ليفتح معك البرنامج فوراً في نافذة سطح مكتب مستقلة بدون أشرطة المتصفح.',
+                    '3. لإضافة أيقونة البرنامج على سطح المكتب لديك: اضغط مرتين على ملف (إنشاء-اختصار-سطح-المكتب.vbs).',
+                    '',
+                    'ملاحظة: جميع بياناتك وميزانيتك متزامنة سحابياً مع جوالك تلقائياً عند تسجيل الدخول بنفس رقم الجوال.'
+                ].join('\r\n');
+                zip.file('طريقة-التشغيل-على-الكمبيوتر.txt', readmeTxt);
+
+                const content = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Finexy-PC-Desktop-App.zip';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 400);
+                showToast('تم تحميل حزمة برنامج الكمبيوتر واللابتوب (Finexy-PC-Desktop-App.zip) بنجاح! 💻🎉', 'success');
+            } catch (e) {
+                downloadStandaloneAppFile('Finexy-Desktop-App.html');
+            }
+        }
+
+        async function triggerNativePwaInstall() {
+            if (deferredPwaPrompt) {
+                try {
+                    deferredPwaPrompt.prompt();
+                    const { outcome } = await deferredPwaPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        deferredPwaPrompt = null;
+                        closeModal('installAppModal');
+                        showToast('جاري تثبيت التطبيق على جهازك...', 'success');
+                    }
+                } catch (e) {}
+                return;
+            }
+
+            const ua = navigator.userAgent || '';
+            const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isIOS) {
+                showToast('في الآيفون: اضغط زر المشاركة (⬆️) في الشريط السفلي ثم اختر "إضافة إلى الشاشة الرئيسية" ليفتح كتطبيق مستقل بدون شريط سفاري! 📲', 'info');
+            } else if (/SamsungBrowser/i.test(ua)) {
+                showToast('في متصفح سامسونج: اضغط القائمة (☰) أسفل الشاشة ثم اختر "إضافة صفحة إلى" ← "الشاشة الرئيسية" ليفتح كتطبيق كامل! 📲', 'info');
+            } else {
+                showToast('في متصفح كروم: اضغط القائمة (⋮) أعلى المتصفح ثم اختر "الإضافة إلى الشاشة الرئيسية" أو "تثبيت التطبيق" ليختفي شريط البحث نهائياً! 📲', 'info');
+            }
+        }
+
+        function getCleanStandaloneHtmlString() {
+            const cloneDoc = document.documentElement.cloneNode(true);
+            cloneDoc.querySelectorAll('.modal').forEach(m => {
+                if (m.id !== 'pinLockScreen') m.style.display = 'none';
+            });
+            cloneDoc.querySelectorAll('.top-dropdown-wrapper').forEach(w => w.classList.remove('open'));
+            return '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
+        }
+
+        function downloadStandaloneAppFile(customFileName) {
+            try {
+                const fileName = customFileName || 'index.html';
+                const serialized = getCleanStandaloneHtmlString();
+                const blob = new Blob([serialized], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 400);
+                showToast(`تم تحميل ملف التطبيق (${fileName}) بنجاح! 💻📲`, 'success');
+            } catch (e) {
+                showToast('تعذر تحميل الملف تلقائياً، يرجى المحاولة مرة أخرى', 'warning');
+            }
+        }
+
+        async function downloadGithubPwaBundleZip() {
+            if (!window.JSZip) {
+                downloadStandaloneAppFile();
+                return;
+            }
+            try {
+                const zip = new window.JSZip();
+                const htmlContent = getCleanStandaloneHtmlString();
+                zip.file('index.html', htmlContent);
+
+                const icon192DataUrl = generateDynamicAppIconDataUrl(192);
+                const icon512DataUrl = generateDynamicAppIconDataUrl(512);
+                if (icon192DataUrl) {
+                    zip.file('icon-192.png', icon192DataUrl.split(',')[1], { base64: true });
+                }
+                if (icon512DataUrl) {
+                    zip.file('icon-512.png', icon512DataUrl.split(',')[1], { base64: true });
+                }
+
+                const manifestJson = {
+                    name: "الميزانية الذكية • Finexy AI",
+                    short_name: "الميزانية الذكية",
+                    description: "تطبيق الميزانية الذكية وإدارة المصروفات والأهداف بالذكاء الاصطناعي",
+                    start_url: "./index.html",
+                    scope: "./",
+                    display: "standalone",
+                    display_override: ["fullscreen", "standalone", "minimal-ui"],
+                    orientation: "portrait",
+                    dir: "rtl",
+                    lang: "ar",
+                    background_color: "#06050b",
+                    theme_color: "#111115",
+                    icons: [
+                        { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+                        { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+                    ]
+                };
+                zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
+
+                const swJs = `const CACHE_NAME = 'finexy-pwa-v58';
+self.addEventListener('install', (e) => {
+    self.skipWaiting();
+    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
+});
+self.addEventListener('activate', (e) => {
+    e.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', (e) => {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+});`;
+                zip.file('sw.js', swJs);
+
+                const content = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Finexy-GitHub-PWA-App.zip';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 400);
+                showToast('تم تحميل حزمة GitHub الكاملة! ارفع ملفاتها على GitHub ليتم تثبيتها كتطبيق متجر رسمي بدون أي شريط متصفح 🚀', 'success');
+            } catch (e) {
+                downloadStandaloneAppFile();
+            }
+        }
+
         window.onload = function() {
             initSavedThemeMode();
+            initInstallablePwaSetup();
             loadLocalData();
+            if (APP_STATE.userAuth && APP_STATE.userAuth.phone && APP_STATE.userAuth.email) {
+                savePhoneEmailMappingLocally(APP_STATE.userAuth.phone, APP_STATE.userAuth.email);
+            }
+            renderLinkedAccountSettings();
             renderDashboard();
             renderCategories();
             renderRecentExpenses();
@@ -6810,6 +9386,28 @@ Return JSON:
                     showToast('تنبيه نظام: ' + e.message, 'danger');
                 }
             });
+
+            // إغلاق نافذة "المساعد" تلقائياً عند الضغط في أي مكان خارجها
+            document.addEventListener('click', function(event) {
+                const aiPanel = document.getElementById('finexy-ai-chat-panel');
+                const aiFab = document.getElementById('finexy-ai-fab');
+                if (aiPanel && aiPanel.classList.contains('open')) {
+                    if (!aiPanel.contains(event.target) && (!aiFab || !aiFab.contains(event.target))) {
+                        aiPanel.classList.remove('open');
+                    }
+                }
+            });
+
+            // دعم التمرير الأفقي السلس بعجلة الماوس داخل شريط الأسئلة السريعة للمساعد
+            const quickChipsBar = document.getElementById('ai-quick-chips-bar');
+            if (quickChipsBar) {
+                quickChipsBar.addEventListener('wheel', function(evt) {
+                    if (evt.deltaY !== 0) {
+                        evt.preventDefault();
+                        quickChipsBar.scrollBy({ left: evt.deltaY < 0 ? 140 : -140, behavior: 'smooth' });
+                    }
+                }, { passive: false });
+            }
 
             window.addEventListener('click', function(event) {
                 if (event.target.classList.contains('modal') && event.target.id !== 'pinLockScreen') {
