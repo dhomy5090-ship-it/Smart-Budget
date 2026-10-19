@@ -25,6 +25,21 @@
         // تهيئة فورية في <head> لوضع التطبيق الكامل (Standalone PWA) لإخفاء شريط المتصفح السفلي في سفاري وكروم وسامسونج عند الرفع على GitHub
         (function() {
             try {
+                try {
+                    var _testLs = window.localStorage;
+                    _testLs.getItem('__test__');
+                } catch (eLs) {
+                    var _memStore = {};
+                    Object.defineProperty(window, 'localStorage', {
+                        value: {
+                            getItem: function(k) { return Object.prototype.hasOwnProperty.call(_memStore, k) ? _memStore[k] : null; },
+                            setItem: function(k, v) { _memStore[k] = String(v); },
+                            removeItem: function(k) { delete _memStore[k]; },
+                            clear: function() { _memStore = {}; }
+                        },
+                        configurable: true
+                    });
+                }
                 function makeAppIconPng(size) {
                     var c = document.createElement('canvas');
                     c.width = size; c.height = size;
@@ -2032,7 +2047,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.3</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.4</div>
             </div>
         </div>
 
@@ -2544,11 +2559,11 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
                         <div>
                             <h3 style="margin:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.3</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.4</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 12px; padding: 6px 12px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.3</div>
+                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.4</div>
                         </div>
                     </div>
                     
@@ -3691,10 +3706,82 @@
         let isCloudConnected = false;
         let firestoreDb = null;
         let isSyncingFromCloud = false;
+        let isSavingToCloud = false;
+        let hasPendingCloudSave = false;
+        let lastLocalMutationTime = 0;
         let pendingBudgetEditType = null;
 
         // متغير عالمي لتخزين مكتبات السحابة لتسريع المزامنة بشكل هائل
         let FB = null;
+
+        // دوال مساعدة للتاريخ والوقت المحلي (لتجنب فرق التوقيت UTC+3 في السعودية ومشاكل صيغ التاريخ في المتصفحات)
+        function getLocalTodayDateStr(dObj) {
+            const d = (dObj instanceof Date && !isNaN(dObj.getTime())) ? dObj : new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function toLocalIsoDateTimeString(rawVal) {
+            const now = new Date();
+            if (!rawVal || !String(rawVal).trim()) {
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                return `${getLocalTodayDateStr(now)}T${hh}:${mm}:${ss}`;
+            }
+            const clean = (typeof toEnglishDigitsClean === 'function' ? toEnglishDigitsClean(String(rawVal)) : String(rawVal)).trim();
+            const m = clean.match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})(?::(\d{2}))?/);
+            if (m) {
+                return `${m[1]}T${m[2]}:${m[3] || '00'}`;
+            }
+            const mDateOnly = clean.match(/^(\d{4}-\d{2}-\d{2})$/);
+            if (mDateOnly) {
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                return `${mDateOnly[1]}T${hh}:${mm}:00`;
+            }
+            const parsed = new Date(clean.replace(' ', 'T'));
+            if (!isNaN(parsed.getTime())) {
+                const hh = String(parsed.getHours()).padStart(2, '0');
+                const mm = String(parsed.getMinutes()).padStart(2, '0');
+                const ss = String(parsed.getSeconds()).padStart(2, '0');
+                return `${getLocalTodayDateStr(parsed)}T${hh}:${mm}:${ss}`;
+            }
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            return `${getLocalTodayDateStr(now)}T${hh}:${mm}:00`;
+        }
+
+        // حفظ واسترجاع رمز الـ PIN المرتبط بكل حساب (رقم جوال) ليبقى محفوظاً للحساب عند إعادة تسجيل الدخول، مع إلغائه من الجهاز عند تسجيل الخروج
+        function saveAccountPinForPhone(phone, pin) {
+            if (!phone) return;
+            try {
+                const phoneKey = String(phone).replace(/[^0-9+]/g, '');
+                const raw = localStorage.getItem('smart_budget_account_pins_map') || '{}';
+                const map = JSON.parse(raw);
+                if (pin) {
+                    map[phoneKey] = String(pin);
+                } else {
+                    delete map[phoneKey];
+                }
+                localStorage.setItem('smart_budget_account_pins_map', JSON.stringify(map));
+            } catch (e) {}
+        }
+
+        function getAccountPinForPhone(phone) {
+            if (!phone) return null;
+            try {
+                const phoneKey = String(phone).replace(/[^0-9+]/g, '');
+                const raw = localStorage.getItem('smart_budget_account_pins_map');
+                if (!raw) return null;
+                const map = JSON.parse(raw);
+                return map[phoneKey] || null;
+            } catch (e) {
+                return null;
+            }
+        }
 
         function getZeroedDefaultCategories() {
             return [
@@ -3773,14 +3860,19 @@
 
         function saveLocalData(skipCloudSync = false) {
             try {
+                if (!skipCloudSync) {
+                    lastLocalMutationTime = Date.now();
+                }
                 if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
                     localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
                     localStorage.removeItem('smart_budget_is_logged_out');
                 } else {
                     localStorage.removeItem('smart_budget_auth_session');
                 }
+                // الرمز السري للقفل يكون نشطاً على الجهاز فقط في حال وجود حساب مسجل دخول
                 if (APP_STATE.userAuth && APP_STATE.userAuth.phone && APP_STATE.appPin) {
                     localStorage.setItem('smart_budget_app_pin', APP_STATE.appPin);
+                    saveAccountPinForPhone(APP_STATE.userAuth.phone, APP_STATE.appPin);
                 } else {
                     APP_STATE.appPin = null;
                     localStorage.removeItem('smart_budget_app_pin');
@@ -3793,34 +3885,37 @@
                 } else {
                     localStorage.removeItem('smart_budget_activation_code');
                 }
-                // إزالة أي نسخة قديمة كانت تحمل أرقام افتراضية غير مصفرة
+                // إزالة مفاتيح النسخ القديمة التي كانت تحمل قيماً افتراضية غير مصفرة
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('budget_smart_app_data_v1');
 
-                // حفظ النسخة المحلية الجديدة
-                localStorage.setItem('smart_budget_local_backup_v63', JSON.stringify({
+                const backupPayload = JSON.stringify({
                     monthlyBudget: APP_STATE.monthlyBudget,
                     dailyBudget: APP_STATE.dailyBudget,
                     bankBalance: APP_STATE.bankBalance,
+                    selectedMonth: APP_STATE.selectedMonth,
+                    budgetStartDate: APP_STATE.budgetStartDate,
+                    budgetEndDate: APP_STATE.budgetEndDate,
                     currency: APP_STATE.currency,
                     activationCode: APP_STATE.activationCode || '',
                     emergencySaved: APP_STATE.emergencySaved,
-                    emergencyFundHistory: APP_STATE.emergencyFundHistory,
-                    savingsHistory: APP_STATE.savingsHistory,
-                    splitBills: APP_STATE.splitBills,
-                    debts: APP_STATE.debts,
-                    categories: APP_STATE.categories,
-                    expenses: APP_STATE.expenses,
-                    savingsGoals: APP_STATE.savingsGoals,
-                    recurringExpenses: APP_STATE.recurringExpenses
-                }));
+                    emergencyFundHistory: APP_STATE.emergencyFundHistory || [],
+                    savingsHistory: APP_STATE.savingsHistory || [],
+                    splitBills: APP_STATE.splitBills || [],
+                    debts: APP_STATE.debts || [],
+                    categories: APP_STATE.categories || [],
+                    expenses: APP_STATE.expenses || [],
+                    savingsGoals: APP_STATE.savingsGoals || [],
+                    recurringExpenses: APP_STATE.recurringExpenses || []
+                });
+                localStorage.setItem('smart_budget_local_backup_v64', backupPayload);
+                localStorage.setItem('smart_budget_local_backup_v63', backupPayload);
             } catch(e) {}
             if (!skipCloudSync) saveCloudData();
         }
 
         function loadLocalData() {
             try {
-                // تنظيف أي بقايا قديمة من مفاتيح الإصدارات السابقة
                 localStorage.removeItem('budget_smart_app_data_v1');
 
                 const isLoggedOutFlag = localStorage.getItem('smart_budget_is_logged_out') === '1';
@@ -3832,42 +3927,38 @@
                     APP_STATE.userAuth = null;
                 }
 
-                // إذا لم يكن هناك حساب مسجل دخول حالياً (أو تم تسجيل الخروج)، نحذف رمز الـ PIN تماماً ولا نقفل التطبيق أبداً
-                if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone || isLoggedOutFlag) {
-                    localStorage.removeItem('smart_budget_app_pin');
-                    localStorage.removeItem('smart_budget_local_backup_v48');
-                    localStorage.removeItem('smart_budget_local_backup_v62');
-                localStorage.removeItem('smart_budget_local_backup_v63');
-                    localStorage.removeItem('smart_budget_persistent_notifs');
-                    localStorage.removeItem('smart_budget_receipt_images');
-                    localStorage.removeItem('smart_budget_activation_code');
-                    APP_STATE.appPin = null;
-                    APP_STATE.activationCode = '';
-                } else {
-                    const savedPin = localStorage.getItem('smart_budget_app_pin');
-                    APP_STATE.appPin = savedPin ? savedPin : null;
-                    const savedActCode = localStorage.getItem('smart_budget_activation_code');
-                    APP_STATE.activationCode = savedActCode || '';
-                    const savedNotifs = localStorage.getItem('smart_budget_persistent_notifs');
-                    if (savedNotifs) {
-                        APP_STATE.notifications = JSON.parse(savedNotifs);
-                    }
-                }
-
-                const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v63');
+                // قراءة النسخة الاحتياطية المحلية دائماً بدون مسحها عند إعادة التحميل (حتى تُحفظ المصروفات في جميع الحالات)
+                const savedBackupV64 = localStorage.getItem('smart_budget_local_backup_v64');
+                const savedBackupV63 = localStorage.getItem('smart_budget_local_backup_v63');
+                const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v62');
                 const savedBackupLegacy = !isLoggedOutFlag ? localStorage.getItem('smart_budget_local_backup_v48') : null;
-                const backupRaw = savedBackupV62 || savedBackupLegacy;
+                const backupRaw = savedBackupV64 || savedBackupV63 || savedBackupV62 || savedBackupLegacy;
 
-                if (backupRaw && (!isLoggedOutFlag || (APP_STATE.userAuth && APP_STATE.userAuth.phone))) {
+                if (backupRaw) {
                     const parsedBackup = JSON.parse(backupRaw);
                     sanitizeLegacyDefaultBudgets(parsedBackup);
                     Object.assign(APP_STATE, parsedBackup);
                 } else {
                     resetAppStateToDefault();
                 }
+
+                const savedNotifs = localStorage.getItem('smart_budget_persistent_notifs');
+                if (savedNotifs) {
+                    APP_STATE.notifications = JSON.parse(savedNotifs);
+                }
+
+                // إذا لم يكن هناك حساب مسجل دخول، نلغي تفعيل رمز القفل على الجهاز فقط (لأنه لا يوجد حساب مفتوح)
                 if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
                     APP_STATE.appPin = null;
                     localStorage.removeItem('smart_budget_app_pin');
+                } else {
+                    const savedPin = localStorage.getItem('smart_budget_app_pin') || getAccountPinForPhone(APP_STATE.userAuth.phone);
+                    APP_STATE.appPin = savedPin ? savedPin : null;
+                    if (APP_STATE.appPin) {
+                        localStorage.setItem('smart_budget_app_pin', APP_STATE.appPin);
+                    }
+                    const savedActCode = localStorage.getItem('smart_budget_activation_code');
+                    if (savedActCode) APP_STATE.activationCode = savedActCode;
                 }
 
                 if (savedBackupLegacy) {
@@ -3878,15 +3969,17 @@
                 const savedGeminiKey = localStorage.getItem('smart_budget_gemini_key');
                 APP_STATE.geminiApiKey = savedGeminiKey || 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
 
-                if (!APP_STATE.savingsGoals) APP_STATE.savingsGoals = [];
-                if (!APP_STATE.recurringExpenses) APP_STATE.recurringExpenses = [];
-                if (!APP_STATE.notifications) APP_STATE.notifications = [];
-                if (!APP_STATE.splitBills) APP_STATE.splitBills = [];
-                if (!APP_STATE.debts) APP_STATE.debts = [];
+                if (!Array.isArray(APP_STATE.categories) || APP_STATE.categories.length === 0) APP_STATE.categories = getZeroedDefaultCategories();
+                if (!Array.isArray(APP_STATE.expenses)) APP_STATE.expenses = [];
+                if (!Array.isArray(APP_STATE.savingsGoals)) APP_STATE.savingsGoals = [];
+                if (!Array.isArray(APP_STATE.recurringExpenses)) APP_STATE.recurringExpenses = [];
+                if (!Array.isArray(APP_STATE.notifications)) APP_STATE.notifications = [];
+                if (!Array.isArray(APP_STATE.splitBills)) APP_STATE.splitBills = [];
+                if (!Array.isArray(APP_STATE.debts)) APP_STATE.debts = [];
                 if (APP_STATE.emergencySaved === undefined) APP_STATE.emergencySaved = 0;
                 if (APP_STATE.bankBalance === undefined) APP_STATE.bankBalance = 0;
-                if (!APP_STATE.emergencyFundHistory) APP_STATE.emergencyFundHistory = [];
-                if (!APP_STATE.savingsHistory) APP_STATE.savingsHistory = [];
+                if (!Array.isArray(APP_STATE.emergencyFundHistory)) APP_STATE.emergencyFundHistory = [];
+                if (!Array.isArray(APP_STATE.savingsHistory)) APP_STATE.savingsHistory = [];
 
                 // استعادة صور الفواتير المحفوظة محلياً وربطها بالمصروفات
                 (APP_STATE.expenses || []).forEach(exp => {
@@ -4211,9 +4304,14 @@
 
             // إذا كان هذا الجهاز متعرفاً عليه مسبقاً لهذا الرقم، نسجل الدخول مباشرة بدون الحاجة لإرسال رمز تحقق جديد
             const recognized = getRecognizedDeviceAccount(phone);
-            if (recognized && (!emailInputVal || ! recognized.email || emailInputVal === recognized.email)) {
+            if (recognized && (!emailInputVal || !recognized.email || emailInputVal === recognized.email)) {
                 const finalEmail = emailInputVal || recognized.email || getPhoneEmailMappingLocally(phone) || '';
                 APP_STATE.userAuth = { phone, email: finalEmail, linkedAt: new Date().toISOString() };
+                const restoredPin = getAccountPinForPhone(phone);
+                if (restoredPin) {
+                    APP_STATE.appPin = restoredPin;
+                    localStorage.setItem('smart_budget_app_pin', restoredPin);
+                }
                 localStorage.removeItem('smart_budget_is_logged_out');
                 localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
                 markDeviceRecognizedForAccount(phone, finalEmail);
@@ -4254,7 +4352,6 @@
                         if (existingEmail && existingEmail !== email) {
                             sendBtn.disabled = false;
                             sendBtn.innerHTML = origBtnHtml;
-                            // إظهار التلميح الأمني تلقائياً لمساعدة المستخدم إذا أخطأ في تذكر بريده
                             pendingRecoveredAccount = { phone, email: existingEmail };
                             const masked = maskEmailSecurityHint(existingEmail);
                             const hintEl = document.getElementById('auth-masked-email-hint');
@@ -4310,6 +4407,11 @@
 
             const { phone, email } = pendingAuthData;
             APP_STATE.userAuth = { phone, email, linkedAt: new Date().toISOString() };
+            const restoredPin = getAccountPinForPhone(phone);
+            if (restoredPin) {
+                APP_STATE.appPin = restoredPin;
+                localStorage.setItem('smart_budget_app_pin', restoredPin);
+            }
             savePhoneEmailMappingLocally(phone, email);
             markDeviceRecognizedForAccount(phone, email);
             localStorage.removeItem('smart_budget_is_logged_out');
@@ -4332,9 +4434,12 @@
             const prevPhone = (APP_STATE.userAuth && APP_STATE.userAuth.phone) ? APP_STATE.userAuth.phone : '';
             const prevEmail = (APP_STATE.userAuth && APP_STATE.userAuth.email) ? APP_STATE.userAuth.email : '';
 
-            // حفظ تعريف الجهاز فقط قبل مسح بيانات الحساب لكي يتعرف الجهاز على نفسه لاحقاً بدون الحاجة لرمز تحقق جديد
+            // حفظ تعريف الجهاز ورمز الحساب الخاص برقم الجوال قبل فصل الجلسة، دون مسح بيانات المستخدم في السحابة
             if (prevPhone) {
                 markDeviceRecognizedForAccount(prevPhone, prevEmail);
+                if (APP_STATE.appPin) {
+                    saveAccountPinForPhone(prevPhone, APP_STATE.appPin);
+                }
             }
 
             if (unsubscribeCloudSnapshot) {
@@ -4342,19 +4447,10 @@
                 unsubscribeCloudSnapshot = null;
             }
 
-            // حذف رمز الـ PIN من السحابة أيضاً عند تسجيل الخروج لكي يصبح التطبيق مفتوحاً بالكامل وغير مقفل
-            if (prevPhone && isCloudConnected && firestoreDb && FB) {
-                try {
-                    const phoneKey = prevPhone.replace(/[^0-9+]/g, '');
-                    APP_STATE.appPin = null;
-                    await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), {
-                        state: Object.assign({}, APP_STATE, { appPin: null }),
-                        updatedAt: new Date().toISOString()
-                    }, { merge: true });
-                } catch (eCloudPin) {}
-            }
+            hasPendingCloudSave = false;
+            isSavingToCloud = false;
 
-            // تصفير الحساب والرمز السري وكافة البيانات الشخصية بالكامل من الذاكرة والتخزين المحلي
+            // عند تسجيل الخروج، لا يوجد حساب نشط على الجهاز، لذلك نلغي قفل التطبيق (الـ PIN) من الجهاز ونصفر الواجهة المحلية
             APP_STATE.userAuth = null;
             APP_STATE.appPin = null;
             APP_STATE.activationCode = '';
@@ -4367,17 +4463,17 @@
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('smart_budget_local_backup_v62');
                 localStorage.removeItem('smart_budget_local_backup_v63');
-                localStorage.removeItem('smart_budget_local_backup_v63');
+                localStorage.removeItem('smart_budget_local_backup_v64');
                 localStorage.removeItem('smart_budget_app_pin');
                 localStorage.removeItem('smart_budget_persistent_notifs');
                 localStorage.removeItem('smart_budget_receipt_images');
                 localStorage.removeItem('smart_budget_activation_code');
             } catch (e) {}
 
-            // حفظ الحالة المصفرة النظيفة محلياً بدون مزامنة سحابية حتى لا تعود البيانات عند قفل وتشغيل التطبيق
+            // حفظ الحالة المصفرة النظيفة محلياً بدون إرسال أي مسح إلى السحابة
             saveLocalData(true);
 
-            // تنظيف كافة الحقول الشخصية وإغلاق وإخفاء شاشة وخانة الـ PIN بالكامل
+            // تنظيف كافة الحقول الشخصية وإغلاق شاشة القفل لأن التطبيق بدون حساب حالياً
             const phoneInp = document.getElementById('settings-linked-phone-input');
             const emailInp = document.getElementById('settings-linked-email-input');
             const actInp = document.getElementById('settings-activation-code-input');
@@ -4407,10 +4503,10 @@
             renderDebtsPage();
             renderSavingsPage();
             renderNotifications();
-            updateCharts();
+            try { updateCharts(); } catch (e) {}
             updateCloudSyncStatusBadge();
 
-            showToast('تم تسجيل الخروج وتصفير كافة البيانات والرمز السري بالكامل كحساب جديد', 'info');
+            showToast('تم تسجيل الخروج وإلغاء قفل الرمز من التطبيق لعدم وجود حساب نشط', 'info');
         }
 
         function applyCloudDataToAppState(cloudData) {
@@ -4421,14 +4517,24 @@
             if (cloudData.dailyBudget !== undefined) APP_STATE.dailyBudget = cloudData.dailyBudget;
             if (cloudData.bankBalance !== undefined) APP_STATE.bankBalance = cloudData.bankBalance;
             if (cloudData.currency !== undefined) APP_STATE.currency = cloudData.currency;
+            if (cloudData.activationCode !== undefined) APP_STATE.activationCode = cloudData.activationCode;
             if (cloudData.emergencySaved !== undefined) APP_STATE.emergencySaved = cloudData.emergencySaved;
             if (Array.isArray(cloudData.emergencyFundHistory)) APP_STATE.emergencyFundHistory = cloudData.emergencyFundHistory;
             if (Array.isArray(cloudData.savingsHistory)) APP_STATE.savingsHistory = cloudData.savingsHistory;
             if (Array.isArray(cloudData.splitBills)) APP_STATE.splitBills = cloudData.splitBills;
             if (Array.isArray(cloudData.debts)) APP_STATE.debts = cloudData.debts;
-            if (Array.isArray(cloudData.categories)) APP_STATE.categories = cloudData.categories;
+            if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) APP_STATE.categories = cloudData.categories;
             if (Array.isArray(cloudData.expenses)) {
-                APP_STATE.expenses = cloudData.expenses;
+                // دمج المصروفات المحلية المسجلة حديثاً (خلال آخر 5 ثوانٍ أو أثناء انتظار الرفع) حتى لا تضيع أي عملية صرف أبداً
+                const localRecent = (hasPendingCloudSave || isSavingToCloud || (Date.now() - lastLocalMutationTime < 5000))
+                    ? (APP_STATE.expenses || [])
+                    : [];
+                const cloudIds = new Set(cloudData.expenses.map(e => e && e.id));
+                const unsyncedLocal = localRecent.filter(e => e && e.id && !cloudIds.has(e.id));
+                APP_STATE.expenses = [...unsyncedLocal, ...cloudData.expenses];
+                if (unsyncedLocal.length > 0) {
+                    hasPendingCloudSave = true;
+                }
                 APP_STATE.expenses.forEach(exp => {
                     if (exp.receiptImage) {
                         saveReceiptImageToLocalCache(exp.id, exp.receiptImage);
@@ -4442,6 +4548,18 @@
             if (Array.isArray(cloudData.recurringExpenses)) APP_STATE.recurringExpenses = cloudData.recurringExpenses;
             if (Array.isArray(cloudData.notifications)) APP_STATE.notifications = cloudData.notifications;
 
+            // استعادة رمز الـ PIN الخاص بالحساب عند تسجيل الدخول
+            if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                const cloudPin = cloudData.appPin || getAccountPinForPhone(APP_STATE.userAuth.phone) || null;
+                APP_STATE.appPin = cloudPin;
+                if (cloudPin) {
+                    localStorage.setItem('smart_budget_app_pin', cloudPin);
+                    saveAccountPinForPhone(APP_STATE.userAuth.phone, cloudPin);
+                } else {
+                    localStorage.removeItem('smart_budget_app_pin');
+                }
+            }
+
             if (cloudData.geminiApiKey) {
                 APP_STATE.geminiApiKey = cloudData.geminiApiKey;
             } else if (!APP_STATE.geminiApiKey) {
@@ -4449,14 +4567,21 @@
             }
 
             saveLocalData(true);
+            renderPinSettings();
+            renderActivationCodeSettings();
             renderDashboard();
             renderCategories();
             renderRecentExpenses();
             renderCalendar();
             renderDebtsPage();
             renderSavingsPage();
-            updateCharts();
-            setTimeout(() => { isSyncingFromCloud = false; }, 400);
+            try { updateCharts(); } catch (e) {}
+            setTimeout(() => {
+                isSyncingFromCloud = false;
+                if (hasPendingCloudSave) {
+                    saveCloudData();
+                }
+            }, 250);
         }
 
         async function subscribeToActiveCloudDocument() {
@@ -4478,6 +4603,9 @@
                 const targetDocRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
 
                 unsubscribeCloudSnapshot = FB.onSnapshot(targetDocRef, (docSnap) => {
+                    isCloudConnected = true;
+                    updateCloudSyncStatusBadge();
+                    if (isSavingToCloud) return;
                     if (docSnap.exists()) {
                         const rawData = docSnap.data();
                         const statePayload = rawData.state ? rawData.state : rawData;
@@ -4487,8 +4615,6 @@
                     } else {
                         saveCloudData();
                     }
-                    isCloudConnected = true;
-                    updateCloudSyncStatusBadge();
                 }, () => {
                     isCloudConnected = false;
                     updateCloudSyncStatusBadge();
@@ -4529,6 +4655,9 @@
                 }
 
                 await subscribeToActiveCloudDocument();
+                if (hasPendingCloudSave) {
+                    saveCloudData();
+                }
             } catch (err) {
                 isCloudConnected = false;
                 updateCloudSyncStatusBadge();
@@ -4536,18 +4665,30 @@
         }
 
         async function saveCloudData() {
-            if (!isCloudConnected || !firestoreDb || isSyncingFromCloud || !FB) return;
+            if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) return;
+            if (!isCloudConnected || !firestoreDb || !FB || isSyncingFromCloud || isSavingToCloud) {
+                hasPendingCloudSave = true;
+                return;
+            }
+            isSavingToCloud = true;
+            hasPendingCloudSave = false;
             try {
-                if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
-                    const phoneKey = APP_STATE.userAuth.phone.replace(/[^0-9+]/g, '');
-                    await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), {
-                        phone: APP_STATE.userAuth.phone,
-                        email: APP_STATE.userAuth.email,
-                        state: APP_STATE,
-                        updatedAt: new Date().toISOString()
-                    });
+                const phoneKey = APP_STATE.userAuth.phone.replace(/[^0-9+]/g, '');
+                const cleanState = JSON.parse(JSON.stringify(APP_STATE));
+                await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), {
+                    phone: APP_STATE.userAuth.phone,
+                    email: APP_STATE.userAuth.email || '',
+                    state: cleanState,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+            } catch (err) {
+                hasPendingCloudSave = true;
+            } finally {
+                isSavingToCloud = false;
+                if (hasPendingCloudSave && isCloudConnected && !isSyncingFromCloud) {
+                    setTimeout(() => saveCloudData(), 150);
                 }
-            } catch (err) {}
+            }
         }
 
         function updateCloudSyncStatusBadge() {
@@ -4687,7 +4828,7 @@
                 }
             }
             if (pageId === 'debts') {
-                const todayStr = new Date().toISOString().split('T')[0];
+                const todayStr = getLocalTodayDateStr();
                 const overdue = (APP_STATE.debts || []).filter(d => d.type === 'owed' && d.dueDate && d.dueDate < todayStr);
                 if (overdue.length > 0) {
                     showToast(`تنبيه: لديك (${overdue.length}) التزامات/ديون حلّ موعد سدادها!`, 'danger');
@@ -4777,11 +4918,11 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         function calculateMonthlySpent() {
-            return (APP_STATE.expenses || []).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+            return (APP_STATE.expenses || []).reduce((sum, e) => sum + (parseFloat(e && e.amount) || 0), 0);
         }
         function calculateDailySpent() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            return (APP_STATE.expenses || []).filter(e => e.date.startsWith(todayStr)).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+            const todayStr = getLocalTodayDateStr();
+            return (APP_STATE.expenses || []).filter(e => e && e.date && String(e.date).startsWith(todayStr)).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
         }
 
         function renderDashboard() {
@@ -5042,22 +5183,13 @@
         function setDateTimeInputValue(inputId, isoOrLocalStr) {
             const el = document.getElementById(inputId);
             if (!el) return;
-            let formatted = isoOrLocalStr;
-            if (!formatted) {
-                const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                formatted = now.toISOString().slice(0, 16);
-            } else {
-                // تحويل أي صيغة تاريخ إلى YYYY-MM-DDTHH:mm
-                const d = new Date(formatted);
-                if (!isNaN(d.getTime())) {
-                    const localD = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-                    formatted = localD.toISOString().slice(0, 16);
-                }
-            }
+            const localIso = toLocalIsoDateTimeString(isoOrLocalStr);
+            const formatted = localIso.slice(0, 16);
             el.value = formatted;
             if (el._flatpickr) {
-                el._flatpickr.setDate(formatted.replace('T', ' '), true, 'Y-m-d H:i');
+                try {
+                    el._flatpickr.setDate(formatted.replace('T', ' '), true, 'Y-m-d H:i');
+                } catch (e) {}
             }
         }
 
@@ -5249,8 +5381,8 @@
             if(!c) return;
             c.innerHTML = '';
             
-            const todayStr = new Date().toISOString().split('T')[0];
-            const todaysExps = (APP_STATE.expenses || []).filter(e => e.date && e.date.startsWith(todayStr));
+            const todayStr = getLocalTodayDateStr();
+            const todaysExps = (APP_STATE.expenses || []).filter(e => e && e.date && String(e.date).startsWith(todayStr));
 
             if(todaysExps.length === 0) {
                 c.innerHTML = '<div style="color:var(--text-muted); text-align:center; font-size:0.92em; padding:8px;">لا توجد مصروفات مسجلة اليوم</div>';
@@ -5381,14 +5513,15 @@
 
         function updateCurrentExpenseRecord() {
             const id = document.getElementById('detail-exp-id').value;
-            const amt = parseFloat(document.getElementById('detail-exp-amount').value);
-            const str = document.getElementById('detail-exp-store').value.trim();
+            const rawAmt = toEnglishDigitsClean(document.getElementById('detail-exp-amount')?.value || '').replace(/[^0-9.]/g, '');
+            const amt = parseFloat(rawAmt);
             const cat = document.getElementById('detail-exp-category').value;
+            const str = (document.getElementById('detail-exp-store').value || '').trim() || cat || 'مصروف عام';
             const method = document.getElementById('detail-exp-method').value;
             const bank = document.getElementById('detail-exp-bank').value;
             const dateVal = document.getElementById('detail-exp-date')?.value;
 
-            if(isNaN(amt) || amt <= 0 || !str) { showToast('يرجى التأكد من صحة المبلغ والمحل', 'warning'); return; }
+            if(isNaN(amt) || amt <= 0) { showToast('يرجى التأكد من صحة المبلغ', 'warning'); return; }
 
             const exp = APP_STATE.expenses.find(e => e.id === id);
             if(exp) {
@@ -5405,8 +5538,7 @@
                 exp.method = method;
                 exp.bank = method !== 'كاش' ? bank : '';
                 if (dateVal) {
-                    const parsedD = new Date(dateVal);
-                    if (!isNaN(parsedD.getTime())) exp.date = parsedD.toISOString();
+                    exp.date = toLocalIsoDateTimeString(dateVal);
                 }
                 exp.receiptImage = currentDetailReceiptDataUrl || null;
                 saveReceiptImageToLocalCache(exp.id, exp.receiptImage);
@@ -5417,7 +5549,7 @@
                 renderCategories();
                 renderRecentExpenses();
                 renderCalendar();
-                updateCharts();
+                try { updateCharts(); } catch (e) {}
                 showToast('تم تحديث المصروف وحفظ التعديلات بنجاح!', 'success');
             }
         }
@@ -5460,7 +5592,7 @@
             });
 
             const ctx = document.getElementById('kpiQuickChart');
-            if (ctx) {
+            if (ctx && typeof Chart !== 'undefined') {
                 if (kpiQuickChartInstance) {
                     kpiQuickChartInstance.data.labels = labels;
                     kpiQuickChartInstance.data.datasets[0].data = data;
@@ -5692,6 +5824,10 @@
         }
 
         function openExpenseModal() {
+            const catSel = document.getElementById('exp-category');
+            if (catSel && catSel.options.length === 0) {
+                renderCategories();
+            }
             document.getElementById('exp-amount').value = ''; 
             document.getElementById('exp-store').value = '';
             document.getElementById('exp-method').value = 'بطاقة / شبكة';
@@ -5699,9 +5835,7 @@
             clearPendingReceiptImage();
             togglePaymentMethodFields();
             
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            setDateTimeInputValue('exp-date', now.toISOString().slice(0, 16));
+            setDateTimeInputValue('exp-date', toLocalIsoDateTimeString());
 
             openModal('expenseModal');
         }
@@ -6525,25 +6659,31 @@ Return JSON:
         }
 
         function saveExpense() {
-            const amt = parseFloat(document.getElementById('exp-amount').value);
-            const str = document.getElementById('exp-store').value.trim();
-            const cat = document.getElementById('exp-category').value;
-            const dateVal = document.getElementById('exp-date').value;
-            const method = document.getElementById('exp-method').value;
-            const bank = document.getElementById('exp-bank').value;
+            const rawAmt = toEnglishDigitsClean(document.getElementById('exp-amount')?.value || '').replace(/[^0-9.]/g, '');
+            const amt = parseFloat(rawAmt);
+            const catSel = document.getElementById('exp-category');
+            const defaultCatName = (APP_STATE.categories && APP_STATE.categories[0]) ? APP_STATE.categories[0].name : 'عام';
+            const cat = (catSel && catSel.value) ? catSel.value : defaultCatName;
+            let str = (document.getElementById('exp-store')?.value || '').trim();
+            if (!str) {
+                str = cat || 'مصروف عام';
+            }
+            const dateVal = document.getElementById('exp-date')?.value || '';
+            const method = document.getElementById('exp-method')?.value || 'بطاقة / شبكة';
+            const bank = document.getElementById('exp-bank')?.value || 'بنك الراجحي';
 
-            if(isNaN(amt) || amt <= 0 || !str) { showToast('يرجى كتابة المبلغ واسم المحل', 'warning'); return; }
+            if (isNaN(amt) || amt <= 0) {
+                showToast('يرجى إدخال مبلغ المصروف أولاً', 'warning');
+                document.getElementById('exp-amount')?.focus();
+                return;
+            }
             
             if (method === 'بطاقة / شبكة' || method === 'تحويل بنكي') {
                 APP_STATE.bankBalance = parseFloat(APP_STATE.bankBalance || 0) - amt;
             }
 
-            const newExpId = 'exp-' + Date.now();
-            let isoDate = new Date().toISOString();
-            if (dateVal) {
-                const parsedD = new Date(dateVal);
-                if (!isNaN(parsedD.getTime())) isoDate = parsedD.toISOString();
-            }
+            const newExpId = 'exp-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+            const isoDate = toLocalIsoDateTimeString(dateVal);
 
             const newExpObj = { 
                 id: newExpId, 
@@ -6560,11 +6700,17 @@ Return JSON:
                 saveReceiptImageToLocalCache(newExpId, currentPendingReceiptDataUrl);
             }
 
+            if (!Array.isArray(APP_STATE.expenses)) APP_STATE.expenses = [];
             APP_STATE.expenses.unshift(newExpObj);
             currentPendingReceiptDataUrl = null;
 
-            saveLocalData(); closeModal('expenseModal'); renderDashboard(); renderCategories(); renderRecentExpenses(); renderCalendar(); updateCharts();
             addNotification(`تم تسجيل مصروف جديد بقيمة ${formatEn(amt)} في ${str} (${cat})`, 'success');
+            closeModal('expenseModal');
+            renderDashboard();
+            renderCategories();
+            renderRecentExpenses();
+            renderCalendar();
+            try { updateCharts(); } catch (e) {}
             showToast('تم حفظ المصروف' + (newExpObj.receiptImage ? ' وصورة الفاتورة' : '') + ' وتحديث الرصيد!', 'success', true);
         }
 
@@ -6920,25 +7066,24 @@ Return JSON:
                 APP_STATE.bankBalance = parseFloat(APP_STATE.bankBalance || 0) - amount;
             }
 
+            if (!Array.isArray(APP_STATE.expenses)) APP_STATE.expenses = [];
             APP_STATE.expenses.unshift({ 
-                id: 'exp-'+Date.now(), 
+                id: 'exp-' + Date.now() + '-' + Math.floor(Math.random() * 1000), 
                 amount: amount, 
                 store: storeName, 
                 category: category, 
-                date: new Date().toISOString(),
+                date: toLocalIsoDateTimeString(),
                 method: method,
                 bank: method !== 'كاش' ? bank : ''
             });
 
-            saveLocalData(); 
+            addNotification(`⚡ مصروف سريع: ${formatEn(amount)} - ${storeName} (${category} • ${method})`, 'success');
             closeModal('quickExpenseModal'); 
             renderDashboard(); 
             renderCategories(); 
             renderRecentExpenses(); 
             renderCalendar(); 
-            updateCharts();
-            
-            addNotification(`⚡ مصروف سريع: ${formatEn(amount)} - ${storeName} (${category} • ${method})`, 'success');
+            try { updateCharts(); } catch (e) {}
             showToast(`تم تسجيل (${storeName} - ${formatEn(amount)}) • الدفع: ${method} بنجاح!`, 'success', true);
         }
 
@@ -7091,7 +7236,7 @@ Return JSON:
         }
 
         function ensureChartsInitialized() {
-            if(!document.getElementById('myChart')) return;
+            if(typeof Chart === 'undefined' || !document.getElementById('myChart')) return;
             if (!pieChartInstance) pieChartInstance = new Chart(document.getElementById('myChart').getContext('2d'), { type:'doughnut', data:{labels:[],datasets:[{data:[],backgroundColor:['#ff5520','#141416','#8b5cf6','#10b981','#f59e0b']}]}, options:{responsive:true,maintainAspectRatio:false} });
             if (!lineChartInstance) lineChartInstance = new Chart(document.getElementById('myLineChart').getContext('2d'), { type:'line', data:{labels:[],datasets:[{label:'المنصرف اليومي',data:[],borderColor:'#ff5520',backgroundColor:'rgba(255,85,32,0.1)'}]}, options:{responsive:true,maintainAspectRatio:false} });
         }
@@ -7295,7 +7440,7 @@ Return JSON:
 
         function updateSelectedDayRolloverDisplay() {
             const dateInput = document.getElementById('daily-rollover-date');
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalTodayDateStr();
             if (dateInput && !dateInput.value) dateInput.value = todayStr;
             
             const selectedDate = dateInput ? dateInput.value : todayStr;
@@ -7309,7 +7454,7 @@ Return JSON:
         function renderSavingsPage() {
             renderEmergencyFundUI();
 
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalTodayDateStr();
             const dateInput = document.getElementById('daily-rollover-date');
             if (dateInput) {
                 if(!dateInput.value) dateInput.value = todayStr;
@@ -7365,7 +7510,7 @@ Return JSON:
 
         function executeDailyRollover() {
             const dateInput = document.getElementById('daily-rollover-date');
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalTodayDateStr();
             const selectedDate = dateInput && dateInput.value ? dateInput.value : todayStr;
             const stats = getSelectedDayStats(selectedDate);
 
@@ -7465,7 +7610,7 @@ Return JSON:
             document.getElementById('debt-type').value = 'owed';
             document.getElementById('debt-person').value = '';
             document.getElementById('debt-amount').value = '';
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalTodayDateStr();
             document.getElementById('debt-receive-date').value = todayStr;
             document.getElementById('debt-due-date').value = '';
             openModal('newDebtModal');
@@ -8813,7 +8958,7 @@ Return JSON:
             const container = document.getElementById('pin-settings-actions');
             if (!container) return;
 
-            // إذا كان المستخدم مسجلاً للخروج (لا يوجد حساب نشط)، تُحذف وتختفي خانة الـ PIN بالكامل ويكون التطبيق مفتوحاً
+            // إذا كان المستخدم مسجلاً للخروج (لا يوجد حساب نشط)، لا يكون هناك رمز دخول على التطبيق نهائياً
             if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
                 APP_STATE.appPin = null;
                 try { localStorage.removeItem('smart_budget_app_pin'); } catch (e) {}
@@ -8853,19 +8998,23 @@ Return JSON:
                 renderPinSettings();
                 return;
             }
-            const pin = document.getElementById('setup-pin-input').value.trim();
+            const pin = toEnglishDigitsClean(document.getElementById('setup-pin-input').value).trim();
             if(pin.length < 4 || isNaN(pin)) {
                 showToast('يرجى إدخال رمز مكون من 4 أرقام على الأقل', 'warning');
                 return;
             }
             APP_STATE.appPin = pin;
+            saveAccountPinForPhone(APP_STATE.userAuth.phone, pin);
             saveLocalData();
             closeModal('pinSetupModal');
             renderPinSettings();
-            showToast('تم تفعيل قفل التطبيق السري بنجاح!', 'success');
+            showToast('تم تفعيل قفل التطبيق السري وربطه بحسابك بنجاح!', 'success');
         }
 
         function removeAppPin() {
+            if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                saveAccountPinForPhone(APP_STATE.userAuth.phone, null);
+            }
             APP_STATE.appPin = null;
             try { localStorage.removeItem('smart_budget_app_pin'); } catch (e) {}
             saveLocalData();
@@ -8931,7 +9080,10 @@ Return JSON:
             initAutomaticCloudConnection();
 
             /* إذا كان الجهاز متعرفاً عليه مسبقاً أو قام المستخدم بتسجيل الخروج، لا نفتح نافذة طلب تسجيل الدخول تلقائياً */
-            const isDeviceRecognizedOrLoggedOut = localStorage.getItem('smart_budget_is_logged_out') === '1' || localStorage.getItem('smart_budget_device_has_registered') === '1';
+            let isDeviceRecognizedOrLoggedOut = false;
+            try {
+                isDeviceRecognizedOrLoggedOut = localStorage.getItem('smart_budget_is_logged_out') === '1' || localStorage.getItem('smart_budget_device_has_registered') === '1';
+            } catch (e) {}
             if ((!APP_STATE.userAuth || !APP_STATE.userAuth.phone) && !isDeviceRecognizedOrLoggedOut) {
                 setTimeout(() => {
                     openUserAuthModal();
@@ -9686,7 +9838,7 @@ ${debtsText}
                 };
                 appFolder.file('manifest.json', JSON.stringify(desktopManifest, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pc-v59';
+                const swJs = `const CACHE_NAME = 'finexy-pc-v64';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
@@ -9704,19 +9856,19 @@ self.addEventListener('fetch', (e) => {
                     '@echo off',
                     'chcp 65001 >nul',
                     'title Finexy Desktop App - الميزانية الذكية',
-                    'set "APP_PATH=%~dp0app\index.html"',
-                    'set "APP_URL=file:///%APP_PATH:\=/%"',
+                    'set "APP_PATH=%~dp0app\\index.html"',
+                    'set "APP_URL=file:///%APP_PATH:\\=/%"',
                     'where msedge >nul 2>nul',
                     'if %errorlevel%==0 (',
                     '    start "" msedge --app="%APP_URL%" --window-size=1280,820',
                     '    exit',
                     ')',
-                    'if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (',
-                    '    start "" "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" --app="%APP_URL%" --window-size=1280,820',
+                    'if exist "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" (',
+                    '    start "" "%ProgramFiles(x86)%\\Microsoft\\Edge\\Application\\msedge.exe" --app="%APP_URL%" --window-size=1280,820',
                     '    exit',
                     ')',
-                    'if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" (',
-                    '    start "" "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" --app="%APP_URL%" --window-size=1280,820',
+                    'if exist "%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe" (',
+                    '    start "" "%ProgramFiles%\\Microsoft\\Edge\\Application\\msedge.exe" --app="%APP_URL%" --window-size=1280,820',
                     '    exit',
                     ')',
                     'where chrome >nul 2>nul',
@@ -9724,8 +9876,8 @@ self.addEventListener('fetch', (e) => {
                     '    start "" chrome --app="%APP_URL%" --window-size=1280,820',
                     '    exit',
                     ')',
-                    'if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (',
-                    '    start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --app="%APP_URL%" --window-size=1280,820',
+                    'if exist "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" (',
+                    '    start "" "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe" --app="%APP_URL%" --window-size=1280,820',
                     '    exit',
                     ')',
                     'start "" "%APP_PATH%"',
@@ -9739,8 +9891,8 @@ self.addEventListener('fetch', (e) => {
                     'Set fso = CreateObject("Scripting.FileSystemObject")',
                     'currentDir = fso.GetParentFolderName(WScript.ScriptFullName)',
                     'desktopPath = WshShell.SpecialFolders("Desktop")',
-                    'Set shortcut = WshShell.CreateShortcut(desktopPath & "\Finexy - الميزانية الذكية.lnk")',
-                    'shortcut.TargetPath = currentDir & "\تشغيل-تطبيق-الميزانية-Finexy.bat"',
+                    'Set shortcut = WshShell.CreateShortcut(desktopPath & "\\Finexy - الميزانية الذكية.lnk")',
+                    'shortcut.TargetPath = currentDir & "\\تشغيل-تطبيق-الميزانية-Finexy.bat"',
                     'shortcut.WorkingDirectory = currentDir',
                     'shortcut.WindowStyle = 7',
                     'shortcut.IconLocation = "shell32.dll,43"',
@@ -9838,6 +9990,14 @@ self.addEventListener('fetch', (e) => {
                 m.style.display = 'none';
             });
             cloneDoc.querySelectorAll('.top-dropdown-wrapper').forEach(w => w.classList.remove('open'));
+            cloneDoc.querySelectorAll('.finexy-ai-chat-panel').forEach(p => p.classList.remove('open'));
+            cloneDoc.querySelectorAll('.flatpickr-calendar, .toast, #finexy-manifest-link, link[rel="apple-touch-icon"], link[rel="icon"]').forEach(el => el.remove());
+            cloneDoc.querySelectorAll('input.flatpickr-input').forEach(inp => {
+                inp.classList.remove('flatpickr-input', 'active');
+                inp.removeAttribute('readonly');
+            });
+            const toastCont = cloneDoc.querySelector('#toast-container');
+            if (toastCont) toastCont.innerHTML = '';
             return '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
         }
 
@@ -9903,7 +10063,7 @@ self.addEventListener('fetch', (e) => {
                 };
                 zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pwa-v63';
+                const swJs = `const CACHE_NAME = 'finexy-pwa-v64';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
