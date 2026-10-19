@@ -2032,7 +2032,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.1</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.2</div>
             </div>
         </div>
 
@@ -2544,11 +2544,11 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
                         <div>
                             <h3 style="margin:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.1</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.2</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 12px; padding: 6px 12px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.1</div>
+                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.2</div>
                         </div>
                     </div>
                     
@@ -2633,6 +2633,21 @@
                             </div>
                             <button type="button" class="primary-btn" style="padding: 10px 20px; font-size: 0.86em;" onclick="saveCurrencySetting()"><i class="fas fa-check-circle"></i> اعتماد وحفظ العملة</button>
                         </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+                            <label style="margin:0;"><i class="fas fa-key text-primary"></i> كود تفعيل الحساب:</label>
+                            <span id="settings-activation-code-badge" class="btn-edit-badge" style="font-size:0.75em; background:rgba(245,158,11,0.12); color:var(--warning); border-color:rgba(245,158,11,0.3); cursor:default;">بانتظار التفعيل</span>
+                        </div>
+                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">خانة مخصصة لإدخال كود تفعيل الحساب الخاص بك.</p>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <div style="position:relative; flex:1; min-width:200px;">
+                                <input type="text" id="settings-activation-code-input" placeholder="أدخل كود التفعيل هنا..." dir="ltr" style="width:100%; text-align:center; font-weight:800; letter-spacing:1px;">
+                            </div>
+                            <button type="button" class="primary-btn" style="padding: 10px 18px; font-size: 0.86em;" onclick="saveAccountActivationCodeField()"><i class="fas fa-check-circle"></i> تفعيل</button>
+                        </div>
+                        <div id="settings-activation-code-status" style="display:none; margin-top:8px; padding:10px 12px; border-radius:12px; font-size:0.82em; font-weight:700;"></div>
                     </div>
 
                     <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
@@ -3647,12 +3662,13 @@
         }
 
         const APP_STATE = {
-            monthlyBudget: 8000, dailyBudget: 266, bankBalance: 0,
+            monthlyBudget: 0, dailyBudget: 0, bankBalance: 0,
             selectedMonth: defaultMonth,
             budgetStartDate: `${defaultMonth}-01`, budgetEndDate: `${defaultMonth}-${lastDayOfCurMonth}`,
             currency: '﷼',
             geminiApiKey: 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw',
-            appPin: null, // تم إضافة حقل الرمز السري
+            appPin: null,
+            activationCode: '',
             emergencySaved: 0,
             emergencyFundHistory: [],
             savingsHistory: [],
@@ -3660,10 +3676,10 @@
             debts: [],
             userAuth: null,
             categories: [
-                { id: 'cat-1', name: 'المقاضي والمواد الغذائية', budget: 2000, icon: 'fa-shopping-basket' },
-                { id: 'cat-2', name: 'السيارة والبنزين', budget: 800, icon: 'fa-car' },
-                { id: 'cat-3', name: 'الفواتير والالتزامات', budget: 1500, icon: 'fa-file-invoice' },
-                { id: 'cat-4', name: 'المطاعم والترفيه', budget: 1200, icon: 'fa-utensils' }
+                { id: 'cat-1', name: 'المقاضي والمواد الغذائية', budget: 0, icon: 'fa-shopping-basket' },
+                { id: 'cat-2', name: 'السيارة والبنزين', budget: 0, icon: 'fa-car' },
+                { id: 'cat-3', name: 'الفواتير والالتزامات', budget: 0, icon: 'fa-file-invoice' },
+                { id: 'cat-4', name: 'المطاعم والترفيه', budget: 0, icon: 'fa-utensils' }
             ],
             expenses: [], savingsGoals: [], recurringExpenses: [], notifications: []
         };
@@ -3680,10 +3696,42 @@
         // متغير عالمي لتخزين مكتبات السحابة لتسريع المزامنة بشكل هائل
         let FB = null;
 
+        function getZeroedDefaultCategories() {
+            return [
+                { id: 'cat-1', name: 'المقاضي والمواد الغذائية', budget: 0, icon: 'fa-shopping-basket' },
+                { id: 'cat-2', name: 'السيارة والبنزين', budget: 0, icon: 'fa-car' },
+                { id: 'cat-3', name: 'الفواتير والالتزامات', budget: 0, icon: 'fa-file-invoice' },
+                { id: 'cat-4', name: 'المطاعم والترفيه', budget: 0, icon: 'fa-utensils' }
+            ];
+        }
+
+        function sanitizeLegacyDefaultBudgets(targetObj) {
+            if (!targetObj) return;
+            const hasNoExpenses = !Array.isArray(targetObj.expenses) || targetObj.expenses.length === 0;
+            if (targetObj.monthlyBudget === 8000 && targetObj.dailyBudget === 266 && hasNoExpenses) {
+                targetObj.monthlyBudget = 0;
+                targetObj.dailyBudget = 0;
+            }
+            if (Array.isArray(targetObj.categories) && targetObj.categories.length === 4) {
+                const defaultBudgetsMap = {
+                    'المقاضي والمواد الغذائية': 2000,
+                    'السيارة والبنزين': 800,
+                    'الفواتير والالتزامات': 1500,
+                    'المطاعم والترفيه': 1200
+                };
+                const isAllOldDefaultCatBudgets = targetObj.categories.every(c => defaultBudgetsMap[c.name] === Number(c.budget));
+                if (isAllOldDefaultCatBudgets && hasNoExpenses) {
+                    targetObj.categories.forEach(c => { c.budget = 0; });
+                }
+            }
+        }
+
         function resetAppStateToDefault() {
-            APP_STATE.monthlyBudget = 8000;
-            APP_STATE.dailyBudget = 266;
+            APP_STATE.monthlyBudget = 0;
+            APP_STATE.dailyBudget = 0;
             APP_STATE.bankBalance = 0;
+            APP_STATE.appPin = null;
+            APP_STATE.activationCode = '';
             APP_STATE.emergencySaved = 0;
             APP_STATE.emergencyFundHistory = [];
             APP_STATE.savingsHistory = [];
@@ -3694,12 +3742,7 @@
             APP_STATE.recurringExpenses = [];
             APP_STATE.notifications = [];
             APP_STATE.geminiApiKey = 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
-            APP_STATE.categories = [
-                { id: 'cat-1', name: 'المقاضي والمواد الغذائية', budget: 2000, icon: 'fa-shopping-basket' },
-                { id: 'cat-2', name: 'السيارة والبنزين', budget: 800, icon: 'fa-car' },
-                { id: 'cat-3', name: 'الفواتير والالتزامات', budget: 1500, icon: 'fa-file-invoice' },
-                { id: 'cat-4', name: 'المطاعم والترفيه', budget: 1200, icon: 'fa-utensils' }
-            ];
+            APP_STATE.categories = getZeroedDefaultCategories();
         }
 
         function saveReceiptImageToLocalCache(expId, dataUrl) {
@@ -3732,6 +3775,9 @@
             try {
                 if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
                     localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
+                    localStorage.removeItem('smart_budget_is_logged_out');
+                } else {
+                    localStorage.removeItem('smart_budget_auth_session');
                 }
                 if (APP_STATE.appPin) {
                     localStorage.setItem('smart_budget_app_pin', APP_STATE.appPin);
@@ -3741,12 +3787,22 @@
                 if (APP_STATE.geminiApiKey) {
                     localStorage.setItem('smart_budget_gemini_key', APP_STATE.geminiApiKey);
                 }
-                // حفظ نسخة محلية مساندة للعمليات وصور الفواتير وسجل الادخار لضمان عدم ضياعها أبداً
-                localStorage.setItem('smart_budget_local_backup_v48', JSON.stringify({
+                if (APP_STATE.activationCode) {
+                    localStorage.setItem('smart_budget_activation_code', APP_STATE.activationCode);
+                } else {
+                    localStorage.removeItem('smart_budget_activation_code');
+                }
+                // إزالة أي نسخة قديمة كانت تحمل أرقام افتراضية غير مصفرة
+                localStorage.removeItem('smart_budget_local_backup_v48');
+                localStorage.removeItem('budget_smart_app_data_v1');
+
+                // حفظ النسخة المحلية الجديدة
+                localStorage.setItem('smart_budget_local_backup_v62', JSON.stringify({
                     monthlyBudget: APP_STATE.monthlyBudget,
                     dailyBudget: APP_STATE.dailyBudget,
                     bankBalance: APP_STATE.bankBalance,
                     currency: APP_STATE.currency,
+                    activationCode: APP_STATE.activationCode || '',
                     emergencySaved: APP_STATE.emergencySaved,
                     emergencyFundHistory: APP_STATE.emergencyFundHistory,
                     savingsHistory: APP_STATE.savingsHistory,
@@ -3763,23 +3819,55 @@
 
         function loadLocalData() {
             try {
+                // تنظيف أي بقايا قديمة من مفاتيح الإصدارات السابقة
+                localStorage.removeItem('budget_smart_app_data_v1');
+
+                const isLoggedOutFlag = localStorage.getItem('smart_budget_is_logged_out') === '1';
                 const savedSession = localStorage.getItem('smart_budget_auth_session');
-                if (savedSession) {
+
+                if (savedSession && !isLoggedOutFlag) {
                     APP_STATE.userAuth = JSON.parse(savedSession);
+                } else {
+                    APP_STATE.userAuth = null;
                 }
-                const savedPin = localStorage.getItem('smart_budget_app_pin');
-                if (savedPin) {
-                    APP_STATE.appPin = savedPin;
+
+                // إذا كان المستخدم قد سجل خروجاً من التطبيق، نضمن عدم تحميل أي رمز قفل أو بيانات حساب سابقة عند إعادة تشغيل التطبيق
+                if (isLoggedOutFlag && !APP_STATE.userAuth) {
+                    localStorage.removeItem('smart_budget_app_pin');
+                    localStorage.removeItem('smart_budget_local_backup_v48');
+                    localStorage.removeItem('smart_budget_persistent_notifs');
+                    localStorage.removeItem('smart_budget_receipt_images');
+                    localStorage.removeItem('smart_budget_activation_code');
+                    APP_STATE.appPin = null;
+                    APP_STATE.activationCode = '';
+                } else {
+                    const savedPin = localStorage.getItem('smart_budget_app_pin');
+                    APP_STATE.appPin = savedPin ? savedPin : null;
+                    const savedActCode = localStorage.getItem('smart_budget_activation_code');
+                    APP_STATE.activationCode = savedActCode || '';
+                    const savedNotifs = localStorage.getItem('smart_budget_persistent_notifs');
+                    if (savedNotifs) {
+                        APP_STATE.notifications = JSON.parse(savedNotifs);
+                    }
                 }
-                const savedNotifs = localStorage.getItem('smart_budget_persistent_notifs');
-                if (savedNotifs) {
-                    APP_STATE.notifications = JSON.parse(savedNotifs);
-                }
-                const savedBackup = localStorage.getItem('smart_budget_local_backup_v48');
-                if (savedBackup) {
-                    const parsedBackup = JSON.parse(savedBackup);
+
+                const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v62');
+                const savedBackupLegacy = !isLoggedOutFlag ? localStorage.getItem('smart_budget_local_backup_v48') : null;
+                const backupRaw = savedBackupV62 || savedBackupLegacy;
+
+                if (backupRaw) {
+                    const parsedBackup = JSON.parse(backupRaw);
+                    sanitizeLegacyDefaultBudgets(parsedBackup);
                     Object.assign(APP_STATE, parsedBackup);
+                } else {
+                    resetAppStateToDefault();
                 }
+
+                if (savedBackupLegacy) {
+                    localStorage.removeItem('smart_budget_local_backup_v48');
+                    saveLocalData(true);
+                }
+
                 const savedGeminiKey = localStorage.getItem('smart_budget_gemini_key');
                 APP_STATE.geminiApiKey = savedGeminiKey || 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
 
@@ -3816,7 +3904,7 @@
 
         let pendingRecoveredAccount = { phone: '', email: '' };
 
-        // حفظ واسترجاع ربط رقم الجوال بالبريد الإلكتروني محلياً كنسخة مساندة للسحابة
+        // حفظ واسترجاع ربط رقم الجوال بالبريد الإلكتروني + تعريف الجهاز الموثوق لعدم طلب رمز تحقق جديد لنفس الجهاز
         function savePhoneEmailMappingLocally(phone, email) {
             if (!phone || !email) return;
             try {
@@ -3826,6 +3914,34 @@
                 map[phoneKey] = String(email).trim().toLowerCase();
                 localStorage.setItem('smart_budget_phone_email_map', JSON.stringify(map));
             } catch (e) {}
+        }
+
+        function markDeviceRecognizedForAccount(phone, email) {
+            if (!phone) return;
+            try {
+                const phoneKey = String(phone).replace(/[^0-9+]/g, '');
+                const raw = localStorage.getItem('smart_budget_recognized_devices') || '{}';
+                const map = JSON.parse(raw);
+                map[phoneKey] = {
+                    phone: String(phone).trim(),
+                    email: String(email || getPhoneEmailMappingLocally(phoneKey) || '').trim().toLowerCase(),
+                    recognizedAt: new Date().toISOString()
+                };
+                localStorage.setItem('smart_budget_recognized_devices', JSON.stringify(map));
+                localStorage.setItem('smart_budget_device_has_registered', '1');
+            } catch (e) {}
+        }
+
+        function getRecognizedDeviceAccount(phone) {
+            if (!phone) return null;
+            try {
+                const phoneKey = String(phone).replace(/[^0-9+]/g, '');
+                const raw = localStorage.getItem('smart_budget_recognized_devices') || '{}';
+                const map = JSON.parse(raw);
+                return map[phoneKey] || null;
+            } catch (e) {
+                return null;
+            }
         }
 
         function getPhoneEmailMappingLocally(phone) {
@@ -3967,13 +4083,13 @@
                     badge.innerHTML = `<i class="fas fa-link"></i> مربوط بـ <span dir="ltr">${APP_STATE.userAuth.phone}</span>`;
                 }
             } else {
-                if (phoneInp && !phoneInp.value) phoneInp.value = '';
-                if (emailInp && !emailInp.value) emailInp.value = '';
+                if (phoneInp) phoneInp.value = '';
+                if (emailInp) emailInp.value = '';
                 if (badge) {
                     badge.style.background = 'rgba(245,158,11,0.12)';
                     badge.style.color = 'var(--warning)';
                     badge.style.borderColor = 'rgba(245,158,11,0.3)';
-                    badge.innerHTML = '<i class="fas fa-circle-info"></i> أدخل الرقم والبريد للربط';
+                    badge.innerHTML = '<i class="fas fa-circle-info"></i> غير مسجل';
                 }
             }
         }
@@ -4076,12 +4192,31 @@
 
         async function sendAuthOtpEmail() {
             const phone = toEnglishDigitsClean(document.getElementById('auth-input-phone').value).trim();
-            const email = document.getElementById('auth-input-email').value.trim().toLowerCase();
+            const emailInputVal = document.getElementById('auth-input-email').value.trim().toLowerCase();
 
             if (!phone || phone.length < 7) {
                 showToast('يرجى إدخال رقم جوال صحيح أولاً', 'warning');
                 return;
             }
+
+            // إذا كان هذا الجهاز متعرفاً عليه مسبقاً لهذا الرقم، نسجل الدخول مباشرة بدون الحاجة لإرسال رمز تحقق جديد
+            const recognized = getRecognizedDeviceAccount(phone);
+            if (recognized && (!emailInputVal || ! recognized.email || emailInputVal === recognized.email)) {
+                const finalEmail = emailInputVal || recognized.email || getPhoneEmailMappingLocally(phone) || '';
+                APP_STATE.userAuth = { phone, email: finalEmail, linkedAt: new Date().toISOString() };
+                localStorage.removeItem('smart_budget_is_logged_out');
+                localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
+                markDeviceRecognizedForAccount(phone, finalEmail);
+                saveLocalData(true);
+                updateAuthHeaderLabel();
+                renderLinkedAccountSettings();
+                closeModal('userAuthModal');
+                await subscribeToActiveCloudDocument();
+                showToast(`تم التعرف على جهازك وتسجيل الدخول مباشرة برقم (${phone}) بنجاح! 📱✅`, 'success');
+                return;
+            }
+
+            const email = emailInputVal;
             // إذا ترك المستخدم البريد فارغاً وضغط إرسال، نساعده تلقائياً بميزة "نسيت البريد الإلكتروني"
             if (!email || !email.includes('@')) {
                 await lookupForgottenEmailByPhone();
@@ -4165,6 +4300,8 @@
             const { phone, email } = pendingAuthData;
             APP_STATE.userAuth = { phone, email, linkedAt: new Date().toISOString() };
             savePhoneEmailMappingLocally(phone, email);
+            markDeviceRecognizedForAccount(phone, email);
+            localStorage.removeItem('smart_budget_is_logged_out');
             
             // حفظ الجلسة بشكل مستمر في LocalStorage ليبقى متصلاً دائماً
             localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
@@ -4176,19 +4313,56 @@
             // إعادة ربط المستمع السحابي بملف رقم الجوال الخاص بالمستخدم
             await subscribeToActiveCloudDocument();
 
-            showToast(`تم التحقق وربط الحساب بنجاح برقم الجوال (${phone}) 📱`, 'success');
+            showToast(`تم التحقق وربط الحساب والتعرف على الجهاز بنجاح برقم (${phone}) 📱`, 'success');
         }
 
         async function logoutUserSession() {
+            // حفظ تعريف الجهاز فقط قبل مسح بيانات الحساب لكي يتعرف الجهاز على نفسه لاحقاً بدون الحاجة لرمز تحقق جديد
+            if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                markDeviceRecognizedForAccount(APP_STATE.userAuth.phone, APP_STATE.userAuth.email);
+            }
+
             if (unsubscribeCloudSnapshot) {
                 unsubscribeCloudSnapshot();
                 unsubscribeCloudSnapshot = null;
             }
-            localStorage.removeItem('smart_budget_auth_session');
-            localStorage.removeItem('budget_smart_app_data_v1');
+
+            // تصفير الحساب والرمز السري وكافة البيانات الشخصية بالكامل من الذاكرة والتخزين المحلي
             APP_STATE.userAuth = null;
+            APP_STATE.appPin = null;
+            APP_STATE.activationCode = '';
             resetAppStateToDefault();
+
+            try {
+                localStorage.setItem('smart_budget_is_logged_out', '1');
+                localStorage.removeItem('smart_budget_auth_session');
+                localStorage.removeItem('budget_smart_app_data_v1');
+                localStorage.removeItem('smart_budget_local_backup_v48');
+                localStorage.removeItem('smart_budget_local_backup_v62');
+                localStorage.removeItem('smart_budget_app_pin');
+                localStorage.removeItem('smart_budget_persistent_notifs');
+                localStorage.removeItem('smart_budget_receipt_images');
+                localStorage.removeItem('smart_budget_activation_code');
+            } catch (e) {}
+
+            // حفظ الحالة المصفرة النظيفة محلياً بدون مزامنة سحابية حتى لا تعود البيانات عند قفل وتشغيل التطبيق
+            saveLocalData(true);
+
+            // تنظيف كافة الحقول الشخصية في الإعدادات وشاشة القفل والمحادثة الذكية
+            const phoneInp = document.getElementById('settings-linked-phone-input');
+            const emailInp = document.getElementById('settings-linked-email-input');
+            const actInp = document.getElementById('settings-activation-code-input');
+            const lockScreen = document.getElementById('pinLockScreen');
+            if (phoneInp) phoneInp.value = '';
+            if (emailInp) emailInp.value = '';
+            if (actInp) actInp.value = '';
+            if (lockScreen) lockScreen.style.display = 'none';
+
             updateAuthHeaderLabel();
+            renderPinSettings();
+            renderLinkedAccountSettings();
+            renderActivationCodeSettings();
+            if (typeof resetFinexyAiChat === 'function') resetFinexyAiChat();
             closeModal('userAuthModal');
 
             renderDashboard();
@@ -4201,12 +4375,13 @@
             updateCharts();
             updateCloudSyncStatusBadge();
 
-            showToast('تم تسجيل الخروج ومسح البيانات محلياً من الجهاز بنجاح', 'info');
+            showToast('تم تسجيل الخروج وتصفير كافة البيانات والرمز السري بالكامل كحساب جديد', 'info');
         }
 
         function applyCloudDataToAppState(cloudData) {
             if (!cloudData) return;
             isSyncingFromCloud = true;
+            sanitizeLegacyDefaultBudgets(cloudData);
             if (cloudData.monthlyBudget !== undefined) APP_STATE.monthlyBudget = cloudData.monthlyBudget;
             if (cloudData.dailyBudget !== undefined) APP_STATE.dailyBudget = cloudData.dailyBudget;
             if (cloudData.bankBalance !== undefined) APP_STATE.bankBalance = cloudData.bankBalance;
@@ -4370,39 +4545,32 @@
         }
 
         function executeClearAllAppData() {
-            localStorage.removeItem('budget_smart_app_data_v1');
-            APP_STATE.monthlyBudget = 8000;
-            APP_STATE.dailyBudget = 266;
-            APP_STATE.bankBalance = 0;
-            APP_STATE.emergencySaved = 0;
-            APP_STATE.emergencyFundHistory = [];
-            APP_STATE.savingsHistory = [];
-            try { localStorage.removeItem('smart_budget_receipt_images'); localStorage.removeItem('smart_budget_local_backup_v48'); } catch(e) {}
-            APP_STATE.splitBills = [];
-            APP_STATE.debts = [];
-            APP_STATE.expenses = [];
-            APP_STATE.savingsGoals = [];
-            APP_STATE.recurringExpenses = [];
-            APP_STATE.notifications = [];
-            APP_STATE.geminiApiKey = 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
-            APP_STATE.categories = [
-                { id: 'cat-1', name: 'المقاضي والمواد الغذائية', budget: 2000, icon: 'fa-shopping-basket' },
-                { id: 'cat-2', name: 'السيارة والبنزين', budget: 800, icon: 'fa-car' },
-                { id: 'cat-3', name: 'الفواتير والالتزامات', budget: 1500, icon: 'fa-file-invoice' },
-                { id: 'cat-4', name: 'المطاعم والترفيه', budget: 1200, icon: 'fa-utensils' }
-            ];
+            try {
+                localStorage.removeItem('budget_smart_app_data_v1');
+                localStorage.removeItem('smart_budget_receipt_images');
+                localStorage.removeItem('smart_budget_local_backup_v48');
+                localStorage.removeItem('smart_budget_local_backup_v62');
+                localStorage.removeItem('smart_budget_app_pin');
+                localStorage.removeItem('smart_budget_persistent_notifs');
+                localStorage.removeItem('smart_budget_activation_code');
+            } catch(e) {}
+            resetAppStateToDefault();
 
             saveLocalData(false);
             updateAuthHeaderLabel();
+            renderPinSettings();
+            renderActivationCodeSettings();
             closeModal('confirmClearDataModal');
             renderDashboard();
             renderCategories();
             renderRecentExpenses();
             renderCalendar();
             renderDebtsPage();
+            renderSavingsPage();
+            renderNotifications();
             updateCharts();
             switchPage('dashboard');
-            showToast('تم مسح كافة البيانات وإعادة ضبط المصنع بنجاح!', 'success');
+            showToast('تم مسح وتصفير كافة البيانات وإعادة ضبط المصنع بنجاح!', 'success');
         }
 
         function switchPage(pageId) {
@@ -4460,6 +4628,7 @@
             if (pageId === 'reports') { generateWeeklyFinancialSummary(); renderReportLivePreview(); }
             if (pageId === 'settings') {
                 renderPinSettings(); // تحديث واجهة الرمز السري
+                renderActivationCodeSettings(); // تحديث خانة كود تفعيل الحساب
                 renderLinkedAccountSettings(); // تحديث واجهة البريد الإلكتروني المربوط بالحساب
                 syncCurrencySettingsUI(); // تحديث قائمة العملات وأزرار الاختيار السريع
                 const gemInput = document.getElementById('settings-gemini-key-input');
@@ -8558,6 +8727,51 @@ Return JSON:
             reader.readAsText(file);
         }
 
+        // --- خانة كود تفعيل الحساب (واجهة جاهزة للتطوير المستقبلي) ---
+        function renderActivationCodeSettings() {
+            const inp = document.getElementById('settings-activation-code-input');
+            const badge = document.getElementById('settings-activation-code-badge');
+            const st = document.getElementById('settings-activation-code-status');
+            if (st) st.style.display = 'none';
+            const code = (APP_STATE.activationCode || '').trim();
+            if (inp) inp.value = code;
+            if (badge) {
+                if (code) {
+                    badge.style.background = 'rgba(16,185,129,0.12)';
+                    badge.style.color = 'var(--success)';
+                    badge.style.borderColor = 'rgba(16,185,129,0.3)';
+                    badge.innerHTML = '<i class="fas fa-check-circle"></i> تم إدخال الكود';
+                } else {
+                    badge.style.background = 'rgba(245,158,11,0.12)';
+                    badge.style.color = 'var(--warning)';
+                    badge.style.borderColor = 'rgba(245,158,11,0.3)';
+                    badge.innerHTML = 'بانتظار التفعيل';
+                }
+            }
+        }
+
+        function saveAccountActivationCodeField() {
+            const inp = document.getElementById('settings-activation-code-input');
+            const st = document.getElementById('settings-activation-code-status');
+            const val = (inp ? inp.value : '').trim();
+            if (!val) {
+                showToast('يرجى إدخال كود التفعيل في الخانة المخصصة أولاً', 'warning');
+                if (inp) inp.focus();
+                return;
+            }
+            APP_STATE.activationCode = val;
+            saveLocalData();
+            renderActivationCodeSettings();
+            if (st) {
+                st.style.display = 'block';
+                st.style.background = 'rgba(16,185,129,0.1)';
+                st.style.border = '1px solid rgba(16,185,129,0.3)';
+                st.style.color = 'var(--success)';
+                st.innerHTML = `✅ تم حفظ كود التفعيل (<span dir="ltr">${val}</span>) في الخانة المخصصة بنجاح.`;
+            }
+            showToast('تم حفظ كود التفعيل في الخانة المخصصة بنجاح! 🔑', 'success');
+        }
+
         // --- وظائف الرمز السري للقفل (PIN Lock) ---
         function renderPinSettings() {
             const container = document.getElementById('pin-settings-actions');
@@ -8654,8 +8868,9 @@ Return JSON:
             /* تشغيل الاتصال التلقائي بالسحابة وتفعيل الذكاء الاصطناعي مباشرة بعد فك القفل */
             initAutomaticCloudConnection();
 
-            /* فتح نافذة تسجيل الدخول تلقائياً إذا لم يكن المستخدم مسجلاً من قبل */
-            if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+            /* إذا كان الجهاز متعرفاً عليه مسبقاً أو قام المستخدم بتسجيل الخروج، لا نفتح نافذة طلب تسجيل الدخول تلقائياً */
+            const isDeviceRecognizedOrLoggedOut = localStorage.getItem('smart_budget_is_logged_out') === '1' || localStorage.getItem('smart_budget_device_has_registered') === '1';
+            if ((!APP_STATE.userAuth || !APP_STATE.userAuth.phone) && !isDeviceRecognizedOrLoggedOut) {
                 setTimeout(() => {
                     openUserAuthModal();
                 }, 400); 
@@ -9626,7 +9841,7 @@ self.addEventListener('fetch', (e) => {
                 };
                 zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pwa-v61';
+                const swJs = `const CACHE_NAME = 'finexy-pwa-v62';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
@@ -9661,8 +9876,9 @@ self.addEventListener('fetch', (e) => {
             initSavedThemeMode();
             initInstallablePwaSetup();
             loadLocalData();
-            if (APP_STATE.userAuth && APP_STATE.userAuth.phone && APP_STATE.userAuth.email) {
-                savePhoneEmailMappingLocally(APP_STATE.userAuth.phone, APP_STATE.userAuth.email);
+            if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                if (APP_STATE.userAuth.email) savePhoneEmailMappingLocally(APP_STATE.userAuth.phone, APP_STATE.userAuth.email);
+                markDeviceRecognizedForAccount(APP_STATE.userAuth.phone, APP_STATE.userAuth.email || '');
             }
             syncAllCurrencyLabels();
             renderLinkedAccountSettings();
