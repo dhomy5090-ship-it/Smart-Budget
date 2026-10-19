@@ -4525,12 +4525,10 @@
             if (Array.isArray(cloudData.debts)) APP_STATE.debts = cloudData.debts;
             if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) APP_STATE.categories = cloudData.categories;
             if (Array.isArray(cloudData.expenses)) {
-                // دمج المصروفات المحلية المسجلة حديثاً (خلال آخر 5 ثوانٍ أو أثناء انتظار الرفع) حتى لا تضيع أي عملية صرف أبداً
-                const localRecent = (hasPendingCloudSave || isSavingToCloud || (Date.now() - lastLocalMutationTime < 5000))
-                    ? (APP_STATE.expenses || [])
-                    : [];
-                const cloudIds = new Set(cloudData.expenses.map(e => e && e.id));
-                const unsyncedLocal = localRecent.filter(e => e && e.id && !cloudIds.has(e.id));
+                // دمج المصروفات المحلية المسجلة على الجهاز مع المصروفات السحابية بالمعرف الفريد دائماً لمنع فقدان أي عملية عند التحديث
+                const currentLocal = Array.isArray(APP_STATE.expenses) ? APP_STATE.expenses : [];
+                const cloudIds = new Set(cloudData.expenses.map(e => e && e.id).filter(Boolean));
+                const unsyncedLocal = currentLocal.filter(e => e && e.id && !cloudIds.has(e.id));
                 APP_STATE.expenses = [...unsyncedLocal, ...cloudData.expenses];
                 if (unsyncedLocal.length > 0) {
                     hasPendingCloudSave = true;
@@ -6704,6 +6702,7 @@ Return JSON:
             APP_STATE.expenses.unshift(newExpObj);
             currentPendingReceiptDataUrl = null;
 
+            saveLocalData();
             addNotification(`تم تسجيل مصروف جديد بقيمة ${formatEn(amt)} في ${str} (${cat})`, 'success');
             closeModal('expenseModal');
             renderDashboard();
@@ -7077,6 +7076,7 @@ Return JSON:
                 bank: method !== 'كاش' ? bank : ''
             });
 
+            saveLocalData();
             addNotification(`⚡ مصروف سريع: ${formatEn(amount)} - ${storeName} (${category} • ${method})`, 'success');
             closeModal('quickExpenseModal'); 
             renderDashboard(); 
