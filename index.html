@@ -2032,7 +2032,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.2</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.3</div>
             </div>
         </div>
 
@@ -2544,11 +2544,11 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
                         <div>
                             <h3 style="margin:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.2</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.3</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 12px; padding: 6px 12px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.2</div>
+                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.3</div>
                         </div>
                     </div>
                     
@@ -2650,9 +2650,9 @@
                         <div id="settings-activation-code-status" style="display:none; margin-top:8px; padding:10px 12px; border-radius:12px; font-size:0.82em; font-weight:700;"></div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div class="form-group" id="settings-pin-group" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                         <label><i class="fas fa-lock text-primary"></i> قفل التطبيق (الرمز السري):</label>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">حماية بياناتك المالية باستخدام رمز مرور (PIN) عند فتح التطبيق.</p>
+                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">حماية بياناتك المالية باستخدام رمز مرور (PIN) عند فتح التطبيق (مرتبط بحسابك المسجل، ويُحذف تلقائياً عند تسجيل الخروج).</p>
                         <div style="display:flex; gap:10px; flex-wrap:wrap;" id="pin-settings-actions">
                             <!-- سيتم حقن أزرار الإعداد برمجياً هنا -->
                         </div>
@@ -2674,7 +2674,7 @@
                         <div id="gemini-key-test-result" style="font-size:0.8em; margin-top:8px; display:none; padding:10px 12px; border-radius:12px;"></div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div class="form-group" id="settings-linked-account-group" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
                             <label style="margin:0;"><i class="fas fa-envelope-circle-check text-primary"></i> البريد الإلكتروني المربوط بالحساب ورقم الجوال:</label>
                             <span id="settings-linked-account-badge" class="btn-edit-badge" style="font-size:0.75em;">غير مسجل</span>
@@ -3779,9 +3779,10 @@
                 } else {
                     localStorage.removeItem('smart_budget_auth_session');
                 }
-                if (APP_STATE.appPin) {
+                if (APP_STATE.userAuth && APP_STATE.userAuth.phone && APP_STATE.appPin) {
                     localStorage.setItem('smart_budget_app_pin', APP_STATE.appPin);
                 } else {
+                    APP_STATE.appPin = null;
                     localStorage.removeItem('smart_budget_app_pin');
                 }
                 if (APP_STATE.geminiApiKey) {
@@ -3797,7 +3798,7 @@
                 localStorage.removeItem('budget_smart_app_data_v1');
 
                 // حفظ النسخة المحلية الجديدة
-                localStorage.setItem('smart_budget_local_backup_v62', JSON.stringify({
+                localStorage.setItem('smart_budget_local_backup_v63', JSON.stringify({
                     monthlyBudget: APP_STATE.monthlyBudget,
                     dailyBudget: APP_STATE.dailyBudget,
                     bankBalance: APP_STATE.bankBalance,
@@ -3831,10 +3832,12 @@
                     APP_STATE.userAuth = null;
                 }
 
-                // إذا كان المستخدم قد سجل خروجاً من التطبيق، نضمن عدم تحميل أي رمز قفل أو بيانات حساب سابقة عند إعادة تشغيل التطبيق
-                if (isLoggedOutFlag && !APP_STATE.userAuth) {
+                // إذا لم يكن هناك حساب مسجل دخول حالياً (أو تم تسجيل الخروج)، نحذف رمز الـ PIN تماماً ولا نقفل التطبيق أبداً
+                if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone || isLoggedOutFlag) {
                     localStorage.removeItem('smart_budget_app_pin');
                     localStorage.removeItem('smart_budget_local_backup_v48');
+                    localStorage.removeItem('smart_budget_local_backup_v62');
+                localStorage.removeItem('smart_budget_local_backup_v63');
                     localStorage.removeItem('smart_budget_persistent_notifs');
                     localStorage.removeItem('smart_budget_receipt_images');
                     localStorage.removeItem('smart_budget_activation_code');
@@ -3851,16 +3854,20 @@
                     }
                 }
 
-                const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v62');
+                const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v63');
                 const savedBackupLegacy = !isLoggedOutFlag ? localStorage.getItem('smart_budget_local_backup_v48') : null;
                 const backupRaw = savedBackupV62 || savedBackupLegacy;
 
-                if (backupRaw) {
+                if (backupRaw && (!isLoggedOutFlag || (APP_STATE.userAuth && APP_STATE.userAuth.phone))) {
                     const parsedBackup = JSON.parse(backupRaw);
                     sanitizeLegacyDefaultBudgets(parsedBackup);
                     Object.assign(APP_STATE, parsedBackup);
                 } else {
                     resetAppStateToDefault();
+                }
+                if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+                    APP_STATE.appPin = null;
+                    localStorage.removeItem('smart_budget_app_pin');
                 }
 
                 if (savedBackupLegacy) {
@@ -4067,6 +4074,7 @@
 
         // تحديث واجهة البريد الإلكتروني المربوط داخل الإعدادات
         function renderLinkedAccountSettings() {
+            const groupEl = document.getElementById('settings-linked-account-group');
             const phoneInp = document.getElementById('settings-linked-phone-input');
             const emailInp = document.getElementById('settings-linked-email-input');
             const badge = document.getElementById('settings-linked-account-badge');
@@ -4074,6 +4082,7 @@
             if (statusBox) statusBox.style.display = 'none';
 
             if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                if (groupEl) groupEl.style.display = 'block';
                 if (phoneInp) phoneInp.value = APP_STATE.userAuth.phone;
                 if (emailInp) emailInp.value = APP_STATE.userAuth.email || '';
                 if (badge) {
@@ -4083,6 +4092,7 @@
                     badge.innerHTML = `<i class="fas fa-link"></i> مربوط بـ <span dir="ltr">${APP_STATE.userAuth.phone}</span>`;
                 }
             } else {
+                if (groupEl) groupEl.style.display = 'none';
                 if (phoneInp) phoneInp.value = '';
                 if (emailInp) emailInp.value = '';
                 if (badge) {
@@ -4209,6 +4219,7 @@
                 markDeviceRecognizedForAccount(phone, finalEmail);
                 saveLocalData(true);
                 updateAuthHeaderLabel();
+                renderPinSettings();
                 renderLinkedAccountSettings();
                 closeModal('userAuthModal');
                 await subscribeToActiveCloudDocument();
@@ -4307,6 +4318,7 @@
             localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
             saveLocalData(true);
             updateAuthHeaderLabel();
+            renderPinSettings();
             renderLinkedAccountSettings();
             closeModal('userAuthModal');
 
@@ -4317,14 +4329,29 @@
         }
 
         async function logoutUserSession() {
+            const prevPhone = (APP_STATE.userAuth && APP_STATE.userAuth.phone) ? APP_STATE.userAuth.phone : '';
+            const prevEmail = (APP_STATE.userAuth && APP_STATE.userAuth.email) ? APP_STATE.userAuth.email : '';
+
             // حفظ تعريف الجهاز فقط قبل مسح بيانات الحساب لكي يتعرف الجهاز على نفسه لاحقاً بدون الحاجة لرمز تحقق جديد
-            if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
-                markDeviceRecognizedForAccount(APP_STATE.userAuth.phone, APP_STATE.userAuth.email);
+            if (prevPhone) {
+                markDeviceRecognizedForAccount(prevPhone, prevEmail);
             }
 
             if (unsubscribeCloudSnapshot) {
                 unsubscribeCloudSnapshot();
                 unsubscribeCloudSnapshot = null;
+            }
+
+            // حذف رمز الـ PIN من السحابة أيضاً عند تسجيل الخروج لكي يصبح التطبيق مفتوحاً بالكامل وغير مقفل
+            if (prevPhone && isCloudConnected && firestoreDb && FB) {
+                try {
+                    const phoneKey = prevPhone.replace(/[^0-9+]/g, '');
+                    APP_STATE.appPin = null;
+                    await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), {
+                        state: Object.assign({}, APP_STATE, { appPin: null }),
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                } catch (eCloudPin) {}
             }
 
             // تصفير الحساب والرمز السري وكافة البيانات الشخصية بالكامل من الذاكرة والتخزين المحلي
@@ -4339,6 +4366,8 @@
                 localStorage.removeItem('budget_smart_app_data_v1');
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('smart_budget_local_backup_v62');
+                localStorage.removeItem('smart_budget_local_backup_v63');
+                localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_app_pin');
                 localStorage.removeItem('smart_budget_persistent_notifs');
                 localStorage.removeItem('smart_budget_receipt_images');
@@ -4348,15 +4377,21 @@
             // حفظ الحالة المصفرة النظيفة محلياً بدون مزامنة سحابية حتى لا تعود البيانات عند قفل وتشغيل التطبيق
             saveLocalData(true);
 
-            // تنظيف كافة الحقول الشخصية في الإعدادات وشاشة القفل والمحادثة الذكية
+            // تنظيف كافة الحقول الشخصية وإغلاق وإخفاء شاشة وخانة الـ PIN بالكامل
             const phoneInp = document.getElementById('settings-linked-phone-input');
             const emailInp = document.getElementById('settings-linked-email-input');
             const actInp = document.getElementById('settings-activation-code-input');
             const lockScreen = document.getElementById('pinLockScreen');
+            const pinSetupModal = document.getElementById('pinSetupModal');
+            const unlockPinInp = document.getElementById('unlock-pin-input');
+            const setupPinInp = document.getElementById('setup-pin-input');
             if (phoneInp) phoneInp.value = '';
             if (emailInp) emailInp.value = '';
             if (actInp) actInp.value = '';
+            if (unlockPinInp) unlockPinInp.value = '';
+            if (setupPinInp) setupPinInp.value = '';
             if (lockScreen) lockScreen.style.display = 'none';
+            if (pinSetupModal) pinSetupModal.style.display = 'none';
 
             updateAuthHeaderLabel();
             renderPinSettings();
@@ -4549,7 +4584,7 @@
                 localStorage.removeItem('budget_smart_app_data_v1');
                 localStorage.removeItem('smart_budget_receipt_images');
                 localStorage.removeItem('smart_budget_local_backup_v48');
-                localStorage.removeItem('smart_budget_local_backup_v62');
+                localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_app_pin');
                 localStorage.removeItem('smart_budget_persistent_notifs');
                 localStorage.removeItem('smart_budget_activation_code');
@@ -8774,9 +8809,23 @@ Return JSON:
 
         // --- وظائف الرمز السري للقفل (PIN Lock) ---
         function renderPinSettings() {
+            const pinGroup = document.getElementById('settings-pin-group');
             const container = document.getElementById('pin-settings-actions');
-            if(!container) return;
-            if(APP_STATE.appPin) {
+            if (!container) return;
+
+            // إذا كان المستخدم مسجلاً للخروج (لا يوجد حساب نشط)، تُحذف وتختفي خانة الـ PIN بالكامل ويكون التطبيق مفتوحاً
+            if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+                APP_STATE.appPin = null;
+                try { localStorage.removeItem('smart_budget_app_pin'); } catch (e) {}
+                if (pinGroup) pinGroup.style.display = 'none';
+                container.innerHTML = '';
+                const lockScreen = document.getElementById('pinLockScreen');
+                if (lockScreen) lockScreen.style.display = 'none';
+                return;
+            }
+
+            if (pinGroup) pinGroup.style.display = 'block';
+            if (APP_STATE.appPin) {
                 container.innerHTML = `
                     <button type="button" class="action-btn" onclick="openPinSetupModal()"><i class="fas fa-key"></i> تغيير الرمز</button>
                     <button type="button" class="btn-edit-badge" style="background:rgba(239,68,68,0.1); color:var(--danger); border-color:rgba(239,68,68,0.3); padding:10px 16px;" onclick="removeAppPin()"><i class="fas fa-trash"></i> إزالة الرمز السري</button>
@@ -8789,11 +8838,21 @@ Return JSON:
         }
 
         function openPinSetupModal() {
+            if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+                showToast('يرجى تسجيل الدخول بحسابك أولاً لتفعيل رمز القفل', 'warning');
+                return;
+            }
             document.getElementById('setup-pin-input').value = '';
             openModal('pinSetupModal');
         }
 
         function saveAppPinCode() {
+            if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+                APP_STATE.appPin = null;
+                closeModal('pinSetupModal');
+                renderPinSettings();
+                return;
+            }
             const pin = document.getElementById('setup-pin-input').value.trim();
             if(pin.length < 4 || isNaN(pin)) {
                 showToast('يرجى إدخال رمز مكون من 4 أرقام على الأقل', 'warning');
@@ -8808,8 +8867,11 @@ Return JSON:
 
         function removeAppPin() {
             APP_STATE.appPin = null;
+            try { localStorage.removeItem('smart_budget_app_pin'); } catch (e) {}
             saveLocalData();
             renderPinSettings();
+            const lockScreen = document.getElementById('pinLockScreen');
+            if (lockScreen) lockScreen.style.display = 'none';
             showToast('تمت إزالة الرمز السري وإلغاء القفل', 'info');
         }
 
@@ -9773,7 +9835,7 @@ self.addEventListener('fetch', (e) => {
         function getCleanStandaloneHtmlString() {
             const cloneDoc = document.documentElement.cloneNode(true);
             cloneDoc.querySelectorAll('.modal').forEach(m => {
-                if (m.id !== 'pinLockScreen') m.style.display = 'none';
+                m.style.display = 'none';
             });
             cloneDoc.querySelectorAll('.top-dropdown-wrapper').forEach(w => w.classList.remove('open'));
             return '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
@@ -9841,7 +9903,7 @@ self.addEventListener('fetch', (e) => {
                 };
                 zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pwa-v62';
+                const swJs = `const CACHE_NAME = 'finexy-pwa-v63';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
@@ -9907,11 +9969,17 @@ self.addEventListener('fetch', (e) => {
                 }
             });
             
-            // التحقق من وجود رمز سري وتفعيل شاشة القفل أولاً
-            if (APP_STATE.appPin && APP_STATE.appPin.length >= 4) {
+            renderPinSettings();
+
+            // التحقق من وجود حساب مسجل ورمز سري معاً لتفعيل شاشة القفل، وإلا يبقى التطبيق مفتوحاً بالكامل
+            if (APP_STATE.userAuth && APP_STATE.userAuth.phone && APP_STATE.appPin && APP_STATE.appPin.length >= 4) {
                 document.getElementById('pinLockScreen').style.display = 'flex';
                 document.getElementById('unlock-pin-input').focus();
             } else {
+                APP_STATE.appPin = null;
+                try { localStorage.removeItem('smart_budget_app_pin'); } catch (e) {}
+                const lockScreen = document.getElementById('pinLockScreen');
+                if (lockScreen) lockScreen.style.display = 'none';
                 executePostUnlockInitialization();
             }
 
