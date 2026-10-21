@@ -2047,7 +2047,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.6</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.7</div>
             </div>
         </div>
 
@@ -2189,7 +2189,7 @@
                     </div>
                     <div class="v13-kpi-tile tile-dashed" onclick="openQuickKpiAnalyticsModal(true)">
                         <div class="v13-kpi-number" id="bento-kpi-tx-count" dir="ltr">0</div>
-                        <div class="v13-kpi-label">عمليات الصرف المسجلة (اضغط لعرض سجل البنود)</div>
+                        <div class="v13-kpi-label">عمليات الصرف المسجلة</div>
                     </div>
                     <div class="v13-kpi-tile tile-orange" onclick="openSavingsDetailsModal()">
                         <div class="v13-kpi-number" id="bento-kpi-savings" dir="ltr">0</div>
@@ -2369,15 +2369,30 @@
                     <div class="card" style="border: 2px dashed var(--primary-color); background: rgba(255,85,32,0.03);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                             <h3 style="margin:0; font-size:1.05em;"><i class="fas fa-calendar-alt text-primary"></i> ترحيل الفائض الشهري</h3>
-                            <span class="btn-edit-badge">شهري</span>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <button type="button" class="btn-edit-badge" id="btn-toggle-monthly-rollover-edit" onclick="toggleMonthlyRolloverCustomAmount()" title="تعديل وتحديد مبلغ مخصص للترحيل"><i class="fas fa-pen"></i> تعديل المبلغ</button>
+                                <span class="btn-edit-badge" style="cursor:default;">شهري</span>
+                            </div>
                         </div>
-                        <p style="color:var(--text-muted); font-size:0.82em; margin: 4px 0 12px 0;">تحويل الفائض المتبقي من كامل الميزانية الشهرية إلى هدفك.</p>
+                        <p style="color:var(--text-muted); font-size:0.82em; margin: 4px 0 12px 0;">تحويل الفائض المتبقي من الميزانية الشهرية بالكامل أو تحديد جزء منه للترحيل (مثلاً بداية الشهر).</p>
                         <div class="stat-row"><span>الفائض الكلي للشهر:</span><span class="stat-value text-success" id="savings-monthly-remaining" dir="ltr">0</span></div>
+                        <div id="monthly-rollover-custom-box" style="display:none; background:var(--surface-color); border:1.5px solid rgba(255,85,32,0.35); border-radius:14px; padding:10px 12px; margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label style="font-size:0.8em; font-weight:800; color:var(--primary-color); margin:0;"><i class="fas fa-sliders"></i> المبلغ المراد ترحيله الآن:</label>
+                                <button type="button" class="btn-edit-badge" style="font-size:0.7em; padding:2px 8px;" onclick="setMonthlyRolloverPreset(1)">كامل الفائض</button>
+                            </div>
+                            <input type="number" id="monthly-rollover-custom-amount" dir="ltr" placeholder="أدخل المبلغ المراد ترحيله..." style="width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--border-color); background:var(--surface-card); color:var(--text-main); font-weight:800; font-size:1em; text-align:center;">
+                            <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                                <button type="button" class="btn-edit-badge" style="flex:1; text-align:center; padding:4px 6px; font-size:0.74em;" onclick="setMonthlyRolloverPreset(0.25)">ربع الفائض (25%)</button>
+                                <button type="button" class="btn-edit-badge" style="flex:1; text-align:center; padding:4px 6px; font-size:0.74em;" onclick="setMonthlyRolloverPreset(0.5)">نصف الفائض (50%)</button>
+                                <button type="button" class="btn-edit-badge" style="flex:1; text-align:center; padding:4px 6px; font-size:0.74em;" onclick="setMonthlyRolloverPreset(0.75)">75%</button>
+                            </div>
+                        </div>
                         <div class="form-group" style="margin-top:8px; margin-bottom:10px;">
                             <label style="font-size:0.82em;">الهدف المستهدف للترحيل:</label>
                             <select id="monthly-rollover-target-goal"></select>
                         </div>
-                        <button type="button" class="primary-btn" style="width:100%; justify-content:center;" onclick="executeMonthlyRollover()"><i class="fas fa-arrow-down"></i> ترحيل الفائض الشهري الآن</button>
+                        <button type="button" class="primary-btn" style="width:100%; justify-content:center;" onclick="executeMonthlyRollover()"><i class="fas fa-arrow-down"></i> <span id="btn-monthly-rollover-label">ترحيل الفائض الشهري الآن</span></button>
                     </div>
                 </div>
 
@@ -2570,11 +2585,11 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
                         <div>
                             <h3 style="margin:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.6</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.7</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 12px; padding: 6px 12px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.6</div>
+                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.7</div>
                         </div>
                     </div>
                     
@@ -3216,30 +3231,26 @@
         </div>
     </div>
 
-    <!-- نافذة إيداع هدف مستقبلي -->
+    <!-- نافذة إيداع / سحب هدف مستقبلي -->
     <div id="goalDepositModal" class="modal">
         <div class="modal-content" style="max-width: 420px; text-align: center;">
-            <h3 style="margin-top:0;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-left:6px;">
-                    <rect x="3" y="6" width="18" height="15" rx="3"></rect>
-                    <line x1="8" y1="10" x2="16" y2="10"></line>
-                    <circle cx="12" cy="3.5" r="2.5" fill="var(--success)"></circle>
-                </svg>
-                إيداع للهدف
+            <h3 id="goal-action-modal-title" style="margin-top:0;">
+                <i class="fas fa-arrow-down text-success"></i> إيداع للهدف
             </h3>
-            <p style="font-size:0.9em; color:var(--text-muted); margin-bottom:15px;">أدخل المبلغ المراد إيداعه في هذا الهدف:</p>
+            <p id="goal-action-modal-desc" style="font-size:0.9em; color:var(--text-muted); margin-bottom:15px;">أدخل المبلغ المراد إيداعه في هذا الهدف:</p>
             <input type="hidden" id="goal-deposit-id">
+            <input type="hidden" id="goal-action-mode" value="deposit">
             <div class="form-group" style="text-align:right;">
-                <label style="font-size:0.86em; color:var(--text-muted); margin-bottom:6px;">المبلغ المراد إيداعه</label>
+                <label id="goal-action-amount-label" style="font-size:0.86em; color:var(--text-muted); margin-bottom:6px;">المبلغ المراد إيداعه</label>
                 <input type="number" id="goal-deposit-amount" dir="ltr" style="text-align:center; font-size:1.4em; font-weight:bold;" placeholder="0">
             </div>
             <div class="form-group" style="text-align:right;">
-                <label style="font-size:0.88em; font-weight:800; color:var(--text-main); margin-bottom:6px;">سبب الإيداع</label>
+                <label id="goal-action-note-label" style="font-size:0.88em; font-weight:800; color:var(--text-main); margin-bottom:6px;">سبب الإيداع</label>
                 <input type="text" id="goal-deposit-note" placeholder="اكتب سبب الإيداع..." style="text-align:right; font-weight:700;">
             </div>
             <div class="modal-actions" style="justify-content:center; gap:12px;">
                 <button type="button" class="btn-cancel" onclick="closeModal('goalDepositModal')">إلغاء</button>
-                <button type="button" class="primary-btn" onclick="confirmGoalDeposit()">إيداع الآن</button>
+                <button type="button" class="primary-btn" id="goal-action-confirm-btn" onclick="confirmGoalDeposit()">إيداع الآن</button>
             </div>
         </div>
     </div>
@@ -4061,6 +4072,7 @@
                     lastModifiedAt: APP_STATE.lastModifiedAt || 0,
                     deletedExpenseIds: (APP_STATE.deletedExpenseIds || []).slice(-200)
                 });
+                localStorage.setItem('smart_budget_local_backup_v67', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v66', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v65', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v64', backupPayload);
@@ -4082,13 +4094,14 @@
                 }
 
                 // قراءة النسخة الاحتياطية المحلية دائماً بدون مسحها عند إعادة التحميل (حتى تُحفظ المصروفات والرصيد البنكي في جميع الحالات)
+                const savedBackupV67 = localStorage.getItem('smart_budget_local_backup_v67');
                 const savedBackupV66 = localStorage.getItem('smart_budget_local_backup_v66');
                 const savedBackupV65 = localStorage.getItem('smart_budget_local_backup_v65');
                 const savedBackupV64 = localStorage.getItem('smart_budget_local_backup_v64');
                 const savedBackupV63 = localStorage.getItem('smart_budget_local_backup_v63');
                 const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v62');
                 const savedBackupLegacy = !isLoggedOutFlag ? localStorage.getItem('smart_budget_local_backup_v48') : null;
-                const backupRaw = savedBackupV66 || savedBackupV65 || savedBackupV64 || savedBackupV63 || savedBackupV62 || savedBackupLegacy;
+                const backupRaw = savedBackupV67 || savedBackupV66 || savedBackupV65 || savedBackupV64 || savedBackupV63 || savedBackupV62 || savedBackupLegacy;
 
                 if (backupRaw) {
                     const parsedBackup = JSON.parse(backupRaw);
@@ -4128,7 +4141,7 @@
                     if (savedActCode) APP_STATE.activationCode = savedActCode;
                 }
 
-                if (savedBackupLegacy || (!savedBackupV66 && backupRaw)) {
+                if (savedBackupLegacy || (!savedBackupV67 && backupRaw)) {
                     localStorage.removeItem('smart_budget_local_backup_v48');
                     saveLocalData(true);
                 }
@@ -4633,6 +4646,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v62');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v67');
                 localStorage.removeItem('smart_budget_local_backup_v66');
                 localStorage.removeItem('smart_budget_local_backup_v65');
                 localStorage.removeItem('smart_budget_last_modified_at');
@@ -4959,6 +4973,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v67');
                 localStorage.removeItem('smart_budget_local_backup_v66');
                 localStorage.removeItem('smart_budget_local_backup_v65');
                 localStorage.removeItem('smart_budget_last_modified_at');
@@ -5161,10 +5176,25 @@
                 .filter(r => r && r.type === 'withdraw')
                 .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
         }
+        function calculateUnlinkedEmergencyWithdrawalsTotal() {
+            const exps = APP_STATE.expenses || [];
+            return (APP_STATE.emergencyFundHistory || [])
+                .filter(r => r && r.type === 'withdraw' && !r.linkedExpenseId && !exps.some(e => String(e.linkedEmergencyId) === String(r.id)))
+                .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+        }
+        function calculateMonthlyRolloverTotal() {
+            return (APP_STATE.savingsHistory || [])
+                .filter(r => r && r.isMonthlyRollover)
+                .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0) +
+                (APP_STATE.emergencyFundHistory || [])
+                .filter(r => r && r.isMonthlyRollover)
+                .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+        }
         function calculateMonthlyRemaining() {
             const mSpent = calculateMonthlySpent();
-            const emWithdrawn = calculateEmergencyWithdrawalsTotal();
-            return (parseFloat(APP_STATE.monthlyBudget) || 0) - mSpent - emWithdrawn;
+            const unlinkedEmWithdrawn = calculateUnlinkedEmergencyWithdrawalsTotal();
+            const rolledOverMonthly = calculateMonthlyRolloverTotal();
+            return (parseFloat(APP_STATE.monthlyBudget) || 0) - mSpent - unlinkedEmWithdrawn - rolledOverMonthly;
         }
         function calculateDailySpent() {
             const todayStr = getLocalTodayDateStr();
@@ -5931,12 +5961,28 @@
             const data = [];
             let categoryData = [];
 
+            const knownCatNames = new Set();
             (APP_STATE.categories || []).forEach(c => {
+                knownCatNames.add(c.name);
                 const catExps = (APP_STATE.expenses || []).filter(e => e.category === c.name);
                 const spent = catExps.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
                 if (spent > 0 || isKpiCategoryLogMode) {
                     categoryData.push({ name: c.name, spent: spent, budget: c.budget, txCount: catExps.length });
                 }
+            });
+            // تضمين أي مصروفات أو سحوبات مسجلة تحت بنود إضافية (مثل سحوبات الادخار والطوارئ) لتظهر في سجل عمليات الصرف المسجلة
+            const extraCatMap = {};
+            (APP_STATE.expenses || []).forEach(e => {
+                const cName = e.category || 'عام';
+                if (!knownCatNames.has(cName)) {
+                    if (!extraCatMap[cName]) extraCatMap[cName] = [];
+                    extraCatMap[cName].push(e);
+                }
+            });
+            Object.keys(extraCatMap).forEach(cName => {
+                const expsList = extraCatMap[cName];
+                const spent = expsList.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+                categoryData.push({ name: cName, spent: spent, budget: 0, txCount: expsList.length });
             });
 
             categoryData.sort((a, b) => b.spent - a.spent);
@@ -6066,15 +6112,16 @@
                 });
             });
             (APP_STATE.savingsHistory || []).forEach(rec => {
+                const isW = rec.type === 'withdraw';
                 combinedHistory.push({
                     id: rec.id,
                     isEmergency: false,
-                    isWithdraw: false,
-                    title: rec.note ? `${rec.title || 'إيداع في هدف'} — سبب الإيداع: ${rec.note}` : (rec.title || 'إيداع في هدف ادخاري'),
+                    isWithdraw: isW,
+                    title: rec.note ? `${rec.title || (isW ? 'سحب من هدف' : 'إيداع في هدف')} — ${isW ? 'السبب' : 'سبب الإيداع'}: ${rec.note}` : (rec.title || 'إيداع في هدف ادخاري'),
                     amount: rec.amount,
                     date: rec.date || '',
                     dayName: rec.dayName || getArabicDayNameFromDateStr(rec.date),
-                    icon: 'fa-bullseye text-success'
+                    icon: isW ? 'fa-arrow-up text-danger' : 'fa-bullseye text-success'
                 });
             });
 
@@ -6185,7 +6232,7 @@
             return arabicDays[d.getDay()] || '';
         }
 
-        function recordSavingsHistoryEntry(title, amount, note = '') {
+        function recordSavingsHistoryEntry(title, amount, note = '', isMonthlyRollover = false, entryType = 'deposit') {
             if (!APP_STATE.savingsHistory) APP_STATE.savingsHistory = [];
             const now = new Date();
             const arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -6196,7 +6243,9 @@
                 note: (note || '').trim(),
                 amount: parseFloat(amount),
                 date: dateStr,
-                dayName: arabicDays[now.getDay()]
+                dayName: arabicDays[now.getDay()],
+                isMonthlyRollover: Boolean(isMonthlyRollover),
+                type: entryType
             });
         }
 
@@ -7806,15 +7855,44 @@ Return JSON:
                 APP_STATE.emergencyFundHistory.unshift({ id: Date.now(), type: 'deposit', amount: amt, date: dateStr, note: noteVal });
                 showToast('تم الإيداع في صندوق الطوارئ وحفظ السبب بنجاح', 'success');
             } else {
+                const recId = Date.now();
+                const expId = 'exp-em-' + recId;
+                const expStoreTitle = noteVal ? `سحب من صندوق الطوارئ (${noteVal})` : 'سحب من صندوق الطوارئ';
+                const withdrawCatName = 'سحوبات الادخار والطوارئ';
                 APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) - amt;
-                APP_STATE.emergencyFundHistory.unshift({ id: Date.now(), type: 'withdraw', amount: amt, date: dateStr, note: noteVal, deductedFromMonthly: true });
-                showToast(`تم السحب من صندوق الطوارئ وخصم (${formatEn(amt)}) من الميزانية الشهرية المتبقية`, 'info');
+                APP_STATE.emergencyFundHistory.unshift({
+                    id: recId,
+                    type: 'withdraw',
+                    amount: amt,
+                    date: dateStr,
+                    note: noteVal,
+                    deductedFromMonthly: true,
+                    linkedExpenseId: expId
+                });
+                if (!Array.isArray(APP_STATE.expenses)) APP_STATE.expenses = [];
+                APP_STATE.expenses.unshift({
+                    id: expId,
+                    linkedEmergencyId: recId,
+                    amount: amt,
+                    store: expStoreTitle,
+                    category: withdrawCatName,
+                    date: toLocalIsoDateTimeString(),
+                    method: 'سحب ادخار / طوارئ',
+                    bank: '',
+                    bankDeducted: false,
+                    bankDeductedAmount: 0,
+                    updatedAt: Date.now()
+                });
+                showToast(`تم السحب من صندوق الطوارئ وتسجيله في المصروفات وعمليات الصرف المسجلة (${formatEn(amt)})`, 'info');
             }
 
             saveLocalData();
             renderEmergencyFundUI();
             renderSavingsPage();
             renderDashboard();
+            renderCategories();
+            renderRecentExpenses();
+            renderCalendar();
             closeModal('emergencyActionModal');
 
             if(document.getElementById('emergencyHistoryModal').style.display === 'flex') {
@@ -7939,13 +8017,25 @@ Return JSON:
             rec.amount = newAmt;
             rec.note = newNote;
 
+            if (rec.type === 'withdraw') {
+                const linkedExp = (APP_STATE.expenses || []).find(e => (rec.linkedExpenseId && e.id === rec.linkedExpenseId) || String(e.linkedEmergencyId) === String(rec.id));
+                if (linkedExp) {
+                    linkedExp.amount = newAmt;
+                    linkedExp.store = newNote ? `سحب من صندوق الطوارئ (${newNote})` : 'سحب من صندوق الطوارئ';
+                    linkedExp.updatedAt = Date.now();
+                }
+            }
+
             saveLocalData();
             renderEmergencyFundUI();
             renderSavingsPage();
             renderDashboard();
+            renderCategories();
+            renderRecentExpenses();
+            renderCalendar();
             cancelEmergencyHistoryEdit();
             openEmergencyHistoryModal();
-            showToast('تم حفظ التعديل في السجل وتحديث المتبقي من الميزانية بنجاح! ✅', 'success');
+            showToast('تم حفظ التعديل في السجل وتحديث المصروفات والمتبقي بنجاح! ✅', 'success');
         }
 
         function deleteEmergencyHistoryRecord() {
@@ -7959,15 +8049,21 @@ Return JSON:
             } else {
                 APP_STATE.emergencySaved = Math.max(0, parseFloat(APP_STATE.emergencySaved || 0) + amt);
             }
+            if (rec.type === 'withdraw') {
+                APP_STATE.expenses = (APP_STATE.expenses || []).filter(e => !((rec.linkedExpenseId && e.id === rec.linkedExpenseId) || String(e.linkedEmergencyId) === String(rec.id)));
+            }
             APP_STATE.emergencyFundHistory.splice(idx, 1);
 
             saveLocalData();
             renderEmergencyFundUI();
             renderSavingsPage();
             renderDashboard();
+            renderCategories();
+            renderRecentExpenses();
+            renderCalendar();
             cancelEmergencyHistoryEdit();
             openEmergencyHistoryModal();
-            showToast('تم حذف العملية من السجل وتحديث المتبقي من الميزانية', 'info');
+            showToast('تم حذف العملية من السجل وتحديث المصروفات والمتبقي من الميزانية', 'info');
         }
 
         function createNewSavingsGoal() {
@@ -8020,6 +8116,12 @@ Return JSON:
             const mRemEl = document.getElementById('savings-monthly-remaining');
             if (mRemEl) mRemEl.innerText = formatEn(monthlyRemaining);
 
+            const customRolloverInp = document.getElementById('monthly-rollover-custom-amount');
+            const customRolloverBox = document.getElementById('monthly-rollover-custom-box');
+            if (customRolloverInp && customRolloverBox && customRolloverBox.style.display === 'none') {
+                customRolloverInp.value = monthlyRemaining > 0 ? monthlyRemaining : '';
+            }
+
             const dailyGoalSel = document.getElementById('daily-rollover-target-goal');
             const monthlyGoalSel = document.getElementById('monthly-rollover-target-goal');
             if (dailyGoalSel && monthlyGoalSel) {
@@ -8038,11 +8140,12 @@ Return JSON:
             (APP_STATE.savingsGoals || []).forEach(goal => {
                 const pct = goal.target > 0 ? Math.min(100, (goal.savedAmount / goal.target) * 100).toFixed(1) : 0;
                 grid.innerHTML += `<div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:6px;">
                         <h4 style="margin:0; font-size:1.05em;">${goal.title}</h4>
-                        <div style="display:flex; gap:6px;">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
                             <button class="action-btn" style="padding:5px 12px; font-size:0.75em; border-color:var(--success); color:var(--success); background:rgba(16,185,129,0.08);" onclick="addToGoal('${goal.id}')"><i class="fas fa-plus"></i> إيداع</button>
-                            <button class="action-btn" style="padding:5px 10px; font-size:0.75em; border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.08);" onclick="deleteSavingsGoal('${goal.id}')"><i class="fas fa-trash"></i></button>
+                            <button class="action-btn" style="padding:5px 12px; font-size:0.75em; border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,0.08);" onclick="withdrawFromGoal('${goal.id}')"><i class="fas fa-minus"></i> سحب</button>
+                            <button class="action-btn" style="padding:5px 10px; font-size:0.75em; border-color:var(--border-color); color:var(--text-muted);" onclick="deleteSavingsGoal('${goal.id}')" title="حذف الهدف"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                     <div class="stat-row"><span>المستهدف:</span><span class="stat-value" dir="ltr">${formatEn(goal.target)}</span></div>
@@ -8058,7 +8161,39 @@ Return JSON:
             saveLocalData();
             renderSavingsPage();
             renderDashboard();
+            runAiGoalPlanner();
             showToast('تم حذف الهدف بنجاح', 'info');
+        }
+
+        function toggleMonthlyRolloverCustomAmount() {
+            const box = document.getElementById('monthly-rollover-custom-box');
+            const inp = document.getElementById('monthly-rollover-custom-amount');
+            const btn = document.getElementById('btn-toggle-monthly-rollover-edit');
+            const lbl = document.getElementById('btn-monthly-rollover-label');
+            if (!box) return;
+            const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
+            if (box.style.display === 'none' || !box.style.display) {
+                box.style.display = 'block';
+                if (inp) {
+                    inp.value = monthlyRemaining > 0 ? Math.round(monthlyRemaining * 0.5) : '';
+                    setTimeout(() => inp.focus(), 60);
+                }
+                if (btn) btn.innerHTML = '<i class="fas fa-check"></i> إغلاق التعديل';
+                if (lbl) lbl.innerText = 'ترحيل المبلغ المحدد الآن';
+            } else {
+                box.style.display = 'none';
+                if (inp) inp.value = monthlyRemaining > 0 ? monthlyRemaining : '';
+                if (btn) btn.innerHTML = '<i class="fas fa-pen"></i> تعديل المبلغ';
+                if (lbl) lbl.innerText = 'ترحيل الفائض الشهري الآن';
+            }
+        }
+
+        function setMonthlyRolloverPreset(ratio) {
+            const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
+            const inp = document.getElementById('monthly-rollover-custom-amount');
+            if (!inp) return;
+            const val = ratio >= 1 ? monthlyRemaining : Math.round(monthlyRemaining * ratio);
+            inp.value = val > 0 ? val : 0;
         }
 
         function executeDailyRollover() {
@@ -8086,6 +8221,7 @@ Return JSON:
                 saveLocalData();
                 renderSavingsPage();
                 renderDashboard();
+                runAiGoalPlanner();
                 showToast(`تم ترحيل فائض يوم (${selectedDate}) إلى صندوق الطوارئ بنجاح!`, 'success');
             } else {
                 const goal = APP_STATE.savingsGoals.find(g => g.id === targetId);
@@ -8095,6 +8231,7 @@ Return JSON:
                 saveLocalData();
                 renderSavingsPage();
                 renderDashboard();
+                runAiGoalPlanner();
                 showToast(`تم ترحيل فائض يوم (${selectedDate}) إلى هدف (${goal.title}) بنجاح!`, 'success');
             }
         }
@@ -8106,59 +8243,185 @@ Return JSON:
                 return;
             }
 
+            const customBox = document.getElementById('monthly-rollover-custom-box');
+            const customInp = document.getElementById('monthly-rollover-custom-amount');
+            let amountToRollover = monthlyRemaining;
+
+            if (customBox && customBox.style.display !== 'none' && customInp) {
+                const rawCustom = toEnglishDigitsClean(customInp.value || '').replace(/[^0-9.]/g, '');
+                const parsedCustom = parseFloat(rawCustom);
+                if (isNaN(parsedCustom) || parsedCustom <= 0) {
+                    showToast('يرجى إدخال مبلغ صحيح للترحيل أكبر من الصفر', 'warning');
+                    customInp.focus();
+                    return;
+                }
+                if (parsedCustom > monthlyRemaining) {
+                    showToast(`المبلغ المدخل (${formatEn(parsedCustom)}) أكبر من الفائض الشهري المتاح (${formatEn(monthlyRemaining)})!`, 'warning');
+                    return;
+                }
+                amountToRollover = parsedCustom;
+            }
+
             const targetId = document.getElementById('monthly-rollover-target-goal')?.value;
             if (!targetId) {
                 showToast('يرجى اختيار الوجهة للترحيل إليها', 'warning');
                 return;
             }
 
+            const isPartial = amountToRollover < monthlyRemaining;
+            const rolloverNote = isPartial ? `ترحيل جزء من الفائض الشهري (${formatEn(amountToRollover)})` : `ترحيل الفائض الشهري الكامل`;
+
             if (targetId === 'emergency_fund') {
                 const now = new Date();
                 const dateStr = now.toLocaleDateString('en-CA') + ' ' + now.toLocaleTimeString('ar-EG', {hour12: true, hour: '2-digit', minute:'2-digit'});
-                APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) + monthlyRemaining;
-                APP_STATE.emergencyFundHistory.unshift({ id: Date.now(), type: 'deposit', amount: monthlyRemaining, date: dateStr, note: `ترحيل الفائض الشهري` });
+                APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) + amountToRollover;
+                APP_STATE.emergencyFundHistory.unshift({
+                    id: Date.now(),
+                    type: 'deposit',
+                    amount: amountToRollover,
+                    date: dateStr,
+                    note: rolloverNote,
+                    isMonthlyRollover: true
+                });
                 saveLocalData();
+                if (customBox) customBox.style.display = 'none';
+                const toggleBtn = document.getElementById('btn-toggle-monthly-rollover-edit');
+                if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-pen"></i> تعديل المبلغ';
+                const btnLbl = document.getElementById('btn-monthly-rollover-label');
+                if (btnLbl) btnLbl.innerText = 'ترحيل الفائض الشهري الآن';
                 renderSavingsPage();
                 renderDashboard();
-                showToast(`تم ترحيل الفائض الشهري إلى صندوق الطوارئ بنجاح!`, 'success');
+                runAiGoalPlanner();
+                showToast(`تم ترحيل (${formatEn(amountToRollover)}) من الفائض الشهري إلى صندوق الطوارئ بنجاح!`, 'success');
             } else {
                 const goal = APP_STATE.savingsGoals.find(g => g.id === targetId);
                 if (!goal) { showToast('الهدف غير موجود', 'warning'); return; }
-                goal.savedAmount += monthlyRemaining;
-                recordSavingsHistoryEntry(`ترحيل الفائض الشهري إلى هدف: ${goal.title}`, monthlyRemaining);
+                goal.savedAmount += amountToRollover;
+                recordSavingsHistoryEntry(`ترحيل من الفائض الشهري إلى هدف: ${goal.title}`, amountToRollover, isPartial ? 'ترحيل جزئي مخصص' : 'ترحيل كامل الفائض', true);
                 saveLocalData();
+                if (customBox) customBox.style.display = 'none';
+                const toggleBtn = document.getElementById('btn-toggle-monthly-rollover-edit');
+                if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-pen"></i> تعديل المبلغ';
+                const btnLbl = document.getElementById('btn-monthly-rollover-label');
+                if (btnLbl) btnLbl.innerText = 'ترحيل الفائض الشهري الآن';
                 renderSavingsPage();
                 renderDashboard();
-                showToast(`تم ترحيل الفائض الشهري إلى هدف (${goal.title}) بنجاح!`, 'success');
+                runAiGoalPlanner();
+                showToast(`تم ترحيل (${formatEn(amountToRollover)}) من الفائض الشهري إلى هدف (${goal.title}) بنجاح!`, 'success');
             }
         }
 
         function addToGoal(id) {
             document.getElementById('goal-deposit-id').value = id;
-            document.getElementById('goal-deposit-amount').value = '';
+            const modeInp = document.getElementById('goal-action-mode');
+            if (modeInp) modeInp.value = 'deposit';
+            const titleEl = document.getElementById('goal-action-modal-title');
+            if (titleEl) titleEl.innerHTML = '<i class="fas fa-arrow-down text-success"></i> إيداع للهدف';
+            const descEl = document.getElementById('goal-action-modal-desc');
+            if (descEl) descEl.innerText = 'أدخل المبلغ المراد إيداعه في هذا الهدف:';
+            const amtLbl = document.getElementById('goal-action-amount-label');
+            if (amtLbl) amtLbl.innerText = 'المبلغ المراد إيداعه';
+            const noteLbl = document.getElementById('goal-action-note-label');
+            if (noteLbl) noteLbl.innerText = 'سبب الإيداع';
             const noteInp = document.getElementById('goal-deposit-note');
-            if (noteInp) noteInp.value = '';
+            if (noteInp) {
+                noteInp.value = '';
+                noteInp.placeholder = 'اكتب سبب الإيداع...';
+            }
+            const confirmBtn = document.getElementById('goal-action-confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.innerText = 'إيداع الآن';
+                confirmBtn.style.background = 'var(--success)';
+                confirmBtn.style.borderColor = 'var(--success)';
+            }
+            document.getElementById('goal-deposit-amount').value = '';
+            openModal('goalDepositModal');
+        }
+
+        function withdrawFromGoal(id) {
+            const goal = (APP_STATE.savingsGoals || []).find(g => g.id === id);
+            if (!goal) return;
+            document.getElementById('goal-deposit-id').value = id;
+            const modeInp = document.getElementById('goal-action-mode');
+            if (modeInp) modeInp.value = 'withdraw';
+            const titleEl = document.getElementById('goal-action-modal-title');
+            if (titleEl) titleEl.innerHTML = `<i class="fas fa-arrow-up text-danger"></i> سحب من هدف: ${goal.title}`;
+            const descEl = document.getElementById('goal-action-modal-desc');
+            if (descEl) descEl.innerText = `أدخل المبلغ المراد سحبه (المتوفر حالياً: ${formatEn(goal.savedAmount || 0)}) وسيتم تسجيله في المصروفات وعمليات الصرف المسجلة:`;
+            const amtLbl = document.getElementById('goal-action-amount-label');
+            if (amtLbl) amtLbl.innerText = 'المبلغ المراد سحبه';
+            const noteLbl = document.getElementById('goal-action-note-label');
+            if (noteLbl) noteLbl.innerText = 'سبب السحب / الصرف';
+            const noteInp = document.getElementById('goal-deposit-note');
+            if (noteInp) {
+                noteInp.value = '';
+                noteInp.placeholder = 'اكتب سبب السحب أو فيمَ تم صرفه...';
+            }
+            const confirmBtn = document.getElementById('goal-action-confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.innerText = 'سحب وتسجيل كمصروف';
+                confirmBtn.style.background = 'var(--danger)';
+                confirmBtn.style.borderColor = 'var(--danger)';
+            }
+            document.getElementById('goal-deposit-amount').value = '';
             openModal('goalDepositModal');
         }
 
         function confirmGoalDeposit() {
             const id = document.getElementById('goal-deposit-id').value;
+            const mode = document.getElementById('goal-action-mode')?.value || 'deposit';
             const rawVal = toEnglishDigitsClean(document.getElementById('goal-deposit-amount')?.value || '').replace(/[^0-9.]/g, '');
             const val = parseFloat(rawVal);
             const noteVal = (document.getElementById('goal-deposit-note')?.value || '').trim();
-            if (!isNaN(val) && val > 0) {
-                const goal = APP_STATE.savingsGoals.find(g => g.id === id);
-                if (goal) {
-                    goal.savedAmount += val;
-                    recordSavingsHistoryEntry(`إيداع في هدف: ${goal.title}`, val, noteVal);
-                    saveLocalData();
-                    closeModal('goalDepositModal');
-                    renderSavingsPage();
-                    renderDashboard();
-                    showToast('تم الإيداع للهدف وحفظ السبب بنجاح', 'success');
+            if (isNaN(val) || val <= 0) {
+                showToast('يرجى إدخال مبلغ صحيح أكبر من الصفر', 'warning');
+                return;
+            }
+            const goal = APP_STATE.savingsGoals.find(g => g.id === id);
+            if (!goal) return;
+
+            if (mode === 'withdraw') {
+                if (val > parseFloat(goal.savedAmount || 0)) {
+                    showToast('المبلغ المطلوب سحبه أكبر من المدخر المتوفر في هذا الهدف!', 'warning');
+                    return;
                 }
+                goal.savedAmount = Math.max(0, parseFloat(goal.savedAmount || 0) - val);
+                recordSavingsHistoryEntry(`سحب من هدف: ${goal.title}`, val, noteVal, false, 'withdraw');
+
+                const expId = 'exp-goal-' + Date.now();
+                const expStoreTitle = noteVal ? `سحب من هدف ${goal.title} (${noteVal})` : `سحب من هدف: ${goal.title}`;
+                if (!Array.isArray(APP_STATE.expenses)) APP_STATE.expenses = [];
+                APP_STATE.expenses.unshift({
+                    id: expId,
+                    amount: val,
+                    store: expStoreTitle,
+                    category: 'سحوبات الادخار والطوارئ',
+                    date: toLocalIsoDateTimeString(),
+                    method: 'سحب ادخار / طوارئ',
+                    bank: '',
+                    bankDeducted: false,
+                    bankDeductedAmount: 0,
+                    updatedAt: Date.now()
+                });
+
+                saveLocalData();
+                closeModal('goalDepositModal');
+                renderSavingsPage();
+                renderDashboard();
+                renderCategories();
+                renderRecentExpenses();
+                renderCalendar();
+                runAiGoalPlanner();
+                showToast(`تم سحب (${formatEn(val)}) من الهدف وإظهاره في المصروفات وعمليات الصرف المسجلة!`, 'info');
             } else {
-                showToast('يرجى إدخال مبلغ صحيح', 'warning');
+                goal.savedAmount = parseFloat(goal.savedAmount || 0) + val;
+                recordSavingsHistoryEntry(`إيداع في هدف: ${goal.title}`, val, noteVal);
+                saveLocalData();
+                closeModal('goalDepositModal');
+                renderSavingsPage();
+                renderDashboard();
+                runAiGoalPlanner();
+                showToast('تم الإيداع للهدف وحفظ السبب بنجاح', 'success');
             }
         }
 
@@ -8629,81 +8892,206 @@ Return JSON:
             out.innerHTML = `تخفيض بند <strong>${catName}</strong> بمقدار <strong class="text-success" dir="ltr">${formatEn(cutAmount)}</strong> شهرياً سيوفر لك <strong dir="ltr">${formatEn(cutAmount * 12)}</strong> سنوياً.`;
         }
 
-        async function runAiGoalPlanner(requestGeminiDeep = false) {
-            const box = document.getElementById('ai-goal-planner-box');
-            if (!box) return;
-
-            const totalMonthly = APP_STATE.monthlyBudget || 0;
+        function computeSmartPlannerMetrics() {
+            const totalMonthly = parseFloat(APP_STATE.monthlyBudget || 0);
+            const dailyLimit = parseFloat(APP_STATE.dailyBudget || 0);
             const monthlySpent = calculateMonthlySpent();
             const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
             const emergencySaved = parseFloat(APP_STATE.emergencySaved || 0);
             const goals = APP_STATE.savingsGoals || [];
 
-            if (goals.length === 0 && emergencySaved === 0) {
-                box.innerHTML = `
-                    <div style="background:var(--surface-card); padding:16px; border-radius:16px; border:1px dashed var(--border-color); text-align:center;">
-                        <i class="fas fa-bullseye text-primary" style="font-size:2em; margin-bottom:8px;"></i>
-                        <div style="font-weight:800; margin-bottom:4px;">لم تقم بإنشاء أهداف ادخارية بعد!</div>
-                        <div style="font-size:0.85em; color:var(--text-muted);">أنشئ أول هدف مالي من البطاقة المقابلة ليقوم الذكاء الاصطناعي برسم خارطة طريق زمنية ومالية لتحقيقه.</div>
-                    </div>
-                `;
-                return;
+            // حساب الأيام المنقضية والمتبقية من الشهر
+            const now = new Date();
+            let totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            let elapsedDays = Math.max(1, now.getDate());
+            let remainingDays = Math.max(0, totalDaysInMonth - elapsedDays);
+
+            if (APP_STATE.budgetStartDate && APP_STATE.budgetEndDate) {
+                const sDate = new Date(APP_STATE.budgetStartDate + 'T00:00:00');
+                const eDate = new Date(APP_STATE.budgetEndDate + 'T23:59:59');
+                if (!isNaN(sDate.getTime()) && !isNaN(eDate.getTime()) && eDate >= sDate) {
+                    totalDaysInMonth = Math.max(1, Math.round((eDate - sDate) / (1000 * 60 * 60 * 24)));
+                    const diffFromStart = Math.floor((now - sDate) / (1000 * 60 * 60 * 24)) + 1;
+                    elapsedDays = Math.min(totalDaysInMonth, Math.max(1, diffFromStart));
+                    remainingDays = Math.max(0, totalDaysInMonth - elapsedDays);
+                }
             }
 
-            let totalTargets = 0;
-            let totalSavedInGoals = 0;
-            let pendingGoals = [];
+            // تحليل البنود وما تم صرفه وما تبقى في كل بند
+            const cats = APP_STATE.categories || [];
+            let totalCatBudgets = 0;
+            let totalCatSpent = 0;
+            let totalCatRemainingCommitted = 0;
+            const catBreakdown = cats.map(c => {
+                const cBudget = parseFloat(c.budget || 0);
+                const cSpent = (APP_STATE.expenses || [])
+                    .filter(e => e.category === c.name)
+                    .reduce((s, e) => s + parseFloat(e.amount || 0), 0);
+                const cRem = Math.max(0, cBudget - cSpent);
+                const cOver = Math.max(0, cSpent - cBudget);
+                const pct = cBudget > 0 ? Math.round((cSpent / cBudget) * 100) : 0;
+                totalCatBudgets += cBudget;
+                totalCatSpent += cSpent;
+                totalCatRemainingCommitted += cRem;
+                return { name: c.name, budget: cBudget, spent: cSpent, rem: cRem, over: cOver, pct };
+            });
 
-            goals.forEach(g => {
+            // حساب متوسط الصرف اليومي الفعلي والمتوقع
+            const actualDailyAvg = monthlySpent > 0 ? (monthlySpent / elapsedDays) : (dailyLimit > 0 ? dailyLimit : (totalCatBudgets > 0 ? totalCatBudgets / totalDaysInMonth : 0));
+            const effectiveDailyRate = Math.round(actualDailyAvg);
+
+            // الصرف المتوقع خلال الـ 5 أيام القادمة والمتبقي بعدها
+            const next5DaysCount = remainingDays > 0 ? Math.min(5, remainingDays) : 5;
+            const expected5DaysSpend = Math.round(actualDailyAvg * next5DaysCount);
+            const remainingAfter5Days = Math.max(0, Math.round(monthlyRemaining - expected5DaysSpend));
+
+            // الصرف المتوقع لبقية الشهر (الأيام المتبقية) مع مراعاة التزامات البنود المتبقية
+            const expectedRemainingDaysByAvg = Math.round(actualDailyAvg * remainingDays);
+            // نأخذ بعين الاعتبار الصرف المتوقع حسب المتوسط والتزامات البنود المتبقية بشكل ذكي ومتوازن
+            const expectedRestOfMonthSpend = remainingDays > 0
+                ? Math.round(monthlySpent > 0 ? expectedRemainingDaysByAvg : Math.max(expectedRemainingDaysByAvg, totalCatRemainingCommitted))
+                : 0;
+
+            // الصافي الحقيقي المتوقع في نهاية الشهر (القابل للادخار بأمان دون الإخلال بمصروفات الأيام المتبقية)
+            const netSafeSurplus = Math.max(0, Math.round(monthlyRemaining - expectedRestOfMonthSpend));
+
+            return {
+                totalMonthly,
+                dailyLimit,
+                monthlySpent,
+                monthlyRemaining,
+                emergencySaved,
+                goals,
+                totalDaysInMonth,
+                elapsedDays,
+                remainingDays,
+                catBreakdown,
+                totalCatBudgets,
+                totalCatSpent,
+                totalCatRemainingCommitted,
+                effectiveDailyRate,
+                next5DaysCount,
+                expected5DaysSpend,
+                remainingAfter5Days,
+                expectedRemainingDaysByAvg,
+                expectedRestOfMonthSpend,
+                netSafeSurplus
+            };
+        }
+
+        async function runAiGoalPlanner(requestGeminiDeep = false) {
+            const box = document.getElementById('ai-goal-planner-box');
+            if (!box) return;
+
+            const m = computeSmartPlannerMetrics();
+            const pendingGoals = [];
+            m.goals.forEach(g => {
                 const target = parseFloat(g.target || 0);
                 const saved = parseFloat(g.savedAmount || 0);
-                totalTargets += target;
-                totalSavedInGoals += saved;
                 if (saved < target) {
                     pendingGoals.push({ ...g, rem: target - saved });
                 }
             });
 
-            const recommendedEmergency = Math.max(1000, Math.round(totalMonthly * 0.5));
-            const emergencySafePct = Math.min(100, Math.round((emergencySaved / recommendedEmergency) * 100));
+            const recommendedEmergency = Math.max(1000, Math.round(m.totalMonthly * 0.5));
+            const emergencySafePct = Math.min(100, Math.round((m.emergencySaved / recommendedEmergency) * 100));
+
+            // بناء ملخص البنود بشكل مبسط وواضح
+            let catsSummaryPills = '';
+            if (m.catBreakdown.length > 0) {
+                catsSummaryPills = m.catBreakdown.map(c => {
+                    const statusColor = c.over > 0 ? 'var(--danger)' : (c.pct >= 80 ? 'var(--warning)' : 'var(--success)');
+                    return `<div style="background:var(--surface-color); border:1px solid var(--border-color); border-radius:10px; padding:6px 10px; font-size:0.78em; display:flex; justify-content:space-between; align-items:center;">
+                        <span><strong>${c.name}</strong> <span style="color:var(--text-muted); font-size:0.9em;">(صُرف ${formatEn(c.spent)} من ${formatEn(c.budget)})</span></span>
+                        <span style="font-weight:800; color:${statusColor};" dir="ltr">${c.over > 0 ? 'تجاوز ' + formatEn(c.over) : 'متبقي للبند ' + formatEn(c.rem)}</span>
+                    </div>`;
+                }).join('');
+            }
 
             let html = `
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <div style="background:var(--surface-card); padding:10px 12px; border-radius:14px; border:1px solid var(--border-color);">
-                        <div style="font-size:0.75em; color:var(--text-muted); font-weight:700;">جاهزية شبكة الأمان (الطوارئ)</div>
-                        <div style="font-size:1.15em; font-weight:900; color:${emergencySafePct >= 100 ? 'var(--success)' : 'var(--warning)'}; margin-top:2px;">
-                            ${emergencySafePct}% <span style="font-size:0.7em; font-weight:700; color:var(--text-muted);">(${formatEn(emergencySaved)} / ${formatEn(recommendedEmergency)})</span>
+                <!-- الخطوة 1: قراءة ذكية واضحة لوضع الشهر والأيام المتبقية ومتوسط الصرف -->
+                <div style="background:linear-gradient(135deg, rgba(255,85,32,0.08), rgba(139,92,246,0.06)); border:1.5px solid rgba(255,85,32,0.28); border-radius:16px; padding:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+                        <div style="font-weight:900; font-size:0.95em; color:var(--primary-color);">
+                            <i class="fas fa-Seedling"></i> القراءة الذكية للصرف والأيام المتبقية:
+                        </div>
+                        <span style="font-size:0.75em; background:var(--surface-card); padding:3px 10px; border-radius:999px; font-weight:800; border:1px solid var(--border-color);">
+                            انقضى <strong>${m.elapsedDays}</strong> يوم • متبقي <strong>${m.remainingDays}</strong> يوم بالشهر
+                        </span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(135px, 1fr)); gap:8px; text-align:center;">
+                        <div style="background:var(--surface-card); padding:9px 8px; border-radius:12px; border:1px solid var(--border-color);">
+                            <div style="font-size:0.72em; color:var(--text-muted); font-weight:700;">المتبقي الفعلي حالياً</div>
+                            <div style="font-size:1.05em; font-weight:900; color:var(--text-main); margin-top:2px;" dir="ltr">${formatEn(m.monthlyRemaining)}</div>
+                        </div>
+                        <div style="background:var(--surface-card); padding:9px 8px; border-radius:12px; border:1px solid var(--border-color);">
+                            <div style="font-size:0.72em; color:var(--text-muted); font-weight:700;">متوسط صرفك اليومي</div>
+                            <div style="font-size:1.05em; font-weight:900; color:var(--warning); margin-top:2px;" dir="ltr">${formatEn(m.effectiveDailyRate)} / يوم</div>
+                        </div>
+                        <div style="background:rgba(239,68,68,0.07); padding:9px 8px; border-radius:12px; border:1px solid rgba(239,68,68,0.25);">
+                            <div style="font-size:0.72em; color:var(--danger); font-weight:800;">الصرف المتوقع (${m.next5DaysCount} أيام قادمة)</div>
+                            <div style="font-size:1.05em; font-weight:900; color:var(--danger); margin-top:2px;" dir="ltr">-${formatEn(m.expected5DaysSpend)}</div>
+                            <div style="font-size:0.68em; color:var(--text-muted); margin-top:2px;">المتبقي بعدها: <strong dir="ltr">${formatEn(m.remainingAfter5Days)}</strong></div>
+                        </div>
+                        <div style="background:rgba(16,185,129,0.1); padding:9px 8px; border-radius:12px; border:1.5px solid rgba(16,185,129,0.35);">
+                            <div style="font-size:0.72em; color:var(--success); font-weight:800;">الصافي المتوقع آخر الشهر</div>
+                            <div style="font-size:1.1em; font-weight:900; color:var(--success); margin-top:2px;" dir="ltr">${formatEn(m.netSafeSurplus)}</div>
+                            <div style="font-size:0.68em; color:var(--text-muted); margin-top:2px;">بعد خصم متوقع (${m.remainingDays} يوم): <strong dir="ltr">${formatEn(m.expectedRestOfMonthSpend)}</strong></div>
                         </div>
                     </div>
-                    <div style="background:var(--surface-card); padding:10px 12px; border-radius:14px; border:1px solid var(--border-color);">
-                        <div style="font-size:0.75em; color:var(--text-muted); font-weight:700;">الفائض القابل للتوزيع حالياً</div>
-                        <div style="font-size:1.15em; font-weight:900; color:var(--success); margin-top:2px;" dir="ltr">
-                            ${formatEn(monthlyRemaining)}
-                        </div>
+
+                    <div style="margin-top:10px; background:var(--surface-card); border-radius:12px; padding:10px 12px; font-size:0.83em; line-height:1.6; border:1px dashed var(--border-color);">
+                        💡 <strong>خلاصة الحسبة ببساطة:</strong> بناءً على صرفك الحالي (<strong dir="ltr">${formatEn(m.monthlySpent)}</strong> خلال ${m.elapsedDays} يوم)، متوسط صرفك هو <strong dir="ltr">${formatEn(m.effectiveDailyRate)}</strong> يومياً. خلال الـ <strong>${m.next5DaysCount} أيام القادمة</strong> متوقع أن تصرف <strong class="text-danger" dir="ltr">${formatEn(m.expected5DaysSpend)}</strong> فيتبقى معك <strong dir="ltr">${formatEn(m.remainingAfter5Days)}</strong>، وخلال كامل الأيام المتبقية من الشهر (${m.remainingDays} يوم) متوقع صرف <strong class="text-danger" dir="ltr">${formatEn(m.expectedRestOfMonthSpend)}</strong>، مما يترك لك <strong>صافي فائض آمن للادخار في الأخير قدره <span class="text-success" dir="ltr">${formatEn(m.netSafeSurplus)}</span></strong>.
+                    </div>
+                </div>
+
+                <!-- الخطوة 2: مراعاة البنود وما تم صرفه منها -->
+                <div style="background:var(--surface-card); padding:12px 14px; border-radius:16px; border:1px solid var(--border-color);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                        <span style="font-weight:800; font-size:0.88em;"><i class="fas fa-layer-group text-primary"></i> موقف البنود والالتزامات الحالية:</span>
+                        <span style="font-size:0.75em; color:var(--text-muted);">مخصصات البنود المتبقية: <strong dir="ltr">${formatEn(m.totalCatRemainingCommitted)}</strong></span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        ${catsSummaryPills || '<div style="font-size:0.82em; color:var(--text-muted);">لا توجد بنود مخصصة حالياً.</div>'}
                     </div>
                 </div>
             `;
 
+            // الخطوة 3: خطة توزيع الصافي على الأهداف وصندوق الطوارئ
+            const distributableAmount = m.netSafeSurplus > 0 ? m.netSafeSurplus : Math.round(m.monthlyRemaining * 0.25);
+            const usingNetSafe = m.netSafeSurplus > 0;
+
             if (pendingGoals.length > 0) {
                 html += `
                     <div style="background:var(--surface-card); padding:14px; border-radius:16px; border:1px solid var(--border-color);">
-                        <div style="font-weight:800; font-size:0.95em; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                            <span><i class="fas fa-chart-pie text-primary"></i> خطة التوزيع الذكية المقترحة:</span>
-                            ${monthlyRemaining > 0 ? `<button type="button" class="btn-edit-badge" style="font-size:0.75em;" onclick="applyAiGoalDistribution()"><i class="fas fa-check"></i> تطبيق التوزيع</button>` : ''}
+                        <div style="font-weight:800; font-size:0.92em; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                            <span><i class="fas fa-bullseye text-primary"></i> خطة ادخار الأهداف (بناءً على ${usingNetSafe ? 'الصافي الآمن بعد مصروفات الشهر' : '25% من المتبقي'}):</span>
+                            ${distributableAmount > 0 ? `<button type="button" class="btn-edit-badge" style="font-size:0.75em;" onclick="applyAiGoalDistribution()"><i class="fas fa-check"></i> ادخار الصافي (${formatEn(distributableAmount)})</button>` : ''}
+                        </div>
+                        <div style="font-size:0.78em; color:var(--text-muted); margin-bottom:10px;">
+                            ${usingNetSafe
+                                ? `ينصح المخطط الذكي بتوزيع <strong>الصافي المتوقع آخر الشهر (<span dir="ltr">${formatEn(m.netSafeSurplus)}</span>)</strong> بدلاً من سحب كامل المتبقي الآن، حتى لا تتأثر مصروفاتك اليومية القادمة:`
+                                : `نظراً لأن وتيرة الصرف الحالية قد تستهلك كامل المتبقي قبل نهاية الشهر، يقترح المخطط استقطاع مبلغ آمن ومعتدل (<span dir="ltr">${formatEn(distributableAmount)}</span>) وتخفيض الصرف اليومي بـ 15%:`}
                         </div>
                         <div style="display:flex; flex-direction:column; gap:8px;">
                 `;
 
-                const sharePerGoal = monthlyRemaining > 0 ? Math.round(monthlyRemaining / pendingGoals.length) : 0;
+                const sharePerGoal = distributableAmount > 0 ? Math.max(1, Math.round(distributableAmount / pendingGoals.length)) : 0;
                 pendingGoals.forEach(g => {
-                    const monthsNeeded = sharePerGoal > 0 ? Math.ceil(g.rem / sharePerGoal) : Math.ceil(g.rem / Math.max(100, Math.round(totalMonthly * 0.1)));
+                    const fallbackMonthlySave = Math.max(100, Math.round(m.totalMonthly * 0.1));
+                    const effectiveMonthlySave = sharePerGoal > 0 ? sharePerGoal : fallbackMonthlySave;
+                    const monthsNeeded = Math.ceil(g.rem / effectiveMonthlySave);
+                    const dailyEq = (effectiveMonthlySave / 30).toFixed(1);
                     html += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,85,32,0.05); padding:8px 12px; border-radius:10px; border:1px solid rgba(255,85,32,0.12); font-size:0.88em;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,85,32,0.05); padding:10px 12px; border-radius:12px; border:1px solid rgba(255,85,32,0.15); font-size:0.86em; flex-wrap:wrap; gap:8px;">
                             <div>
-                                <strong style="color:var(--text-main);">${g.title}</strong>
-                                <div style="font-size:0.78em; color:var(--text-muted);">متبقي: <span dir="ltr" class="font-bold text-danger">${formatEn(g.rem)}</span> • موعد الإنجاز المقدر: <strong>${monthsNeeded} شهر</strong></div>
+                                <strong style="color:var(--text-main); font-size:0.98em;">🎯 ${g.title}</strong>
+                                <div style="font-size:0.8em; color:var(--text-muted); margin-top:2px;">
+                                    باقي للهدف: <strong dir="ltr" class="text-danger">${formatEn(g.rem)}</strong> • يكتمل خلال: <strong>${monthsNeeded} ${monthsNeeded <= 2 ? 'شهر' : 'أشهر'}</strong> (يعادل <span dir="ltr">${dailyEq} ${APP_STATE.currency || '﷼'}/يوم</span>)
+                                </div>
                             </div>
-                            <span class="font-bold text-success" dir="ltr">+${formatEn(sharePerGoal)} / شهر</span>
+                            <span class="font-bold text-success" style="background:rgba(16,185,129,0.12); padding:4px 10px; border-radius:999px;" dir="ltr">+${formatEn(effectiveMonthlySave)} / شهر</span>
                         </div>
                     `;
                 });
@@ -8712,11 +9100,17 @@ Return JSON:
                         </div>
                     </div>
                 `;
-            } else if (goals.length > 0) {
+            } else if (m.goals.length > 0) {
                 html += `
                     <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:14px; padding:12px; text-align:center; color:var(--success); font-weight:800;">
-                        <i class="fas fa-trophy" style="font-size:1.5em; margin-bottom:4px;"></i>
-                        <div>مبارك! جميع أهدافك المالية المسجلة محققة بالكامل 100%.</div>
+                        <i class="fas fa-trophy" style="font-size:1.4em; margin-bottom:4px;"></i>
+                        <div>مبارك! جميع أهدافك المالية المسجلة محققة بالكامل 100%، ويمكنك توجيه الصافي المتوقع (<span dir="ltr">${formatEn(m.netSafeSurplus)}</span>) لتعزيز صندوق الطوارئ (${emergencySafePct}%).</div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div style="background:var(--surface-card); padding:12px; border-radius:14px; border:1px dashed var(--border-color); text-align:center; font-size:0.84em; color:var(--text-muted);">
+                        أضف هدفاً مالياً جديداً من البطاقة المجاورة ليقوم المخطط الذكي بتوزيع الصافي المتوقع (<strong class="text-success" dir="ltr">${formatEn(m.netSafeSurplus)}</strong>) عليه تلقائياً.
                     </div>
                 `;
             }
@@ -8732,45 +9126,50 @@ Return JSON:
                 html += `
                     <div id="gemini-deep-plan-box" style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.3); border-radius:16px; padding:14px; margin-top:4px;">
                         <div style="display:flex; align-items:center; gap:8px; font-weight:900; color:#8b5cf6; margin-bottom:6px;">
-                            <i class="fas fa-brain"></i> تحليل وتوصيات خبير الذكاء الاصطناعي (Gemini):
+                            <i class="fas fa-brain"></i> خطة المستشار الذكي (Gemini AI) المفصلة:
                         </div>
-                        <div id="gemini-plan-text" style="font-size:0.9em; line-height:1.6; color:var(--text-main);">
-                            جاري استدعاء نموذج Gemini لتحليل أهدافك ومعدل إنفاقك...
+                        <div id="gemini-plan-text" style="font-size:0.88em; line-height:1.65; color:var(--text-main);">
+                            جاري تحليل البنود ومتوسط الصرف اليومي والأيام المتبقية...
                         </div>
                     </div>
                 `;
                 box.innerHTML = html;
 
                 try {
-                    const goalsSummary = pendingGoals.map(g => `${g.title} (متبقي ${g.rem} ريال)`).join(', ') || 'لا توجد أهداف معلقة';
-                    const prompt = `أنت مستشار مالي ذكي لتطبيق "الميزانية الذكية".
-بيانات المستخدم الحالية:
-- الميزانية الشهرية: ${totalMonthly} ريال
-- المنصرف هذا الشهر: ${monthlySpent} ريال
-- الفائض المتاح: ${monthlyRemaining} ريال
-- صندوق الطوارئ المتوفر: ${emergencySaved} ريال (المستهدف المقترح للأمان: ${recommendedEmergency} ريال)
-- الأهداف الادخارية المعلقة: ${goalsSummary}
+                    const goalsSummary = pendingGoals.map(g => `${g.title} (متبقي ${g.rem})`).join('، ') || 'لا توجد أهداف معلقة';
+                    const catsSummaryText = m.catBreakdown.map(c => `${c.name}: مخصص ${c.budget}، صُرف ${c.spent}، متبقي ${c.rem}`).join(' | ');
+                    const prompt = `أنت مخطط مالي ذكي داخل تطبيق "الميزانية الذكية". اشرح للمستخدم خطة واضحة وسهلة الفهم جداً باللغة العربية بناءً على أرقامه:
+- الميزانية الشهرية: ${m.totalMonthly} | المنصرف حتى الآن: ${m.monthlySpent} | المتبقي حالياً: ${m.monthlyRemaining}
+- الأيام المنقضية: ${m.elapsedDays} يوم | الأيام المتبقية من الشهر: ${m.remainingDays} يوم
+- متوسط الصرف اليومي: ${m.effectiveDailyRate}
+- الصرف المتوقع خلال الـ ${m.next5DaysCount} أيام القادمة: ${m.expected5DaysSpend} (وسيتبقى بعدها: ${m.remainingAfter5Days})
+- الصرف المتوقع لكامل الأيام المتبقية (${m.remainingDays} يوم): ${m.expectedRestOfMonthSpend}
+- الصافي النهائي الآمن للادخار آخر الشهر: ${m.netSafeSurplus}
+- تفصيل البنود: ${catsSummaryText}
+- الأهداف الادخارية: ${goalsSummary}
 
-المطلوب: قدم توجيهاً مالياً فائق الدقة وموجزاً باللغة العربية (3 نقاط رئيسية ومرقمة) لتوزيع الفائض وتسريع تحقيق الأهداف وتقوية شبكة الأمان، بأسلوب عملي ومشجع بدون مقدمات طويلة.`;
+اكتب 3 نقاط واضحة ومباشرة وسهلة الفهم تشرح له:
+1. كيف يسير صرفه في البنود وكم سيصرف في الـ 5 أيام القادمة وكم سيتبقى له.
+2. كم الصافي النهائي الحقيقي آخر الشهر بعد تغطية مصروفات الأيام المتبقية.
+3. كيف يوزع هذا الصافي بذكاء بين أهدافه وصندوق الطوارئ.`;
 
                     const aiText = await callGeminiAPI({ contents: [{ parts: [{ text: prompt }] }] });
                     const textContainer = document.getElementById('gemini-plan-text');
                     if (textContainer && aiText) {
                         textContainer.innerHTML = aiText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     }
-                    showToast('تم تحديث خطة الأهداف الذكية بـ Gemini AI بنجاح! ✨', 'success', true);
+                    showToast('تم توليد الخطة الذكية المفصلة بنجاح! ✨', 'success', true);
                 } catch (e) {
                     const textContainer = document.getElementById('gemini-plan-text');
                     if (textContainer) {
-                        const emShare = Math.round(monthlyRemaining * 0.4);
-                        const goalShare = Math.max(0, monthlyRemaining - emShare);
+                        const topCat = m.catBreakdown.slice().sort((a, b) => b.spent - a.spent)[0];
                         textContainer.innerHTML = `
-                            1. <strong>تعزيز شبكة الأمان (40%):</strong> خصص <strong>${formatEn(emShare)}</strong> من الفائض الحالي لصندوق الطوارئ للوصول إلى حد الأمان الموصى به (${formatEn(recommendedEmergency)}).<br>
-                            2. <strong>تسريع الأهداف النشطة (60%):</strong> وجّه <strong>${formatEn(goalShare)}</strong> نحو ${pendingGoals.length > 0 ? 'هدف <strong>' + pendingGoals[0].title + '</strong>' : 'أهدافك الادخارية'} لتقليص مدة الإنجاز.<br>
-                            3. <strong>استثمار التوفير اليومي:</strong> رحّل فائض الميزانية اليومية (${formatEn(APP_STATE.dailyBudget)}) في أيام عدم الصرف مباشرة إلى أهدافك لتحقيقها قبل موعدها بـ 30%.
+                            1. <strong>توقعات الـ ${m.next5DaysCount} أيام القادمة والبنود:</strong> بمعدل صرفك الحالي (<strong dir="ltr">${formatEn(m.effectiveDailyRate)}/يوم</strong>)، متوقع أن تصرف <strong dir="ltr">${formatEn(m.expected5DaysSpend)}</strong> خلال الـ ${m.next5DaysCount} أيام القادمة ليتبقى معك <strong dir="ltr">${formatEn(m.remainingAfter5Days)}</strong>${topCat && topCat.spent > 0 ? `، مع الانتباه لبند <strong>${topCat.name}</strong> (صُرف منه ${formatEn(topCat.spent)})` : ''}.<br>
+                            2. <strong>حساب الصافي النهائي آخر الشهر:</strong> لتغطية الـ <strong>${m.remainingDays} يوماً المتبقية</strong> من الشهر، تحتاج إلى إبقاء <strong dir="ltr">${formatEn(m.expectedRestOfMonthSpend)}</strong> للمصروفات القادمة، وبالتالي فإن <strong>الصافي الحقيقي الآمن للادخار هو <span class="text-success" dir="ltr">${formatEn(m.netSafeSurplus)}</span></strong>.<br>
+                            3. <strong>التوصية الذكية للأهداف:</strong> رحّل الآن جزءاً آمناً (${formatEn(Math.round(distributableAmount * 0.5))}) عبر ميزة <strong>تعديل مبلغ ترحيل الفائض الشهري</strong>، واترك بقية السيولة لتغطية الأيام القادمة بكل راحة.
                         `;
                     }
-                    showToast('تم توليد خطة الأهداف الذكية بنجاح! ✨', 'success', true);
+                    showToast('تم تحديث الخطة الذكية بنجاح! ✨', 'success', true);
                 } finally {
                     if (btn) {
                         btn.disabled = false;
@@ -8784,9 +9183,10 @@ Return JSON:
         }
 
         function applyAiGoalDistribution() {
-            const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
-            if (monthlyRemaining <= 0) {
-                showToast('لا يوجد فائض مالي متبقي للتوزيع حالياً', 'warning', true);
+            const m = computeSmartPlannerMetrics();
+            const safeAmount = m.netSafeSurplus > 0 ? m.netSafeSurplus : Math.round(m.monthlyRemaining * 0.25);
+            if (safeAmount <= 0) {
+                showToast('لا يوجد فائض صافي آمن للتوزيع حالياً بعد احتساب مصروفات الأيام المتبقية', 'warning', true);
                 return;
             }
 
@@ -8796,20 +9196,20 @@ Return JSON:
                 return;
             }
 
-            const perGoal = Math.floor(monthlyRemaining / pendingGoals.length);
+            const perGoal = Math.floor(safeAmount / pendingGoals.length);
             if (perGoal <= 0) return;
 
             pendingGoals.forEach(g => {
                 g.savedAmount = (g.savedAmount || 0) + perGoal;
-                recordSavingsHistoryEntry(`توزيع ذكي للفائض إلى هدف: ${g.title}`, perGoal);
+                recordSavingsHistoryEntry(`توزيع ذكي للصافي المتوقع إلى هدف: ${g.title}`, perGoal, 'من مخطط الـ AI الذكي', true);
             });
 
             saveLocalData();
             renderSavingsPage();
             renderDashboard();
             runAiGoalPlanner();
-            addNotification(`🎯 تم تطبيق التوزيع الذكي: إيداع ${formatEn(perGoal)} في كل هدف ادخاري نشط`, 'success');
-            showToast(`تم توزيع الفائض بنجاح (${formatEn(perGoal)} لكل هدف)!`, 'success', true);
+            addNotification(`🎯 تم تطبيق التوزيع الذكي للصافي: إيداع ${formatEn(perGoal)} في كل هدف ادخاري نشط`, 'success');
+            showToast(`تم ادخار وتوزيع الصافي الآمن بنجاح (${formatEn(perGoal)} لكل هدف)!`, 'success', true);
         }
 
         function generateWeeklyFinancialSummary() {
