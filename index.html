@@ -2047,7 +2047,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.5</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.6</div>
             </div>
         </div>
 
@@ -2187,9 +2187,9 @@
                         </div>
                         <div class="v13-kpi-label">قيمة إجمالي مخصصات البنود</div>
                     </div>
-                    <div class="v13-kpi-tile tile-dashed" onclick="openQuickKpiAnalyticsModal()">
+                    <div class="v13-kpi-tile tile-dashed" onclick="openQuickKpiAnalyticsModal(true)">
                         <div class="v13-kpi-number" id="bento-kpi-tx-count" dir="ltr">0</div>
-                        <div class="v13-kpi-label">عمليات الصرف المسجلة</div>
+                        <div class="v13-kpi-label">عمليات الصرف المسجلة (اضغط لعرض سجل البنود)</div>
                     </div>
                     <div class="v13-kpi-tile tile-orange" onclick="openSavingsDetailsModal()">
                         <div class="v13-kpi-number" id="bento-kpi-savings" dir="ltr">0</div>
@@ -2333,7 +2333,14 @@
                             <button class="btn-edit-badge" onclick="event.stopPropagation(); openEmergencyHistoryModal()"><i class="fas fa-history"></i> السجل</button>
                         </div>
                         <div class="stat-row"><span>المتوفر في الصندوق:</span><span class="stat-value text-success" id="emergency-saved-display" dir="ltr">0 ﷼</span></div>
-                        <div style="display:flex; gap:10px; margin-top:14px;">
+                        <div class="stat-row" style="margin-bottom:8px; padding-bottom:8px;">
+                            <span style="font-size:0.86em; color:var(--text-muted);"><i class="fas fa-link text-primary"></i> المتبقي من الميزانية الشهرية:</span>
+                            <span class="stat-value text-primary" id="emergency-monthly-rem-display" dir="ltr" style="font-size:0.98em;">0 ﷼</span>
+                        </div>
+                        <div style="font-size:0.76em; color:var(--text-muted); margin-bottom:10px; background:rgba(255,85,32,0.06); padding:6px 10px; border-radius:10px; border:1px dashed rgba(255,85,32,0.25);">
+                            مرتبط بالميزانية الشهرية المتبقية (يُخصم السحب تلقائياً من المتبقي: <strong class="text-danger" id="emergency-withdrawn-total-display" dir="ltr">0 ﷼</strong>)
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
                             <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:10px; background:var(--success); border-color:var(--success); box-shadow:0 8px 20px -4px rgba(16,185,129,0.35);" onclick="event.stopPropagation(); depositEmergencyFund()"><i class="fas fa-plus"></i> إيداع</button>
                             <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:10px; background:var(--danger); border-color:var(--danger); box-shadow:0 8px 20px -4px rgba(239,68,68,0.35);" onclick="event.stopPropagation(); withdrawEmergencyFund()"><i class="fas fa-minus"></i> سحب</button>
                         </div>
@@ -2493,6 +2500,10 @@
                         </div>
                         <div class="form-group"><label>المبلغ الإجمالي</label><input type="number" id="bill-split-amount" readonly style="background: var(--bg-color); color: var(--text-muted);"></div>
                         <div class="form-group"><label>تقسيم على (عدد الأيام)</label><input type="number" id="bill-split-days" value="3" min="2" oninput="calculateBillSplitPreview()"></div>
+                        <div class="form-group">
+                            <label>بداية التقسيم (تاريخ بدء الخصم)</label>
+                            <input type="date" id="bill-split-start-date" dir="ltr" onchange="calculateBillSplitPreview()" oninput="calculateBillSplitPreview()">
+                        </div>
                         <div id="bill-split-result-box" style="margin-bottom:14px;"></div>
                         <button type="button" class="primary-btn" style="width:100%; justify-content:center;" onclick="executeBillSplit()"><i class="fas fa-check-circle"></i> تم (اعتماد وجدولة السحب)</button>
                     </div>
@@ -2559,11 +2570,11 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
                         <div>
                             <h3 style="margin:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.5</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.6</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 12px; padding: 6px 12px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.5</div>
+                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.6</div>
                         </div>
                     </div>
                     
@@ -3152,20 +3163,35 @@
         </div>
     </div>
 
-    <!-- نافذة التحليل السريع للـ KPI العلوية -->
+    <!-- نافذة التحليل السريع للـ KPI العلوية مع القائمة الجانبية لسجل البند -->
     <div id="kpiAnalyticsModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:16px;">
-                <h3 style="margin:0; font-size:1.15em;"><i class="fas fa-chart-pie text-primary"></i> تحليل الاستهلاك السريع</h3>
-                <button class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('kpiAnalyticsModal')"><i class="fas fa-times"></i></button>
+        <div id="kpi-analytics-dual-wrapper" style="display:flex; align-items:stretch; justify-content:center; gap:16px; width:100%; max-width:980px; max-height:90vh; flex-wrap:wrap; overflow-y:auto;">
+            <div class="modal-content" style="max-width: 480px; flex: 1 1 340px; margin:0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:16px;">
+                    <h3 id="kpi-analytics-modal-title" style="margin:0; font-size:1.15em;"><i class="fas fa-chart-pie text-primary"></i> تحليل الاستهلاك السريع</h3>
+                    <button type="button" class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeKpiCategorySidePanel(); closeModal('kpiAnalyticsModal');"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div style="position:relative; height:220px; width:100%; margin-bottom: 20px;">
+                    <canvas id="kpiQuickChart"></canvas>
+                </div>
+                
+                <h4 id="kpi-categories-list-heading" style="margin:0 0 10px 0; font-size:0.95em; color:var(--text-muted);"><i class="fas fa-fire text-danger"></i> أكثر البنود استهلاكاً:</h4>
+                <div id="kpi-top-categories-list" style="display:flex; flex-direction:column; gap:8px; max-height:240px; overflow-y:auto; padding-bottom: 10px;"></div>
             </div>
-            
-            <div style="position:relative; height:220px; width:100%; margin-bottom: 20px;">
-                <canvas id="kpiQuickChart"></canvas>
+
+            <!-- القائمة المنبثقة الجانبية (على اليسار بعد تحليل الاستهلاك السريع) لعرض السجل الكامل للبند المختار -->
+            <div id="kpi-category-side-panel" class="modal-content" style="display:none; max-width: 460px; flex: 1 1 320px; margin:0; border: 2px solid var(--primary-color);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:14px;">
+                    <div>
+                        <h3 id="kpi-side-panel-title" style="margin:0; font-size:1.08em;"><i class="fas fa-list-check text-primary"></i> السجل الكامل للبند</h3>
+                        <div id="kpi-side-panel-subtitle" style="font-size:0.76em; color:var(--text-muted); margin-top:2px;">المصروفات المسجلة</div>
+                    </div>
+                    <button type="button" class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeKpiCategorySidePanel()" title="إغلاق القائمة الجانبية"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="kpi-side-panel-summary" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; text-align:center;"></div>
+                <div id="kpi-side-panel-expenses-list" style="display:flex; flex-direction:column; gap:8px; max-height:380px; overflow-y:auto; padding-bottom:6px;"></div>
             </div>
-            
-            <h4 style="margin:0 0 10px 0; font-size:0.95em; color:var(--text-muted);"><i class="fas fa-fire text-danger"></i> أكثر البنود استهلاكاً:</h4>
-            <div id="kpi-top-categories-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; padding-bottom: 10px;"></div>
         </div>
     </div>
 
@@ -3229,6 +3255,22 @@
                 <button class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('emergencyHistoryModal')"><i class="fas fa-times"></i></button>
             </div>
 
+            <!-- شريط الربط المباشر مع الميزانية الشهرية المتبقية داخل السجل -->
+            <div id="em-history-budget-banner" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px; text-align:center;">
+                <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:8px 6px;">
+                    <div style="font-size:0.72em; color:var(--text-muted); font-weight:800;">المتوفر بالصندوق</div>
+                    <div id="em-hist-saved-val" class="font-bold text-success" style="font-size:0.95em; margin-top:2px;" dir="ltr">0 ﷼</div>
+                </div>
+                <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:8px 6px;">
+                    <div style="font-size:0.72em; color:var(--text-muted); font-weight:800;">المسحوب من المتبقي</div>
+                    <div id="em-hist-withdrawn-val" class="font-bold text-danger" style="font-size:0.95em; margin-top:2px;" dir="ltr">0 ﷼</div>
+                </div>
+                <div style="background:rgba(255,85,32,0.08); border:1px solid rgba(255,85,32,0.28); border-radius:12px; padding:8px 6px;">
+                    <div style="font-size:0.72em; color:var(--text-muted); font-weight:800;">المتبقي الشهري</div>
+                    <div id="em-hist-monthly-rem-val" class="font-bold text-primary" style="font-size:0.95em; margin-top:2px;" dir="ltr">0 ﷼</div>
+                </div>
+            </div>
+
             <!-- أزرار إيداع وسحب سريعة من داخل السجل نفسه -->
             <div style="display:flex; gap:8px; margin-bottom:14px;">
                 <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:9px; font-size:0.86em; background:var(--success); border-color:var(--success); box-shadow:none;" onclick="depositEmergencyFund()"><i class="fas fa-plus"></i> إيداع جديد</button>
@@ -3274,6 +3316,14 @@
             <div class="stat-row"><span>اسم المصروف:</span><span class="stat-value" id="split-detail-store"></span></div>
             <div class="stat-row"><span>المبلغ الإجمالي:</span><span class="stat-value text-danger" id="split-detail-amount" dir="ltr"></span></div>
             <div class="stat-row"><span>تم تقسيمها على:</span><span class="stat-value"><span id="split-detail-days"></span> أيام</span></div>
+            <div class="stat-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+                <span style="font-size:0.88em; color:var(--text-muted); font-weight:700;">فترة التقسيم (من — إلى):</span>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-color); padding:10px 14px; border-radius:12px; border:1px solid var(--border-color); font-weight:800; font-size:0.92em;">
+                    <span>من <strong id="split-detail-start-date" class="text-primary" dir="ltr"></strong></span>
+                    <span style="flex:1; height:2px; background:linear-gradient(90deg, var(--primary-color), var(--success)); border-radius:999px; min-width:28px;"></span>
+                    <span>إلى <strong id="split-detail-end-date" class="text-success" dir="ltr"></strong></span>
+                </div>
+            </div>
             <div class="stat-row"><span>قيمة السحب اليومي:</span><span class="stat-value text-warning" id="split-detail-daily" dir="ltr"></span></div>
             
             <div id="split-detail-actions" style="margin-top: 20px;"></div>
@@ -4011,6 +4061,7 @@
                     lastModifiedAt: APP_STATE.lastModifiedAt || 0,
                     deletedExpenseIds: (APP_STATE.deletedExpenseIds || []).slice(-200)
                 });
+                localStorage.setItem('smart_budget_local_backup_v66', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v65', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v64', backupPayload);
             } catch(e) {}
@@ -4031,12 +4082,13 @@
                 }
 
                 // قراءة النسخة الاحتياطية المحلية دائماً بدون مسحها عند إعادة التحميل (حتى تُحفظ المصروفات والرصيد البنكي في جميع الحالات)
+                const savedBackupV66 = localStorage.getItem('smart_budget_local_backup_v66');
                 const savedBackupV65 = localStorage.getItem('smart_budget_local_backup_v65');
                 const savedBackupV64 = localStorage.getItem('smart_budget_local_backup_v64');
                 const savedBackupV63 = localStorage.getItem('smart_budget_local_backup_v63');
                 const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v62');
                 const savedBackupLegacy = !isLoggedOutFlag ? localStorage.getItem('smart_budget_local_backup_v48') : null;
-                const backupRaw = savedBackupV65 || savedBackupV64 || savedBackupV63 || savedBackupV62 || savedBackupLegacy;
+                const backupRaw = savedBackupV66 || savedBackupV65 || savedBackupV64 || savedBackupV63 || savedBackupV62 || savedBackupLegacy;
 
                 if (backupRaw) {
                     const parsedBackup = JSON.parse(backupRaw);
@@ -4076,7 +4128,7 @@
                     if (savedActCode) APP_STATE.activationCode = savedActCode;
                 }
 
-                if (savedBackupLegacy || (!savedBackupV65 && backupRaw)) {
+                if (savedBackupLegacy || (!savedBackupV66 && backupRaw)) {
                     localStorage.removeItem('smart_budget_local_backup_v48');
                     saveLocalData(true);
                 }
@@ -4581,6 +4633,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v62');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v66');
                 localStorage.removeItem('smart_budget_local_backup_v65');
                 localStorage.removeItem('smart_budget_last_modified_at');
                 localStorage.removeItem('smart_budget_app_pin');
@@ -4906,6 +4959,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v66');
                 localStorage.removeItem('smart_budget_local_backup_v65');
                 localStorage.removeItem('smart_budget_last_modified_at');
                 localStorage.removeItem('smart_budget_app_pin');
@@ -5102,6 +5156,16 @@
         function calculateMonthlySpent() {
             return (APP_STATE.expenses || []).reduce((sum, e) => sum + (parseFloat(e && e.amount) || 0), 0);
         }
+        function calculateEmergencyWithdrawalsTotal() {
+            return (APP_STATE.emergencyFundHistory || [])
+                .filter(r => r && r.type === 'withdraw')
+                .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+        }
+        function calculateMonthlyRemaining() {
+            const mSpent = calculateMonthlySpent();
+            const emWithdrawn = calculateEmergencyWithdrawalsTotal();
+            return (parseFloat(APP_STATE.monthlyBudget) || 0) - mSpent - emWithdrawn;
+        }
         function calculateDailySpent() {
             const todayStr = getLocalTodayDateStr();
             return (APP_STATE.expenses || []).filter(e => e && e.date && String(e.date).startsWith(todayStr)).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
@@ -5109,12 +5173,14 @@
 
         function renderDashboard() {
             const mSpent = calculateMonthlySpent();
+            const emWithdrawn = calculateEmergencyWithdrawalsTotal();
+            const mRemaining = calculateMonthlyRemaining();
             const dSpent = calculateDailySpent();
             
             document.getElementById('display-monthly-budget').innerText = formatEn(APP_STATE.monthlyBudget);
             document.getElementById('display-monthly-spent').innerText = formatEn(mSpent);
-            document.getElementById('display-monthly-remaining').innerText = formatEn(APP_STATE.monthlyBudget - mSpent);
-            document.getElementById('monthly-progress-fill').style.width = Math.min(100, (mSpent/Math.max(1, APP_STATE.monthlyBudget))*100) + '%';
+            document.getElementById('display-monthly-remaining').innerText = formatEn(mRemaining);
+            document.getElementById('monthly-progress-fill').style.width = Math.min(100, ((mSpent + emWithdrawn)/Math.max(1, APP_STATE.monthlyBudget))*100) + '%';
             
             document.getElementById('display-daily-budget').innerText = formatEn(APP_STATE.dailyBudget);
             document.getElementById('display-daily-spent').innerText = formatEn(dSpent);
@@ -5776,21 +5842,106 @@
             showToast('تم حذف المصروف وتحديث الرصيد', 'info', true);
         }
 
-        function openQuickKpiAnalyticsModal() {
+        let isKpiCategoryLogMode = false;
+        let activeKpiSideCategory = null;
+
+        function closeKpiCategorySidePanel() {
+            activeKpiSideCategory = null;
+            const sidePanel = document.getElementById('kpi-category-side-panel');
+            if (sidePanel) sidePanel.style.display = 'none';
+            document.querySelectorAll('#kpi-top-categories-list .kpi-cat-row-item').forEach(el => {
+                el.style.borderColor = 'var(--border-color)';
+                el.style.background = 'var(--surface-color)';
+            });
+        }
+
+        function openKpiCategorySideLog(catName) {
+            activeKpiSideCategory = catName;
+            const sidePanel = document.getElementById('kpi-category-side-panel');
+            const titleEl = document.getElementById('kpi-side-panel-title');
+            const subEl = document.getElementById('kpi-side-panel-subtitle');
+            const sumEl = document.getElementById('kpi-side-panel-summary');
+            const listEl = document.getElementById('kpi-side-panel-expenses-list');
+            if (!sidePanel || !listEl) return;
+
+            const catObj = (APP_STATE.categories || []).find(c => c.name === catName) || { name: catName, budget: 0, icon: 'fa-tags' };
+            const catExpenses = (APP_STATE.expenses || []).filter(e => e.category === catName);
+            const totalSpent = catExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+            const rem = Math.max(0, (parseFloat(catObj.budget) || 0) - totalSpent);
+
+            if (titleEl) {
+                titleEl.innerHTML = `<i class="fas ${catObj.icon || 'fa-folder-open'} text-primary"></i> سجل: ${catName}`;
+            }
+            if (subEl) {
+                subEl.innerText = `إجمالي العمليات المسجلة في هذا البند: ${catExpenses.length} عملية`;
+            }
+            if (sumEl) {
+                sumEl.innerHTML = `
+                    <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.22); border-radius:12px; padding:8px;">
+                        <div style="font-size:0.72em; color:var(--danger); font-weight:800;">إجمالي صرف البند</div>
+                        <div class="font-bold text-danger" style="font-size:1em; margin-top:2px;" dir="ltr">${formatEn(totalSpent)}</div>
+                    </div>
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.22); border-radius:12px; padding:8px;">
+                        <div style="font-size:0.72em; color:var(--success); font-weight:800;">المتبقي في البند</div>
+                        <div class="font-bold text-success" style="font-size:1em; margin-top:2px;" dir="ltr">${formatEn(rem)}</div>
+                    </div>
+                `;
+            }
+
+            listEl.innerHTML = '';
+            if (catExpenses.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; padding:22px 12px; color:var(--text-muted); font-size:0.88em; background:var(--surface-card); border-radius:14px;">لا توجد عمليات صرف مسجلة في هذا البند حتى الآن.</div>';
+            } else {
+                catExpenses.forEach(e => {
+                    const datePart = e.date ? e.date.replace('T', ' ').slice(0, 16) : '';
+                    const methodInfo = e.method ? `${e.method}${e.bank ? ' (' + e.bank + ')' : ''}` : '';
+                    const hasReceipt = !!(e.receiptImage || getReceiptImageFromLocalCache(e.id));
+                    const receiptBadge = hasReceipt ? `<span style="font-size:0.7em; background:rgba(255,85,32,0.12); color:var(--primary-color); padding:2px 7px; border-radius:999px; margin-right:6px; font-weight:800;"><i class="fas fa-image"></i> فاتورة</span>` : '';
+                    listEl.innerHTML += `
+                        <div style="background:var(--surface-color); border:1px solid var(--border-color); padding:11px 14px; border-radius:13px; display:flex; justify-content:space-between; align-items:center; gap:10px; cursor:pointer; transition:all 0.2s ease;" onclick="closeModal('kpiAnalyticsModal'); openExpenseDetailsModal('${e.id}')">
+                            <div style="min-width:0; flex:1;">
+                                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+                                    <strong style="font-size:0.94em; color:var(--text-main);">${e.store}</strong>
+                                    ${receiptBadge}
+                                </div>
+                                <div style="font-size:0.75em; color:var(--text-muted); margin-top:3px;">
+                                    ${methodInfo ? `<span>${methodInfo}</span> • ` : ''}<span dir="ltr">${datePart}</span>
+                                </div>
+                            </div>
+                            <span class="text-danger font-bold" style="font-size:1.02em; flex-shrink:0;" dir="ltr">-${formatEn(e.amount)}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            document.querySelectorAll('#kpi-top-categories-list .kpi-cat-row-item').forEach(el => {
+                const isSelected = el.getAttribute('data-cat-name') === catName;
+                el.style.borderColor = isSelected ? 'var(--primary-color)' : 'var(--border-color)';
+                el.style.background = isSelected ? 'rgba(255,85,32,0.08)' : 'var(--surface-color)';
+            });
+
+            sidePanel.style.display = 'block';
+        }
+
+        function openQuickKpiAnalyticsModal(enableCategoryLog = false) {
+            isKpiCategoryLogMode = Boolean(enableCategoryLog);
+            closeKpiCategorySidePanel();
+
             const labels = [];
             const data = [];
             let categoryData = [];
 
             (APP_STATE.categories || []).forEach(c => {
-                const spent = (APP_STATE.expenses || []).filter(e => e.category === c.name).reduce((sum, e) => sum + parseFloat(e.amount), 0);
-                if (spent > 0) {
-                    categoryData.push({ name: c.name, spent: spent, budget: c.budget });
+                const catExps = (APP_STATE.expenses || []).filter(e => e.category === c.name);
+                const spent = catExps.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
+                if (spent > 0 || isKpiCategoryLogMode) {
+                    categoryData.push({ name: c.name, spent: spent, budget: c.budget, txCount: catExps.length });
                 }
             });
 
             categoryData.sort((a, b) => b.spent - a.spent);
 
-            categoryData.forEach(c => {
+            categoryData.filter(c => c.spent > 0).forEach(c => {
                 labels.push(c.name);
                 data.push(c.spent);
             });
@@ -5816,6 +5967,13 @@
                 }
             }
 
+            const headingEl = document.getElementById('kpi-categories-list-heading');
+            if (headingEl) {
+                headingEl.innerHTML = isKpiCategoryLogMode
+                    ? '<i class="fas fa-hand-pointer text-primary"></i> اضغط على أي بند لفتح سجله الكامل في القائمة الجانبية:'
+                    : '<i class="fas fa-fire text-danger"></i> أكثر البنود استهلاكاً:';
+            }
+
             const listDiv = document.getElementById('kpi-top-categories-list');
             listDiv.innerHTML = '';
             if (categoryData.length === 0) {
@@ -5823,15 +5981,32 @@
             } else {
                 categoryData.forEach(c => {
                     const pct = c.budget > 0 ? Math.round((c.spent / c.budget) * 100) : 0;
-                    listDiv.innerHTML += `
-                        <div style="background:var(--surface-color); border:1px solid var(--border-color); padding:10px 14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <strong style="font-size:0.95em;">${c.name}</strong>
-                                <div style="font-size:0.75em; color:var(--text-muted); margin-top:2px;">استهلكت ${pct}% من المخصص</div>
+                    const safeCatAttr = c.name.replace(/"/g, '&quot;');
+                    const safeCatJs = encodeURIComponent(c.name);
+                    if (isKpiCategoryLogMode) {
+                        listDiv.innerHTML += `
+                            <div class="kpi-cat-row-item" data-cat-name="${safeCatAttr}" style="background:var(--surface-color); border:1.5px solid var(--border-color); padding:11px 14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:all 0.2s ease;" onclick="openKpiCategorySideLog(decodeURIComponent('${safeCatJs}'))">
+                                <div>
+                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                        <strong style="font-size:0.95em;">${c.name}</strong>
+                                        <span style="font-size:0.72em; background:rgba(255,85,32,0.12); color:var(--primary-color); padding:2px 8px; border-radius:999px; font-weight:800;"><i class="fas fa-arrow-left"></i> السجل (${c.txCount})</span>
+                                    </div>
+                                    <div style="font-size:0.75em; color:var(--text-muted); margin-top:2px;">استهلكت ${pct}% من المخصص • اضغط لعرض السجل الكامل</div>
+                                </div>
+                                <span class="text-danger font-bold" style="font-size:1.05em;" dir="ltr">${formatEn(c.spent)}</span>
                             </div>
-                            <span class="text-danger font-bold" style="font-size:1.05em;" dir="ltr">${formatEn(c.spent)}</span>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        listDiv.innerHTML += `
+                            <div style="background:var(--surface-color); border:1px solid var(--border-color); padding:10px 14px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <strong style="font-size:0.95em;">${c.name}</strong>
+                                    <div style="font-size:0.75em; color:var(--text-muted); margin-top:2px;">استهلكت ${pct}% من المخصص</div>
+                                </div>
+                                <span class="text-danger font-bold" style="font-size:1.05em;" dir="ltr">${formatEn(c.spent)}</span>
+                            </div>
+                        `;
+                    }
                 });
             }
 
@@ -5919,8 +6094,8 @@
                         <div style="font-size:1.15em; font-weight:900; color:#3b82f6; margin-top:4px;" dir="ltr">${formatEn(goalsSaved)}</div>
                     </div>
                     <div style="background:var(--surface-card); padding:12px 10px; border-radius:16px; border:1px solid var(--border-color);">
-                        <div style="font-size:0.74em; color:var(--text-muted); font-weight:800;">عمليات وأيام الادخار</div>
-                        <div style="font-size:1.15em; font-weight:900; color:var(--text-main); margin-top:4px;">${combinedHistory.length + positiveSavingDays.length} يوم/عملية</div>
+                        <div style="font-size:0.74em; color:var(--text-muted); font-weight:800;">المتبقي الشهري</div>
+                        <div style="font-size:1.12em; font-weight:900; color:var(--text-main); margin-top:4px;" dir="ltr">${formatEn(calculateMonthlyRemaining())}</div>
                     </div>
                 `;
             }
@@ -7538,9 +7713,29 @@ Return JSON:
 
         function renderEmergencyFundUI() {
             const savedEl = document.getElementById('emergency-saved-display');
-            if (!savedEl) return;
             const saved = parseFloat(APP_STATE.emergencySaved || 0);
-            savedEl.innerText = formatEn(saved);
+            if (savedEl) savedEl.innerText = formatEn(saved);
+
+            const mRem = calculateMonthlyRemaining();
+            const emWithdrawn = calculateEmergencyWithdrawalsTotal();
+
+            const remEl = document.getElementById('emergency-monthly-rem-display');
+            if (remEl) {
+                remEl.innerText = formatEn(mRem);
+                remEl.className = 'stat-value ' + (mRem < 0 ? 'text-danger' : 'text-primary');
+            }
+            const withEl = document.getElementById('emergency-withdrawn-total-display');
+            if (withEl) withEl.innerText = formatEn(emWithdrawn);
+
+            const histSavedEl = document.getElementById('em-hist-saved-val');
+            if (histSavedEl) histSavedEl.innerText = formatEn(saved);
+            const histWithEl = document.getElementById('em-hist-withdrawn-val');
+            if (histWithEl) histWithEl.innerText = formatEn(emWithdrawn);
+            const histRemEl = document.getElementById('em-hist-monthly-rem-val');
+            if (histRemEl) {
+                histRemEl.innerText = formatEn(mRem);
+                histRemEl.className = 'font-bold ' + (mRem < 0 ? 'text-danger' : 'text-primary');
+            }
         }
 
         function depositEmergencyFund() {
@@ -7612,12 +7807,13 @@ Return JSON:
                 showToast('تم الإيداع في صندوق الطوارئ وحفظ السبب بنجاح', 'success');
             } else {
                 APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) - amt;
-                APP_STATE.emergencyFundHistory.unshift({ id: Date.now(), type: 'withdraw', amount: amt, date: dateStr, note: noteVal });
-                showToast('تم السحب من صندوق الطوارئ وحفظ سبب السحب بنجاح', 'info');
+                APP_STATE.emergencyFundHistory.unshift({ id: Date.now(), type: 'withdraw', amount: amt, date: dateStr, note: noteVal, deductedFromMonthly: true });
+                showToast(`تم السحب من صندوق الطوارئ وخصم (${formatEn(amt)}) من الميزانية الشهرية المتبقية`, 'info');
             }
 
             saveLocalData();
             renderEmergencyFundUI();
+            renderSavingsPage();
             renderDashboard();
             closeModal('emergencyActionModal');
 
@@ -7630,6 +7826,7 @@ Return JSON:
             const editBox = document.getElementById('em-history-edit-box');
             if (editBox && !autoEditId) editBox.style.display = 'none';
 
+            renderEmergencyFundUI();
             const list = document.getElementById('em-history-list');
             list.innerHTML = '';
             if (!APP_STATE.emergencyFundHistory || APP_STATE.emergencyFundHistory.length === 0) {
@@ -7642,6 +7839,9 @@ Return JSON:
                     const sign = isDep ? '+' : '-';
                     const colorClass = isDep ? 'text-success' : 'text-danger';
                     const title = isDep ? 'إيداع' : 'سحب';
+                    const budgetBadge = isDep
+                        ? ''
+                        : `<span style="font-size:0.68em; background:rgba(239,68,68,0.12); color:var(--danger); padding:2px 7px; border-radius:999px; font-weight:800;">خُصم من المتبقي الشهري</span>`;
                     const reasonLabel = isDep ? 'سبب الإيداع:' : 'سبب السحب:';
                     const noteHtml = record.note
                         ? `<div style="font-size:0.84em; color:var(--text-main); font-weight:700; margin-top:3px;"><span style="color:var(--primary-color);">${reasonLabel}</span> ${record.note}</div>`
@@ -7656,6 +7856,7 @@ Return JSON:
                                 <div style="flex:1; min-width:0;">
                                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                                         <strong style="font-size:0.96em;">${title}</strong>
+                                        ${budgetBadge}
                                         <span style="font-size:0.72em; color:var(--text-muted);" dir="ltr">${record.date || ''}</span>
                                     </div>
                                     ${noteHtml}
@@ -7740,10 +7941,11 @@ Return JSON:
 
             saveLocalData();
             renderEmergencyFundUI();
+            renderSavingsPage();
             renderDashboard();
             cancelEmergencyHistoryEdit();
             openEmergencyHistoryModal();
-            showToast('تم حفظ التعديل في السجل وتحديث الرصيد بنجاح! ✅', 'success');
+            showToast('تم حفظ التعديل في السجل وتحديث المتبقي من الميزانية بنجاح! ✅', 'success');
         }
 
         function deleteEmergencyHistoryRecord() {
@@ -7761,10 +7963,11 @@ Return JSON:
 
             saveLocalData();
             renderEmergencyFundUI();
+            renderSavingsPage();
             renderDashboard();
             cancelEmergencyHistoryEdit();
             openEmergencyHistoryModal();
-            showToast('تم حذف العملية من السجل وتحديث الرصيد', 'info');
+            showToast('تم حذف العملية من السجل وتحديث المتبقي من الميزانية', 'info');
         }
 
         function createNewSavingsGoal() {
@@ -7813,8 +8016,7 @@ Return JSON:
             }
             updateSelectedDayRolloverDisplay();
 
-            const monthlySpent = calculateMonthlySpent();
-            const monthlyRemaining = Math.max(0, APP_STATE.monthlyBudget - monthlySpent);
+            const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
             const mRemEl = document.getElementById('savings-monthly-remaining');
             if (mRemEl) mRemEl.innerText = formatEn(monthlyRemaining);
 
@@ -7898,8 +8100,7 @@ Return JSON:
         }
 
         function executeMonthlyRollover() {
-            const monthlySpent = calculateMonthlySpent();
-            const monthlyRemaining = Math.max(0, APP_STATE.monthlyBudget - monthlySpent);
+            const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
             if (monthlyRemaining <= 0) {
                 showToast('لا يوجد فائض مالي متبقي في الشهر!', 'warning');
                 return;
@@ -8434,7 +8635,7 @@ Return JSON:
 
             const totalMonthly = APP_STATE.monthlyBudget || 0;
             const monthlySpent = calculateMonthlySpent();
-            const monthlyRemaining = Math.max(0, totalMonthly - monthlySpent);
+            const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
             const emergencySaved = parseFloat(APP_STATE.emergencySaved || 0);
             const goals = APP_STATE.savingsGoals || [];
 
@@ -8583,7 +8784,7 @@ Return JSON:
         }
 
         function applyAiGoalDistribution() {
-            const monthlyRemaining = Math.max(0, (APP_STATE.monthlyBudget || 0) - calculateMonthlySpent());
+            const monthlyRemaining = Math.max(0, calculateMonthlyRemaining());
             if (monthlyRemaining <= 0) {
                 showToast('لا يوجد فائض مالي متبقي للتوزيع حالياً', 'warning', true);
                 return;
@@ -8636,7 +8837,7 @@ Return JSON:
 
         function buildFinancialReportHTML() {
             const monthlySpent = calculateMonthlySpent();
-            const monthlyDiff = APP_STATE.monthlyBudget - monthlySpent;
+            const monthlyDiff = calculateMonthlyRemaining();
             const spentPercent = APP_STATE.monthlyBudget > 0 ? Math.min(100, Math.round((monthlySpent / APP_STATE.monthlyBudget) * 100)) : 0;
             const now = new Date();
             const dateStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
@@ -8878,6 +9079,31 @@ Return JSON:
             }, 450);
         }
         
+        function setSplitStartDateValue(dateYmd) {
+            const inp = document.getElementById('bill-split-start-date');
+            if (!inp) return;
+            const cleanDate = (dateYmd && String(dateYmd).split('T')[0]) || getLocalTodayDateStr();
+            inp.value = cleanDate;
+            if (inp._flatpickr) {
+                try { inp._flatpickr.setDate(cleanDate, false, 'Y-m-d'); } catch (e) {}
+            }
+        }
+
+        function computeSplitStartAndEndDates(rawStartDateStr, daysCount) {
+            const cleanStart = (rawStartDateStr && String(rawStartDateStr).split('T')[0]) || getLocalTodayDateStr();
+            const parts = cleanStart.split('-').map(Number);
+            const startObj = (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2]))
+                ? new Date(parts[0], parts[1] - 1, parts[2])
+                : new Date();
+            const safeDays = Math.max(1, parseInt(daysCount) || 1);
+            const endObj = new Date(startObj.getFullYear(), startObj.getMonth(), startObj.getDate() + (safeDays - 1));
+            return {
+                startStr: getLocalTodayDateStr(startObj),
+                endStr: getLocalTodayDateStr(endObj),
+                startObj: startObj
+            };
+        }
+
         function initBillSplitter() {
             const sel = document.getElementById('bill-split-expense-select');
             if(!sel) return;
@@ -8888,6 +9114,7 @@ Return JSON:
                 sel.innerHTML += `<option value="${e.id}">${e.store} - ${formatEn(e.amount)} (${datePart})</option>`;
             });
             document.getElementById('bill-split-amount').value = '';
+            setSplitStartDateValue(getLocalTodayDateStr());
             document.getElementById('bill-split-result-box').innerHTML = '';
         }
 
@@ -8901,6 +9128,8 @@ Return JSON:
             const exp = APP_STATE.expenses.find(e => e.id === selId);
             if(exp) {
                 document.getElementById('bill-split-amount').value = exp.amount;
+                const expDateStr = exp.date ? exp.date.split('T')[0] : getLocalTodayDateStr();
+                setSplitStartDateValue(expDateStr);
                 calculateBillSplitPreview();
             }
         }
@@ -8908,11 +9137,18 @@ Return JSON:
         function calculateBillSplitPreview() {
             const amount = parseFloat(document.getElementById('bill-split-amount').value) || 0;
             const days = parseInt(document.getElementById('bill-split-days').value) || 1;
+            const startInputVal = document.getElementById('bill-split-start-date')?.value || getLocalTodayDateStr();
             const resBox = document.getElementById('bill-split-result-box');
             if (amount > 0 && days > 0) {
                 const daily = (amount / days).toFixed(2);
+                const { startStr, endStr } = computeSplitStartAndEndDates(startInputVal, days);
                 resBox.innerHTML = `<div style="background:var(--surface-card); padding:14px; border-radius:14px; border:1px solid var(--border-color); color:var(--text-main);">
-                    <i class="fas fa-bolt text-warning"></i> سيتم تقسيم المبلغ ليكون السحب التلقائي <span class="text-danger font-bold" dir="ltr">${formatEn(daily)}</span> يومياً لمدة ${days} أيام قادمة.
+                    <div><i class="fas fa-bolt text-warning"></i> سيتم تقسيم المبلغ ليكون السحب التلقائي <span class="text-danger font-bold" dir="ltr">${formatEn(daily)}</span> يومياً لمدة <strong>${days} أيام</strong>.</div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; padding:8px 12px; background:var(--surface-color); border-radius:10px; border:1px dashed var(--border-color); font-size:0.86em; font-weight:800;">
+                        <span>من <strong class="text-primary" dir="ltr">${startStr}</strong></span>
+                        <span style="flex:1; height:2px; background:linear-gradient(90deg, var(--primary-color), var(--success)); border-radius:999px; min-width:24px;"></span>
+                        <span>إلى <strong class="text-success" dir="ltr">${endStr}</strong></span>
+                    </div>
                 </div>`;
             } else {
                 resBox.innerHTML = '';
@@ -8930,15 +9166,19 @@ Return JSON:
             if(expIndex === -1) return;
             
             const origExp = APP_STATE.expenses[expIndex];
-            const dailyAmount = origExp.amount / days;
+            const dailyAmount = Number((origExp.amount / days).toFixed(2));
             const splitId = 'split-' + Date.now();
+            const chosenStart = document.getElementById('bill-split-start-date')?.value || (origExp.date ? origExp.date.split('T')[0] : getLocalTodayDateStr());
+            const { startStr, endStr, startObj } = computeSplitStartAndEndDates(chosenStart, days);
+            const origTimePart = (origExp.date && origExp.date.includes('T')) ? origExp.date.split('T')[1].slice(0, 8) : '12:00:00';
             
             const splitRecord = {
                 id: splitId,
                 origExp: origExp,
                 days: days,
                 dailyAmount: dailyAmount,
-                startDate: new Date().toISOString(),
+                startDate: startStr,
+                endDate: endStr,
                 status: 'active'
             };
             
@@ -8947,18 +9187,19 @@ Return JSON:
             
             APP_STATE.expenses.splice(expIndex, 1);
             
-            const baseDate = new Date();
-            for(let i=0; i<days; i++) {
-                const targetDate = new Date(baseDate);
-                targetDate.setDate(targetDate.getDate() + i);
+            for(let i = 0; i < days; i++) {
+                const targetDate = new Date(startObj.getFullYear(), startObj.getMonth(), startObj.getDate() + i);
+                const dayYmd = getLocalTodayDateStr(targetDate);
                 APP_STATE.expenses.unshift({
                     id: 'exp-' + Date.now() + '-' + i,
                     amount: dailyAmount,
                     store: origExp.store + ` (قسط ${i+1}/${days})`,
                     category: origExp.category,
-                    date: targetDate.toISOString(),
+                    date: `${dayYmd}T${origTimePart}`,
                     method: origExp.method,
                     bank: origExp.bank,
+                    bankDeducted: origExp.bankDeducted,
+                    bankDeductedAmount: origExp.bankDeducted ? dailyAmount : 0,
                     splitId: splitId
                 });
             }
@@ -8967,8 +9208,10 @@ Return JSON:
             initBillSplitter();
             renderSplitBillsHistory();
             renderDashboard();
+            renderCategories();
+            renderRecentExpenses();
             renderCalendar();
-            showToast('تم اعتماد التقسيم وجدولة السحب التلقائي بنجاح!', 'success');
+            showToast(`تم تقسيم الفاتورة من ${startStr} إلى ${endStr} بنجاح!`, 'success');
         }
 
         function renderSplitBillsHistory() {
@@ -8981,20 +9224,28 @@ Return JSON:
             }
             
             APP_STATE.splitBills.forEach(sb => {
-                const dateStr = sb.startDate ? sb.startDate.split('T')[0] : '';
+                const { startStr, endStr } = computeSplitStartAndEndDates(sb.startDate, sb.days);
+                const finalEndStr = sb.endDate ? sb.endDate.split('T')[0] : endStr;
                 const statusBadge = sb.status === 'active' 
                     ? `<span style="font-size:0.7em; background:rgba(16,185,129,0.12); color:var(--success); padding:3px 9px; border-radius:8px; font-weight:800;">نشط ومجدول</span>` 
                     : `<span style="font-size:0.7em; background:rgba(239,68,68,0.12); color:var(--danger); padding:3px 9px; border-radius:8px; font-weight:800;">ملغى</span>`;
                 
                 list.innerHTML += `
-                    <div style="background:var(--surface-color); border:1px solid var(--border-color); padding:12px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="openSplitBillModal('${sb.id}')">
-                        <div>
-                            <strong style="font-size:0.98em;">${sb.origExp.store}</strong> ${statusBadge}
-                            <div style="font-size:0.8em; color:var(--text-muted); margin-top:4px;">مقسمة على ${sb.days} أيام • ${dateStr}</div>
+                    <div style="background:var(--surface-color); border:1px solid var(--border-color); padding:12px 16px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:12px; cursor:pointer;" onclick="openSplitBillModal('${sb.id}')">
+                        <div style="flex:1; min-width:0;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <strong style="font-size:0.98em;">${sb.origExp.store}</strong> ${statusBadge}
+                            </div>
+                            <div style="font-size:0.8em; color:var(--text-muted); margin-top:4px; font-weight:700;">تم تقسيمها على ${sb.days} أيام</div>
+                            <div style="display:flex; align-items:center; gap:8px; margin-top:5px; font-size:0.78em; font-weight:800; background:var(--surface-card); padding:5px 10px; border-radius:8px; border:1px solid var(--border-color);">
+                                <span>من <span class="text-primary" dir="ltr">${startStr}</span></span>
+                                <span style="flex:1; height:1.5px; background:var(--border-color); min-width:16px;"></span>
+                                <span>إلى <span class="text-success" dir="ltr">${finalEndStr}</span></span>
+                            </div>
                         </div>
-                        <div style="text-align:left;">
+                        <div style="text-align:left; flex-shrink:0;">
                             <div class="text-danger font-bold" style="font-size:1.05em;" dir="ltr">${formatEn(sb.origExp.amount)}</div>
-                            <div style="font-size:0.75em; color:var(--text-muted);">${formatEn(sb.dailyAmount)} / يوم</div>
+                            <div style="font-size:0.75em; color:var(--text-muted); margin-top:2px;">${formatEn(sb.dailyAmount)} / يوم</div>
                         </div>
                     </div>
                 `;
@@ -9005,9 +9256,16 @@ Return JSON:
             const sb = APP_STATE.splitBills.find(s => s.id === id);
             if(!sb) return;
             
+            const { startStr, endStr } = computeSplitStartAndEndDates(sb.startDate, sb.days);
+            const finalEndStr = sb.endDate ? sb.endDate.split('T')[0] : endStr;
+
             document.getElementById('split-detail-store').innerText = sb.origExp.store;
             document.getElementById('split-detail-amount').innerText = formatEn(sb.origExp.amount);
             document.getElementById('split-detail-days').innerText = sb.days;
+            const startEl = document.getElementById('split-detail-start-date');
+            if (startEl) startEl.innerText = startStr;
+            const endEl = document.getElementById('split-detail-end-date');
+            if (endEl) endEl.innerText = finalEndStr;
             document.getElementById('split-detail-daily').innerText = formatEn(sb.dailyAmount);
             
             const actionsDiv = document.getElementById('split-detail-actions');
@@ -9560,7 +9818,7 @@ Return JSON:
 
             const mBudget = parseFloat(APP_STATE.monthlyBudget || 0);
             const mSpent = calculateMonthlySpent();
-            const mRem = mBudget - mSpent;
+            const mRem = calculateMonthlyRemaining();
             const mPct = mBudget > 0 ? Math.round((mSpent / mBudget) * 100) : 0;
 
             const dBudget = parseFloat(APP_STATE.dailyBudget || 0);
@@ -10193,7 +10451,7 @@ ${debtsText}
                 };
                 appFolder.file('manifest.json', JSON.stringify(desktopManifest, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pc-v65';
+                const swJs = `const CACHE_NAME = 'finexy-pc-v66';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
@@ -10418,7 +10676,7 @@ self.addEventListener('fetch', (e) => {
                 };
                 zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pwa-v65';
+                const swJs = `const CACHE_NAME = 'finexy-pwa-v66';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
