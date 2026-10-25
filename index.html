@@ -2036,6 +2036,206 @@
             }
         }
 
+    
+        /* === تصميم صفحة الإعدادات بالقوائم الجانبية (V6.9 Side-Menu Layout) === */
+        .settings-shell {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .settings-header-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            padding: 18px 22px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        .settings-layout-grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+        .settings-sidebar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 16px;
+        }
+        .settings-sidebar-title {
+            font-size: 0.78em;
+            font-weight: 800;
+            color: var(--text-muted);
+            padding: 6px 10px 4px 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .settings-nav-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-color);
+            text-align: right;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            font-family: inherit;
+        }
+        .settings-nav-btn:hover {
+            background: var(--surface-color);
+            border-color: var(--border-color);
+            transform: translateX(-2px);
+        }
+        .settings-nav-btn.active {
+            background: rgba(255, 85, 32, 0.12);
+            border-color: rgba(255, 85, 32, 0.35);
+            color: var(--primary-color);
+            box-shadow: 0 6px 18px -6px rgba(255, 85, 32, 0.25);
+        }
+        .settings-nav-btn.danger-tab.active {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.35);
+            color: var(--danger);
+            box-shadow: 0 6px 18px -6px rgba(239, 68, 68, 0.25);
+        }
+        .settings-nav-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            transition: all 0.22s ease;
+        }
+        .settings-nav-btn.active .settings-nav-icon {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+        .settings-nav-btn.danger-tab .settings-nav-icon {
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.08);
+        }
+        .settings-nav-btn.danger-tab.active .settings-nav-icon {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #fff;
+        }
+        .settings-nav-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+        }
+        .settings-nav-label {
+            font-size: 0.9em;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+        .settings-nav-sub {
+            font-size: 0.72em;
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .settings-content-area {
+            min-width: 0;
+        }
+        .settings-tab-pane {
+            display: none;
+            animation: settingsFadeIn 0.22s ease;
+        }
+        .settings-tab-pane.active {
+            display: block;
+        }
+        .settings-panel-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 16px;
+        }
+        .settings-panel-card:last-child {
+            margin-bottom: 0;
+        }
+        .settings-section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .settings-section-head h4 {
+            margin: 0;
+            font-size: 1.05em;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        @keyframes settingsFadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 768px) {
+            .settings-layout-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .settings-sidebar-card {
+                position: static;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+                gap: 8px;
+                scrollbar-width: none;
+            }
+            .settings-sidebar-card::-webkit-scrollbar {
+                display: none;
+            }
+            .settings-sidebar-title {
+                display: none;
+            }
+            .settings-nav-btn {
+                width: auto;
+                min-width: 155px;
+                flex-shrink: 0;
+                padding: 10px 12px;
+            }
+            .settings-nav-btn:hover {
+                transform: none;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -2047,7 +2247,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.8</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.9</div>
             </div>
         </div>
 
@@ -2340,9 +2540,6 @@
                             <span style="font-size:0.86em; color:var(--text-muted);"><i class="fas fa-link text-primary"></i> المتبقي من الميزانية الشهرية:</span>
                             <span class="stat-value text-primary" id="emergency-monthly-rem-display" dir="ltr" style="font-size:0.98em;">0 ﷼</span>
                         </div>
-                        <div style="font-size:0.76em; color:var(--text-muted); margin-bottom:10px; background:rgba(255,85,32,0.06); padding:6px 10px; border-radius:10px; border:1px dashed rgba(255,85,32,0.25);">
-                            مرتبط بالميزانية الشهرية المتبقية (يُخصم السحب تلقائياً من المتبقي: <strong class="text-danger" id="emergency-withdrawn-total-display" dir="ltr">0 ﷼</strong>)
-                        </div>
                         <div style="display:flex; gap:10px; margin-top:10px;">
                             <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:10px; background:var(--success); border-color:var(--success); box-shadow:0 8px 20px -4px rgba(16,185,129,0.35);" onclick="event.stopPropagation(); depositEmergencyFund()"><i class="fas fa-plus"></i> إيداع</button>
                             <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:10px; background:var(--danger); border-color:var(--danger); box-shadow:0 8px 20px -4px rgba(239,68,68,0.35);" onclick="event.stopPropagation(); withdrawEmergencyFund()"><i class="fas fa-minus"></i> سحب</button>
@@ -2600,192 +2797,286 @@
 
             <!-- Page: Settings -->
             <div id="page-settings" class="page-section">
-                <div class="card" style="max-width: 650px; margin: 0 auto;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px;">
+                <div class="settings-shell">
+                    <!-- شريط عنوان الإعدادات ورقم التحديث التلقائي -->
+                    <div class="settings-header-card">
                         <div>
-                            <h3 style="margin:0; font-size:1.2em;"><i class="fas fa-cog text-primary"></i> إعدادات التطبيق والمزامنة</h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 3px;" dir="ltr">Finexy • AI Cloud V6.8</div>
+                            <h3 style="margin:0; font-size:1.22em; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-sliders text-primary"></i> إعدادات التطبيق والمزامنة
+                            </h3>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V6.9</div>
                         </div>
-                        <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 12px; padding: 6px 12px; text-align: center;">
+                        <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 14px; padding: 7px 14px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.86em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.8</div>
+                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.9</div>
                         </div>
                     </div>
-                    
-                    <div class="form-group" style="margin-top: 16px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 18px; padding: 16px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-                            <label style="margin:0; font-size:0.95em;"><i class="fas fa-coins text-primary"></i> عملة التطبيق (أكثر من 35 عملة عالمية وعربية):</label>
-                            <span id="settings-active-currency-badge" class="btn-edit-badge" style="font-size:0.8em;">العملة الحالية: ﷼</span>
-                        </div>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">اختر عملتك المفضلة بضغطة واحدة من العملات الأساسية أو من القائمة الشاملة لـ 40 عملة منتشرة حول العالم:</p>
 
-                        <!-- أزرار اختيار سريع لأهم العملات العالمية والعربية -->
-                        <div class="currency-quick-chips" id="currency-quick-chips-box">
-                            <button type="button" class="currency-chip-btn" data-cur="﷼" onclick="selectAndSaveCurrency('﷼')">🇸🇦 الريال السعودي (﷼)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="$" onclick="selectAndSaveCurrency('$')">🇺🇸 الدولار الأمريكي ($)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="€" onclick="selectAndSaveCurrency('€')">🇪🇺 اليورو الأوروبي (€)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="£" onclick="selectAndSaveCurrency('£')">🇬🇧 الجنيه الإسترليني (£)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="¥" onclick="selectAndSaveCurrency('¥')">🇨🇳 اليوان الصيني (¥)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="د.إ" onclick="selectAndSaveCurrency('د.إ')">🇦🇪 الدرهم الإماراتي (د.إ)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="د.ك" onclick="selectAndSaveCurrency('د.ك')">🇰🇼 الدينار الكويتي (د.ك)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="ر.ق" onclick="selectAndSaveCurrency('ر.ق')">🇶🇦 الريال القطري (ر.ق)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="ج.م" onclick="selectAndSaveCurrency('ج.م')">🇪🇬 الجنيه المصري (ج.م)</button>
-                            <button type="button" class="currency-chip-btn" data-cur="₺" onclick="selectAndSaveCurrency('₺')">🇹🇷 الليرة التركية (₺)</button>
-                        </div>
+                    <!-- تخطيط القوائم الجانبية + محتوى القسم -->
+                    <div class="settings-layout-grid">
+                        <!-- القائمة الجانبية لتصنيف الإعدادات -->
+                        <div class="settings-sidebar-card" role="tablist" aria-label="أقسام الإعدادات">
+                            <div class="settings-sidebar-title"><i class="fas fa-layer-group text-primary"></i> أقسام الإعدادات</div>
 
-                        <!-- القائمة المنسدلة الشاملة لـ 40 عملة عالمية وعربية -->
-                        <div style="margin-bottom: 10px;">
-                            <label style="font-size:0.82em; color:var(--text-muted); margin-bottom:5px;">اختر من قائمة عملات العالم (40 عملة):</label>
-                            <select id="settings-currency-select" onchange="onCurrencyDropdownSelect(this.value)" style="width:100%; font-weight:800; cursor:pointer;">
-                                <optgroup label="🌟 أهم العملات العالمية الأساسية">
-                                    <option value="﷼">🇸🇦 الريال السعودي — Saudi Riyal (SAR / ﷼)</option>
-                                    <option value="$">🇺🇸 الدولار الأمريكي — US Dollar (USD / $)</option>
-                                    <option value="€">🇪🇺 اليورو الأوروبي — Euro (EUR / €)</option>
-                                    <option value="£">🇬🇧 الجنيه الإسترليني — British Pound (GBP / £)</option>
-                                    <option value="¥">🇨🇳 اليوان الصيني — Chinese Yuan (CNY / ¥)</option>
-                                </optgroup>
-                                <optgroup label="🌍 عملات دول الخليج والعالم العربي">
-                                    <option value="د.إ">🇦🇪 الدرهم الإماراتي — UAE Dirham (AED / د.إ)</option>
-                                    <option value="د.ك">🇰🇼 الدينار الكويتي — Kuwaiti Dinar (KWD / د.ك)</option>
-                                    <option value="ر.ق">🇶🇦 الريال القطري — Qatari Riyal (QAR / ر.ق)</option>
-                                    <option value="د.ب">🇧🇭 الدينار البحريني — Bahraini Dinar (BHD / د.ب)</option>
-                                    <option value="ر.ع">🇴🇲 الريال العماني — Omani Rial (OMR / ر.ع)</option>
-                                    <option value="ج.م">🇪🇬 الجنيه المصري — Egyptian Pound (EGP / ج.م)</option>
-                                    <option value="د.أ">🇯🇴 الدينار الأردني — Jordanian Dinar (JOD / د.أ)</option>
-                                    <option value="د.ع">🇮🇶 الدينار العراقي — Iraqi Dinar (IQD / د.ع)</option>
-                                    <option value="د.م">🇲🇦 الدرهم المغربي — Moroccan Dirham (MAD / د.م)</option>
-                                    <option value="د.ج">🇩🇿 الدينار الجزائري — Algerian Dinar (DZD / د.ج)</option>
-                                    <option value="د.ت">🇹🇳 الدينار التونسي — Tunisian Dinar (TND / د.ت)</option>
-                                    <option value="د.ل">🇱🇾 الدينار الليبي — Libyan Dinar (LYD / د.ل)</option>
-                                    <option value="ل.ل">🇱🇧 الليرة اللبنانية — Lebanese Pound (LBP / ل.ل)</option>
-                                    <option value="ج.س">🇸🇩 الجنيه السوداني — Sudanese Pound (SDG / ج.س)</option>
-                                    <option value="ر.ي">🇾🇪 الريال اليمني — Yemeni Rial (YER / ر.ي)</option>
-                                </optgroup>
-                                <optgroup label="🌐 أشهر العملات العالمية والآسيوية والأوروبية">
-                                    <option value="JP¥">🇯🇵 الين الياباني — Japanese Yen (JPY / JP¥)</option>
-                                    <option value="CHF">🇨🇭 الفرنك السويسري — Swiss Franc (CHF)</option>
-                                    <option value="CA$">🇨🇦 الدولار الكندي — Canadian Dollar (CAD / CA$)</option>
-                                    <option value="A$">🇦🇺 الدولار الأسترالي — Australian Dollar (AUD / A$)</option>
-                                    <option value="NZ$">🇳🇿 الدولار النيوزيلندي — New Zealand Dollar (NZD / NZ$)</option>
-                                    <option value="₺">🇹🇷 الليرة التركية — Turkish Lira (TRY / ₺)</option>
-                                    <option value="₹">🇮🇳 الروبية الهندية — Indian Rupee (INR / ₹)</option>
-                                    <option value="PKR">🇵🇰 الروبية الباكستانية — Pakistani Rupee (PKR)</option>
-                                    <option value="₽">🇷🇺 الروبل الروسي — Russian Ruble (RUB / ₽)</option>
-                                    <option value="₩">🇰🇷 الوون الكوري الجنوبي — South Korean Won (KRW / ₩)</option>
-                                    <option value="S$">🇸🇬 الدولار السنغافوري — Singapore Dollar (SGD / S$)</option>
-                                    <option value="HK$">🇭🇰 دولار هونغ كونغ — Hong Kong Dollar (HKD / HK$)</option>
-                                    <option value="RM">🇲🇾 الرينغيت الماليزي — Malaysian Ringgit (MYR / RM)</option>
-                                    <option value="Rp">🇮🇩 الروبية الإندونيسية — Indonesian Rupiah (IDR / Rp)</option>
-                                    <option value="฿">🇹🇭 البات التايلاندي — Thai Baht (THB / ฿)</option>
-                                    <option value="₱">🇵🇭 البيزو الفلبيني — Philippine Peso (PHP / ₱)</option>
-                                    <option value="R$">🇧🇷 الريال البرازيلي — Brazilian Real (BRL / R$)</option>
-                                    <option value="MX$">🇲🇽 البيزو المكسيكي — Mexican Peso (MXN / MX$)</option>
-                                    <option value="ZAR">🇿🇦 الراند الجنوب أفريقي — South African Rand (ZAR)</option>
-                                    <option value="kr">🇸🇪 الكرونة السويدية — Swedish Krona (SEK / kr)</option>
-                                </optgroup>
-                            </select>
+                            <button type="button" class="settings-nav-btn active" id="settings-tab-btn-currency" onclick="switchSettingsTab('currency')">
+                                <div class="settings-nav-icon"><i class="fas fa-coins"></i></div>
+                                <div class="settings-nav-text">
+                                    <span class="settings-nav-label">العملة والرموز</span>
+                                    <span class="settings-nav-sub">عملة التطبيق ورمز الصرف</span>
+                                </div>
+                            </button>
+
+                            <button type="button" class="settings-nav-btn" id="settings-tab-btn-account" onclick="switchSettingsTab('account')">
+                                <div class="settings-nav-icon"><i class="fas fa-user-shield"></i></div>
+                                <div class="settings-nav-text">
+                                    <span class="settings-nav-label">الحساب والأمان</span>
+                                    <span class="settings-nav-sub">التفعيل، القفل، وربط البريد</span>
+                                </div>
+                            </button>
+
+                            <button type="button" class="settings-nav-btn" id="settings-tab-btn-ai_cloud" onclick="switchSettingsTab('ai_cloud')">
+                                <div class="settings-nav-icon"><i class="fas fa-robot"></i></div>
+                                <div class="settings-nav-text">
+                                    <span class="settings-nav-label">الذكاء والسحابة</span>
+                                    <span class="settings-nav-sub">المفتاح الذكي والمزامنة</span>
+                                </div>
+                            </button>
+
+                            <button type="button" class="settings-nav-btn" id="settings-tab-btn-backup" onclick="switchSettingsTab('backup')">
+                                <div class="settings-nav-icon"><i class="fas fa-laptop-medical"></i></div>
+                                <div class="settings-nav-text">
+                                    <span class="settings-nav-label">التثبيت والنسخ</span>
+                                    <span class="settings-nav-sub">تطبيق الجهاز وتصدير البيانات</span>
+                                </div>
+                            </button>
+
+                            <button type="button" class="settings-nav-btn danger-tab" id="settings-tab-btn-danger" onclick="switchSettingsTab('danger')">
+                                <div class="settings-nav-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                                <div class="settings-nav-text">
+                                    <span class="settings-nav-label">ضبط المصنع</span>
+                                    <span class="settings-nav-sub">مسح البيانات وإعادة الضبط</span>
+                                </div>
+                            </button>
                         </div>
 
-                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:170px;">
-                                <span style="font-size:0.8em; color:var(--text-muted); white-space:nowrap;">أو اكتب رمزاً مخصصاً:</span>
-                                <input type="text" id="settings-currency-input" value="﷼" style="max-width: 130px; text-align:center; font-weight:900;">
+                        <!-- منطقة عرض القسم المختار -->
+                        <div class="settings-content-area">
+                            <!-- القسم 1: العملة والرموز -->
+                            <div class="settings-tab-pane active" id="settings-pane-currency">
+                                <div class="settings-panel-card">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-coins text-primary"></i> عملة التطبيق (أكثر من 35 عملة عالمية وعربية)</h4>
+                                        <span id="settings-active-currency-badge" class="btn-edit-badge" style="font-size:0.8em;">العملة الحالية: ﷼</span>
+                                    </div>
+                                    <p style="font-size: 0.84em; color: var(--text-muted); margin: 0 0 12px 0;">اختر عملتك المفضلة بضغطة واحدة من العملات الأساسية أو من القائمة الشاملة لـ 40 عملة منتشرة حول العالم:</p>
+
+                                    <!-- أزرار اختيار سريع لأهم العملات العالمية والعربية -->
+                                    <div class="currency-quick-chips" id="currency-quick-chips-box">
+                                        <button type="button" class="currency-chip-btn" data-cur="﷼" onclick="selectAndSaveCurrency('﷼')">🇸🇦 الريال السعودي (﷼)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="$" onclick="selectAndSaveCurrency('$')">🇺🇸 الدولار الأمريكي ($)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="€" onclick="selectAndSaveCurrency('€')">🇪🇺 اليورو الأوروبي (€)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="£" onclick="selectAndSaveCurrency('£')">🇬🇧 الجنيه الإسترليني (£)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="¥" onclick="selectAndSaveCurrency('¥')">🇨🇳 اليوان الصيني (¥)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="د.إ" onclick="selectAndSaveCurrency('د.إ')">🇦🇪 الدرهم الإماراتي (د.إ)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="د.ك" onclick="selectAndSaveCurrency('د.ك')">🇰🇼 الدينار الكويتي (د.ك)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="ر.ق" onclick="selectAndSaveCurrency('ر.ق')">🇶🇦 الريال القطري (ر.ق)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="ج.م" onclick="selectAndSaveCurrency('ج.م')">🇪🇬 الجنيه المصري (ج.م)</button>
+                                        <button type="button" class="currency-chip-btn" data-cur="₺" onclick="selectAndSaveCurrency('₺')">🇹🇷 الليرة التركية (₺)</button>
+                                    </div>
+
+                                    <!-- القائمة المنسدلة الشاملة لـ 40 عملة عالمية وعربية -->
+                                    <div style="margin-bottom: 14px; margin-top: 12px;">
+                                        <label style="font-size:0.82em; color:var(--text-muted); margin-bottom:6px; display:block;">اختر من قائمة عملات العالم (40 عملة):</label>
+                                        <select id="settings-currency-select" onchange="onCurrencyDropdownSelect(this.value)" style="width:100%; font-weight:800; cursor:pointer;">
+                                            <optgroup label="🌟 أهم العملات العالمية الأساسية">
+                                                <option value="﷼">🇸🇦 الريال السعودي — Saudi Riyal (SAR / ﷼)</option>
+                                                <option value="$">🇺🇸 الدولار الأمريكي — US Dollar (USD / $)</option>
+                                                <option value="€">🇪🇺 اليورو الأوروبي — Euro (EUR / €)</option>
+                                                <option value="£">🇬🇧 الجنيه الإسترليني — British Pound (GBP / £)</option>
+                                                <option value="¥">🇨🇳 اليوان الصيني — Chinese Yuan (CNY / ¥)</option>
+                                            </optgroup>
+                                            <optgroup label="🌍 عملات دول الخليج والعالم العربي">
+                                                <option value="د.إ">🇦🇪 الدرهم الإماراتي — UAE Dirham (AED / د.إ)</option>
+                                                <option value="د.ك">🇰🇼 الدينار الكويتي — Kuwaiti Dinar (KWD / د.ك)</option>
+                                                <option value="ر.ق">🇶🇦 الريال القطري — Qatari Riyal (QAR / ر.ق)</option>
+                                                <option value="د.ب">🇧🇭 الدينار البحريني — Bahraini Dinar (BHD / د.ب)</option>
+                                                <option value="ر.ع">🇴🇲 الريال العماني — Omani Rial (OMR / ر.ع)</option>
+                                                <option value="ج.م">🇪🇬 الجنيه المصري — Egyptian Pound (EGP / ج.م)</option>
+                                                <option value="د.أ">🇯🇴 الدينار الأردني — Jordanian Dinar (JOD / د.أ)</option>
+                                                <option value="د.ع">🇮🇶 الدينار العراقي — Iraqi Dinar (IQD / د.ع)</option>
+                                                <option value="د.م">🇲🇦 الدرهم المغربي — Moroccan Dirham (MAD / د.م)</option>
+                                                <option value="د.ج">🇩🇿 الدينار الجزائري — Algerian Dinar (DZD / د.ج)</option>
+                                                <option value="د.ت">🇹🇳 الدينار التونسي — Tunisian Dinar (TND / د.ت)</option>
+                                                <option value="د.ل">🇱🇾 الدينار الليبي — Libyan Dinar (LYD / د.ل)</option>
+                                                <option value="ل.ل">🇱🇧 الليرة اللبنانية — Lebanese Pound (LBP / ل.ل)</option>
+                                                <option value="ج.س">🇸🇩 الجنيه السوداني — Sudanese Pound (SDG / ج.س)</option>
+                                                <option value="ر.ي">🇾🇪 الريال اليمني — Yemeni Rial (YER / ر.ي)</option>
+                                            </optgroup>
+                                            <optgroup label="🌐 أشهر العملات العالمية والآسيوية والأوروبية">
+                                                <option value="JP¥">🇯🇵 الين الياباني — Japanese Yen (JPY / JP¥)</option>
+                                                <option value="CHF">🇨🇭 الفرنك السويسري — Swiss Franc (CHF)</option>
+                                                <option value="CA$">🇨🇦 الدولار الكندي — Canadian Dollar (CAD / CA$)</option>
+                                                <option value="A$">🇦🇺 الدولار الأسترالي — Australian Dollar (AUD / A$)</option>
+                                                <option value="NZ$">🇳🇿 الدولار النيوزيلندي — New Zealand Dollar (NZD / NZ$)</option>
+                                                <option value="₺">🇹🇷 الليرة التركية — Turkish Lira (TRY / ₺)</option>
+                                                <option value="₹">🇮🇳 الروبية الهندية — Indian Rupee (INR / ₹)</option>
+                                                <option value="PKR">🇵🇰 الروبية الباكستانية — Pakistani Rupee (PKR)</option>
+                                                <option value="₽">🇷🇺 الروبل الروسي — Russian Ruble (RUB / ₽)</option>
+                                                <option value="₩">🇰🇷 الوون الكوري الجنوبي — South Korean Won (KRW / ₩)</option>
+                                                <option value="S$">🇸🇬 الدولار السنغافوري — Singapore Dollar (SGD / S$)</option>
+                                                <option value="HK$">🇭🇰 دولار هونغ كونغ — Hong Kong Dollar (HKD / HK$)</option>
+                                                <option value="RM">🇲🇾 الرينغيت الماليزي — Malaysian Ringgit (MYR / RM)</option>
+                                                <option value="Rp">🇮🇩 الروبية الإندونيسية — Indonesian Rupiah (IDR / Rp)</option>
+                                                <option value="฿">🇹🇭 البات التايلاندي — Thai Baht (THB / ฿)</option>
+                                                <option value="₱">🇵🇭 البيزو الفلبيني — Philippine Peso (PHP / ₱)</option>
+                                                <option value="R$">🇧🇷 الريال البرازيلي — Brazilian Real (BRL / R$)</option>
+                                                <option value="MX$">🇲🇽 البيزو المكسيكي — Mexican Peso (MXN / MX$)</option>
+                                                <option value="ZAR">🇿🇦 الراند الجنوب أفريقي — South African Rand (ZAR)</option>
+                                                <option value="kr">🇸🇪 الكرونة السويدية — Swedish Krona (SEK / kr)</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+
+                                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:var(--surface-color); border:1px solid var(--border-color); padding:12px 14px; border-radius:16px;">
+                                        <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:170px;">
+                                            <span style="font-size:0.82em; color:var(--text-muted); white-space:nowrap;">أو اكتب رمزاً مخصصاً:</span>
+                                            <input type="text" id="settings-currency-input" value="﷼" style="max-width: 130px; text-align:center; font-weight:900;">
+                                        </div>
+                                        <button type="button" class="primary-btn" style="padding: 10px 20px; font-size: 0.86em;" onclick="saveCurrencySetting()"><i class="fas fa-check-circle"></i> اعتماد وحفظ العملة</button>
+                                    </div>
+                                </div>
                             </div>
-                            <button type="button" class="primary-btn" style="padding: 10px 20px; font-size: 0.86em;" onclick="saveCurrencySetting()"><i class="fas fa-check-circle"></i> اعتماد وحفظ العملة</button>
-                        </div>
-                    </div>
 
-                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-                            <label style="margin:0;"><i class="fas fa-key text-primary"></i> كود تفعيل الحساب:</label>
-                            <span id="settings-activation-code-badge" class="btn-edit-badge" style="font-size:0.75em; background:rgba(245,158,11,0.12); color:var(--warning); border-color:rgba(245,158,11,0.3); cursor:default;">بانتظار التفعيل</span>
-                        </div>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">خانة مخصصة لإدخال كود تفعيل الحساب الخاص بك.</p>
-                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                            <div style="position:relative; flex:1; min-width:200px;">
-                                <input type="text" id="settings-activation-code-input" placeholder="أدخل كود التفعيل هنا..." dir="ltr" style="width:100%; text-align:center; font-weight:800; letter-spacing:1px;">
+                            <!-- القسم 2: الحساب والأمان -->
+                            <div class="settings-tab-pane" id="settings-pane-account">
+                                <div class="settings-panel-card">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-key text-primary"></i> كود تفعيل الحساب</h4>
+                                        <span id="settings-activation-code-badge" class="btn-edit-badge" style="font-size:0.75em; background:rgba(245,158,11,0.12); color:var(--warning); border-color:rgba(245,158,11,0.3); cursor:default;">بانتظار التفعيل</span>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">خانة مخصصة لإدخال كود تفعيل الحساب والاشتراك الخاص بك.</p>
+                                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                        <div style="position:relative; flex:1; min-width:200px;">
+                                            <input type="text" id="settings-activation-code-input" placeholder="أدخل كود التفعيل هنا..." dir="ltr" style="width:100%; text-align:center; font-weight:800; letter-spacing:1px;">
+                                        </div>
+                                        <button type="button" class="primary-btn" style="padding: 10px 18px; font-size: 0.86em;" onclick="saveAccountActivationCodeField()"><i class="fas fa-check-circle"></i> تفعيل</button>
+                                    </div>
+                                    <div id="settings-activation-code-status" style="display:none; margin-top:8px; padding:10px 12px; border-radius:12px; font-size:0.82em; font-weight:700;"></div>
+                                </div>
+
+                                <!-- قفل التطبيق (الرمز السري) -->
+                                <div class="settings-panel-card" id="settings-pin-group" style="display: none;">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-lock text-primary"></i> قفل التطبيق (الرمز السري PIN)</h4>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">حماية بياناتك المالية باستخدام رمز مرور (PIN) عند فتح التطبيق (مرتبط بحسابك المسجل، ويُحذف تلقائياً عند تسجيل الخروج).</p>
+                                    <div style="display:flex; gap:10px; flex-wrap:wrap;" id="pin-settings-actions">
+                                        <!-- سيتم حقن أزرار الإعداد برمجياً هنا -->
+                                    </div>
+                                </div>
+
+                                <!-- البريد الإلكتروني المربوط بالحساب ورقم الجوال -->
+                                <div class="settings-panel-card" id="settings-linked-account-group" style="display: none;">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-envelope-circle-check text-primary"></i> البريد الإلكتروني المربوط بالحساب ورقم الجوال</h4>
+                                        <span id="settings-linked-account-badge" class="btn-edit-badge" style="font-size:0.75em;">غير مسجل</span>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">يمكنك هنا تغيير أو تحديث البريد الإلكتروني المربوط برقم جوالك ليتم اعتماده فوراً في الحساب والسحابة واستقبال رموز التحقق عليه.</p>
+                                    <div style="background:var(--surface-color); border:1px solid var(--border-color); border-radius:16px; padding:14px;">
+                                        <div class="form-group" style="margin-bottom:10px;">
+                                            <label style="font-size:0.82em; color:var(--text-muted);">رقم الجوال المربوط بالحساب:</label>
+                                            <input type="tel" id="settings-linked-phone-input" placeholder="05xxxxxxxx" dir="ltr" style="text-align:right; font-weight:800;">
+                                        </div>
+                                        <div class="form-group" style="margin-bottom:12px;">
+                                            <label style="font-size:0.82em; color:var(--text-muted);">البريد الإلكتروني المربوط (الجديد أو الحالي):</label>
+                                            <input type="email" id="settings-linked-email-input" placeholder="name@gmail.com" dir="ltr" style="text-align:right; font-weight:800;">
+                                        </div>
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                            <button type="button" class="primary-btn" style="padding:10px 18px; font-size:0.86em;" id="btn-save-linked-email" onclick="saveUpdatedLinkedEmail()">
+                                                <i class="fas fa-sync-alt"></i> تحديث وربط البريد الإلكتروني بالرقم
+                                            </button>
+                                        </div>
+                                        <div id="settings-email-update-status" style="display:none; margin-top:10px; padding:10px 12px; border-radius:12px; font-size:0.82em; font-weight:700;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- بطاقة اختصار إدارة تسجيل الدخول عند عدم ربط حساب -->
+                                <div class="settings-panel-card" id="settings-account-login-shortcut">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-user-circle text-primary"></i> إدارة جلسة الحساب وقفل الأمان</h4>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">لتفعيل الرمز السري (PIN) أو تحديث البريد الإلكتروني المربوط برقم الجوال، يمكنك فتح نافذة الحساب المباشرة:</p>
+                                    <button type="button" class="action-btn" style="border-color: var(--primary-color); color: var(--primary-color);" onclick="openUserAuthModal()">
+                                        <i class="fas fa-user-shield"></i> فتح نافذة الحساب وتسجيل الدخول
+                                    </button>
+                                </div>
                             </div>
-                            <button type="button" class="primary-btn" style="padding: 10px 18px; font-size: 0.86em;" onclick="saveAccountActivationCodeField()"><i class="fas fa-check-circle"></i> تفعيل</button>
-                        </div>
-                        <div id="settings-activation-code-status" style="display:none; margin-top:8px; padding:10px 12px; border-radius:12px; font-size:0.82em; font-weight:700;"></div>
-                    </div>
 
-                    <div class="form-group" id="settings-pin-group" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <label><i class="fas fa-lock text-primary"></i> قفل التطبيق (الرمز السري):</label>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">حماية بياناتك المالية باستخدام رمز مرور (PIN) عند فتح التطبيق (مرتبط بحسابك المسجل، ويُحذف تلقائياً عند تسجيل الخروج).</p>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;" id="pin-settings-actions">
-                            <!-- سيتم حقن أزرار الإعداد برمجياً هنا -->
-                        </div>
-                    </div>
+                            <!-- القسم 3: الذكاء الاصطناعي والسحابة -->
+                            <div class="settings-tab-pane" id="settings-pane-ai_cloud">
+                                <div class="settings-panel-card">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-robot text-warning"></i> مفتاح الذكاء الاصطناعي</h4>
+                                        <span id="gemini-key-status-badge" class="btn-edit-badge" style="display:none; background:rgba(16,185,129,0.12); color:var(--success); border-color:rgba(16,185,129,0.3); cursor:default;"><i class="fas fa-check-circle"></i> المفتاح الذكي نشط</span>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">المفتاح الذكي محمي ومشفر داخل النظام لقراءة الفواتير والمصروف السريع والمحادثة الذكية، ولا يمكن تعديله أو إظهاره أو استخراجه من الواجهة.</p>
+                                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                        <div style="position:relative; flex:1; min-width:220px; user-select:none; -webkit-user-select:none;">
+                                            <input type="password" id="settings-gemini-key-input" value="••••••••••••••••••••••••••••••••" readonly disabled tabindex="-1" autocomplete="off" oncopy="return false" oncut="return false" onpaste="return false" oncontextmenu="return false" onselectstart="return false" style="width:100%; padding-left:38px; pointer-events:none; user-select:none; -webkit-user-select:none; letter-spacing:3px; opacity:0.85; cursor:not-allowed;" dir="ltr" aria-label="مفتاح الذكاء الاصطناعي محمي">
+                                            <i class="fas fa-lock" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.95em; pointer-events:none;"></i>
+                                        </div>
+                                        <button type="button" class="action-btn" style="padding: 10px 18px; font-size: 0.86em;" id="btn-test-gemini-key" onclick="testGeminiApiKeyConnection()"><i class="fas fa-plug-circle-check text-primary"></i> فحص المفتاح</button>
+                                    </div>
+                                    <div id="gemini-key-test-result" style="font-size:0.8em; margin-top:8px; display:none; padding:10px 12px; border-radius:12px;"></div>
+                                </div>
 
-                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                            <label style="margin:0;"><i class="fas fa-robot text-warning"></i> مفتاح الذكاء الاصطناعي:</label>
-                            <span id="gemini-key-status-badge" class="btn-edit-badge" style="display:none; background:rgba(16,185,129,0.12); color:var(--success); border-color:rgba(16,185,129,0.3); cursor:default;"><i class="fas fa-check-circle"></i> المفتاح الذكي نشط</span>
-                        </div>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 6px 0 10px 0;">المفتاح الذكي محمي ومشفر داخل النظام لقراءة الفواتير والمصروف السريع والمحادثة الذكية، ولا يمكن تعديله أو إظهاره أو استخراجه من الواجهة.</p>
-                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                            <div style="position:relative; flex:1; min-width:220px; user-select:none; -webkit-user-select:none;">
-                                <input type="password" id="settings-gemini-key-input" value="••••••••••••••••••••••••••••••••" readonly disabled tabindex="-1" autocomplete="off" oncopy="return false" oncut="return false" onpaste="return false" oncontextmenu="return false" onselectstart="return false" style="width:100%; padding-left:38px; pointer-events:none; user-select:none; -webkit-user-select:none; letter-spacing:3px; opacity:0.85; cursor:not-allowed;" dir="ltr" aria-label="مفتاح الذكاء الاصطناعي محمي">
-                                <i class="fas fa-lock" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.95em; pointer-events:none;"></i>
+                                <div class="settings-panel-card">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-cloud text-primary"></i> حالة المزامنة السحابية</h4>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">تتم مزامنة مصروفاتك، ميزانيتك، وأهدافك تلقائياً مع السحابة فور إجراء أي تعديل.</p>
+                                    <div style="display:flex; gap:10px; align-items:center; background:var(--surface-color); border:1px solid var(--border-color); padding:12px 16px; border-radius:14px;">
+                                        <span id="cloud-sync-status-badge" style="display:inline-flex; align-items:center; gap:6px; font-size:0.9em; font-weight:bold;">جاري الاتصال بالسحابة تلقائياً...</span>
+                                    </div>
+                                </div>
                             </div>
-                            <button type="button" class="action-btn" style="padding: 10px 18px; font-size: 0.86em;" id="btn-test-gemini-key" onclick="testGeminiApiKeyConnection()"><i class="fas fa-plug-circle-check text-primary"></i> فحص المفتاح</button>
-                        </div>
-                        <div id="gemini-key-test-result" style="font-size:0.8em; margin-top:8px; display:none; padding:10px 12px; border-radius:12px;"></div>
-                    </div>
 
-                    <div class="form-group" id="settings-linked-account-group" style="display: none; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
-                            <label style="margin:0;"><i class="fas fa-envelope-circle-check text-primary"></i> البريد الإلكتروني المربوط بالحساب ورقم الجوال:</label>
-                            <span id="settings-linked-account-badge" class="btn-edit-badge" style="font-size:0.75em;">غير مسجل</span>
-                        </div>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 12px 0;">يمكنك هنا تغيير أو تحديث البريد الإلكتروني المربوط برقم جوالك ليتم اعتماده فوراً في الحساب والسحابة واستقبال رموز التحقق عليه.</p>
-                        <div style="background:var(--surface-color); border:1px solid var(--border-color); border-radius:16px; padding:14px;">
-                            <div class="form-group" style="margin-bottom:10px;">
-                                <label style="font-size:0.82em; color:var(--text-muted);">رقم الجوال المربوط بالحساب:</label>
-                                <input type="tel" id="settings-linked-phone-input" placeholder="05xxxxxxxx" dir="ltr" style="text-align:right; font-weight:800;">
+                            <!-- القسم 4: تثبيت التطبيق والنسخ الاحتياطي -->
+                            <div class="settings-tab-pane" id="settings-pane-backup">
+                                <div class="settings-panel-card">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-laptop-code text-primary"></i> تطبيق اللابتوب والكمبيوتر (PC) وتطبيق الجوال</h4>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">ثبّت التطبيق كبرنامج مستقل على سطح المكتب في اللابتوب أو الـ PC (Windows / Mac) أو على جوالك بضغطة واحدة:</p>
+                                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                        <button type="button" class="primary-btn" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);" onclick="openInstallAppModal('pc')"><i class="fas fa-laptop"></i> تحميل / تثبيت تطبيق اللابتوب والـ PC</button>
+                                        <button type="button" class="action-btn" style="border-color: var(--success); color: var(--success);" onclick="openInstallAppModal('mobile')"><i class="fas fa-mobile-screen-button"></i> تثبيت تطبيق الجوال</button>
+                                    </div>
+                                </div>
+
+                                <div class="settings-panel-card">
+                                    <div class="settings-section-head">
+                                        <h4><i class="fas fa-database text-primary"></i> إدارة النسخ الاحتياطي والبيانات</h4>
+                                    </div>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">يمكنك تصدير نسخة احتياطية كاملة من بياناتك المالية بصيغة (JSON) أو استعادتها في أي وقت:</p>
+                                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                                        <button type="button" class="primary-btn" onclick="saveLocalDataFile()"><i class="fas fa-download"></i> تصدير البيانات (JSON)</button>
+                                        <button type="button" class="action-btn" onclick="triggerFileInput()"><i class="fas fa-upload"></i> استعادة البيانات</button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="form-group" style="margin-bottom:12px;">
-                                <label style="font-size:0.82em; color:var(--text-muted);">البريد الإلكتروني المربوط (الجديد أو الحالي):</label>
-                                <input type="email" id="settings-linked-email-input" placeholder="name@gmail.com" dir="ltr" style="text-align:right; font-weight:800;">
+
+                            <!-- القسم 5: منطقة الخطر (إعادة ضبط المصنع) -->
+                            <div class="settings-tab-pane" id="settings-pane-danger">
+                                <div class="settings-panel-card" style="border-color: rgba(239, 68, 68, 0.35); background: linear-gradient(180deg, rgba(239, 68, 68, 0.04), transparent);">
+                                    <div class="settings-section-head" style="border-bottom-color: rgba(239, 68, 68, 0.2);">
+                                        <h4 style="color: var(--danger);"><i class="fas fa-triangle-exclamation"></i> منطقة الخطر (إعادة ضبط المصنع)</h4>
+                                    </div>
+                                    <p style="font-size: 0.84em; color: var(--text-muted); margin: 0 0 14px 0;">مسح كافة المصروفات، البنود، الأهداف، والديون والبدء من جديد. يُنصح بتصدير نسخة احتياطية قبل المسح.</p>
+                                    <button type="button" class="primary-btn" style="background: var(--danger); border-color: var(--danger); box-shadow: 0 8px 20px -4px rgba(239, 68, 68, 0.4);" onclick="promptClearAllAppData()"><i class="fas fa-trash-can"></i> مسح كافة البيانات</button>
+                                </div>
                             </div>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <button type="button" class="primary-btn" style="padding:10px 18px; font-size:0.86em;" id="btn-save-linked-email" onclick="saveUpdatedLinkedEmail()">
-                                    <i class="fas fa-sync-alt"></i> تحديث وربط البريد الإلكتروني بالرقم
-                                </button>
-                            </div>
-                            <div id="settings-email-update-status" style="display:none; margin-top:10px; padding:10px 12px; border-radius:12px; font-size:0.82em; font-weight:700;"></div>
                         </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <label><i class="fas fa-cloud text-primary"></i> حالة المزامنة السحابية:</label>
-                        <div style="display:flex; gap:10px; align-items:center; margin-top: 8px;">
-                            <span id="cloud-sync-status-badge" style="display:inline-flex; align-items:center; gap:6px; font-size:0.9em; font-weight:bold;">جاري الاتصال بالسحابة تلقائياً...</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <label><i class="fas fa-laptop-code text-primary"></i> تطبيق اللابتوب والكمبيوتر (PC) وتطبيق الجوال:</label>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 10px 0;">ثبّت التطبيق كبرنامج مستقل على سطح المكتب في اللابتوب أو الـ PC (Windows / Mac) أو على جوالك:</p>
-                        <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
-                            <button type="button" class="primary-btn" style="background: linear-gradient(135deg, #8b5cf6, #6366f1);" onclick="openInstallAppModal('pc')"><i class="fas fa-laptop"></i> تحميل / تثبيت تطبيق اللابتوب والـ PC</button>
-                            <button type="button" class="action-btn" style="border-color: var(--success); color: var(--success);" onclick="openInstallAppModal('mobile')"><i class="fas fa-mobile-screen-button"></i> تثبيت تطبيق الجوال</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                        <label>إدارة النسخ الاحتياطي والبيانات:</label>
-                        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-                            <button type="button" class="primary-btn" onclick="saveLocalDataFile()"><i class="fas fa-download"></i> تصدير البيانات (JSON)</button>
-                            <button type="button" class="action-btn" onclick="triggerFileInput()"><i class="fas fa-upload"></i> استعادة البيانات</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 25px; border-top: 2px dashed rgba(239, 68, 68, 0.3); padding-top: 20px;">
-                        <label style="color: var(--danger);"><i class="fas fa-triangle-exclamation"></i> منطقة الخطر (إعادة ضبط المصنع):</label>
-                        <p style="font-size: 0.82em; color: var(--text-muted); margin: 4px 0 12px 0;">مسح كافة المصروفات، البنود، الأهداف، والديون والبدء من جديد.</p>
-                        <button type="button" class="primary-btn" style="background: var(--danger); border-color: var(--danger); box-shadow: 0 8px 20px -4px rgba(239, 68, 68, 0.4);" onclick="promptClearAllAppData()"><i class="fas fa-trash-can"></i> مسح كافة البيانات</button>
                     </div>
                 </div>
             </div>
@@ -2877,7 +3168,7 @@
                     </div>
                 </div>
 
-                <button type="button" class="action-btn" style="width:100%; justify-content:center; margin-bottom:14px; border-color:var(--primary-color); color:var(--primary-color); font-size:0.86em;" onclick="closeModal('userAuthModal'); switchPage('settings'); setTimeout(() => document.getElementById('settings-linked-email-input')?.focus(), 150);">
+                <button type="button" class="action-btn" style="width:100%; justify-content:center; margin-bottom:14px; border-color:var(--primary-color); color:var(--primary-color); font-size:0.86em;" onclick="closeModal('userAuthModal'); switchPage('settings'); if(typeof switchSettingsTab==='function') switchSettingsTab('account'); setTimeout(() => document.getElementById('settings-linked-email-input')?.focus(), 150);">
                     <i class="fas fa-envelope-open-text"></i> تغيير البريد الإلكتروني المربوط من الإعدادات
                 </button>
 
@@ -4121,6 +4412,7 @@
                     lastModifiedAt: APP_STATE.lastModifiedAt || 0,
                     deletedExpenseIds: (APP_STATE.deletedExpenseIds || []).slice(-200)
                 });
+                localStorage.setItem('smart_budget_local_backup_v69', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v68', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v67', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v66', backupPayload);
@@ -4144,7 +4436,8 @@
                 }
 
                 // قراءة النسخة الاحتياطية المحلية دائماً بدون مسحها عند إعادة التحميل (حتى تُحفظ المصروفات والرصيد البنكي في جميع الحالات)
-                const savedBackupV68 = localStorage.getItem('smart_budget_local_backup_v68');
+                const savedBackupV69 = localStorage.getItem('smart_budget_local_backup_v69');
+                const savedBackupV68 = savedBackupV69 || localStorage.getItem('smart_budget_local_backup_v68');
                 const savedBackupV67 = savedBackupV68 || localStorage.getItem('smart_budget_local_backup_v67');
                 const savedBackupV66 = localStorage.getItem('smart_budget_local_backup_v66');
                 const savedBackupV65 = localStorage.getItem('smart_budget_local_backup_v65');
@@ -4697,6 +4990,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v62');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v68');
                 localStorage.removeItem('smart_budget_local_backup_v67');
                 localStorage.removeItem('smart_budget_local_backup_v66');
@@ -5025,6 +5319,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v68');
                 localStorage.removeItem('smart_budget_local_backup_v67');
                 localStorage.removeItem('smart_budget_local_backup_v66');
@@ -5051,6 +5346,21 @@
             updateCharts();
             switchPage('dashboard');
             showToast('تم مسح وتصفير كافة البيانات وإعادة ضبط المصنع بنجاح!', 'success');
+        }
+
+        function switchSettingsTab(tabId) {
+            const tabs = ['currency', 'account', 'ai_cloud', 'backup', 'danger'];
+            const target = tabs.includes(tabId) ? tabId : 'currency';
+            document.querySelectorAll('#page-settings .settings-nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('#page-settings .settings-tab-pane').forEach(pane => {
+                pane.classList.remove('active');
+            });
+            const activeBtn = document.getElementById('settings-tab-btn-' + target);
+            const activePane = document.getElementById('settings-pane-' + target);
+            if (activeBtn) activeBtn.classList.add('active');
+            if (activePane) activePane.classList.add('active');
         }
 
         function switchPage(pageId) {
