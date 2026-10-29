@@ -2247,7 +2247,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V6.9</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V7.1</div>
             </div>
         </div>
 
@@ -2404,12 +2404,13 @@
 
                 <div class="dashboard-grid">
                     <div class="card" style="cursor: pointer; position: relative;" onclick="openMonthlyBudgetExpensesModal()" title="اضغط لعرض عمليات الصرف الفعلية خلال مدة الميزانية">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px;">
                             <div>
                                 <h3 style="margin: 0; font-size: 1.05em;"><i class="fas fa-wallet text-primary"></i> الميزانية الشهرية</h3>
-                                <div style="font-size: 0.73em; color: var(--primary-color); font-weight: 800; margin-top: 3px;"><i class="fas fa-receipt"></i> اضغط لعرض عمليات الصرف الفعلية خلال المدة</div>
+                                <div id="display-monthly-period-badge" style="font-size: 0.74em; color: var(--text-muted); font-weight: 800; margin-top: 4px; background: var(--surface-color); border: 1px solid var(--border-color); padding: 3px 9px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px;" dir="ltr"></div>
+                                <div style="font-size: 0.72em; color: var(--primary-color); font-weight: 800; margin-top: 4px;"><i class="fas fa-receipt"></i> اضغط لعرض عمليات الصرف الفعلية خلال المدة</div>
                             </div>
-                            <button type="button" class="btn-edit-badge" onclick="event.stopPropagation(); openEditBudgetModal('monthly');" title="تعديل الميزانية الشهرية"><i class="fas fa-pen"></i></button>
+                            <button type="button" class="btn-edit-badge" onclick="event.stopPropagation(); openEditBudgetModal('monthly');" title="تعديل الميزانية الشهرية وتحديد بداية ونهاية الشهر"><i class="fas fa-pen"></i></button>
                         </div>
                         <div class="stat-row"><span>المقرر:</span><span class="stat-value" id="display-monthly-budget" dir="ltr">0</span></div>
                         <div class="stat-row"><span>المنصرف:</span><span class="stat-value text-danger" id="display-monthly-spent" dir="ltr">0</span></div>
@@ -2536,10 +2537,6 @@
                             <button class="btn-edit-badge" onclick="event.stopPropagation(); openEmergencyHistoryModal()"><i class="fas fa-history"></i> السجل</button>
                         </div>
                         <div class="stat-row"><span>المتوفر في الصندوق:</span><span class="stat-value text-success" id="emergency-saved-display" dir="ltr">0 ﷼</span></div>
-                        <div class="stat-row" style="margin-bottom:8px; padding-bottom:8px;">
-                            <span style="font-size:0.86em; color:var(--text-muted);"><i class="fas fa-link text-primary"></i> المتبقي من الميزانية الشهرية:</span>
-                            <span class="stat-value text-primary" id="emergency-monthly-rem-display" dir="ltr" style="font-size:0.98em;">0 ﷼</span>
-                        </div>
                         <div style="display:flex; gap:10px; margin-top:10px;">
                             <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:10px; background:var(--success); border-color:var(--success); box-shadow:0 8px 20px -4px rgba(16,185,129,0.35);" onclick="event.stopPropagation(); depositEmergencyFund()"><i class="fas fa-plus"></i> إيداع</button>
                             <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:10px; background:var(--danger); border-color:var(--danger); box-shadow:0 8px 20px -4px rgba(239,68,68,0.35);" onclick="event.stopPropagation(); withdrawEmergencyFund()"><i class="fas fa-minus"></i> سحب</button>
@@ -2656,8 +2653,30 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 20px;">
-                    <h3 style="margin:0 0 14px 0; font-size:1.1em;"><i class="fas fa-list-check text-primary"></i> قائمة الالتزامات المسجلة</h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                        <div>
+                            <h3 style="margin:0; font-size:1.1em;"><i class="fas fa-list-check text-primary"></i> قائمة الالتزامات النشطة (غير المسددة)</h3>
+                            <div style="font-size:0.78em; color:var(--text-muted); margin-top:2px;">اضغط على زر <strong>"هل تم السداد؟ (اضغط للتسديد)"</strong> أمام أي التزام عند إتمام سداده لينتقل إلى سجل الالتزامات</div>
+                        </div>
+                        <span id="active-debts-count-badge" class="btn-edit-badge" style="cursor:default;">0 التزام نشط</span>
+                    </div>
                     <div id="debts-list-container" style="display:flex; flex-direction:column; gap:10px;"></div>
+                </div>
+
+                <!-- سجل قائمة الالتزامات والسداد -->
+                <div class="card" style="margin-bottom: 20px; border: 1.5px solid var(--border-color);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">
+                        <div>
+                            <h3 style="margin:0; font-size:1.1em;"><i class="fas fa-clock-rotate-left text-primary"></i> سجل قائمة الالتزامات والسداد</h3>
+                            <div style="font-size:0.78em; color:var(--text-muted); margin-top:2px;">أرشيف وسجل كامل لجميع الالتزامات التي سُجلت أو تم سدادها مع تواريخ الاستلام والسداد الفعلي</div>
+                        </div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                            <button type="button" class="btn-edit-badge" id="debt-log-filter-all" onclick="setDebtHistoryFilter('all')" style="background:var(--primary-color); color:#fff;">الكل</button>
+                            <button type="button" class="btn-edit-badge" id="debt-log-filter-paid" onclick="setDebtHistoryFilter('paid')">المسددة ✓</button>
+                            <button type="button" class="btn-edit-badge" id="debt-log-filter-active" onclick="setDebtHistoryFilter('active')">قيد السداد</button>
+                        </div>
+                    </div>
+                    <div id="debts-history-list-container" style="display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto;"></div>
                 </div>
 
                 <div class="card finexy-orange-accent-card">
@@ -2777,12 +2796,32 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
                     <div>
                         <h2 style="margin:0; font-size:1.35em; font-weight:900;"><i class="fas fa-file-invoice text-primary"></i> الملخص والتقارير المالية</h2>
-                        <div style="font-size:0.82em; color:var(--text-muted); margin-top:2px;">استخرج كشف حسابك الشامل بصيغة PDF أو عاينه قبل الطباعة</div>
+                        <div style="font-size:0.82em; color:var(--text-muted); margin-top:2px;">استعرض وعاين كشف حسابك الشامل لأي شهر بكامل مصروفاته وبأسعار ومخصصات البنود وقتها</div>
                     </div>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button type="button" class="action-btn" style="border-color:var(--primary-color); color:var(--primary-color); background:rgba(255,85,32,0.06);" onclick="openReportPreviewModal()"><i class="fas fa-eye"></i> معاينة التقرير</button>
+                        <button type="button" class="primary-btn" onclick="openReportPreviewModal()"><i class="fas fa-eye"></i> معاينة التقرير الشامل</button>
                         <button type="button" class="action-btn" style="border-color:var(--secondary-color);" onclick="printFinancialReportNow()"><i class="fas fa-print"></i> طباعة التقرير</button>
-                        <button type="button" class="primary-btn" onclick="exportFinancialReportPDF()"><i class="fas fa-file-pdf"></i> تحميل التقرير (PDF)</button>
+                    </div>
+                </div>
+
+                <!-- خانة اختيار التقرير لأي شهر / دورة ميزانية -->
+                <div class="card" style="margin-bottom: 20px; border: 1.5px solid rgba(255, 85, 32, 0.35); background: linear-gradient(135deg, rgba(255,85,32,0.05), transparent);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                        <div style="flex:1; min-width:240px;">
+                            <h3 style="margin:0; font-size:1.08em; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-calendar-alt text-primary"></i> اختيار شهر / فترة التقرير المالي
+                            </h3>
+                            <p style="margin:4px 0 0 0; font-size:0.8em; color:var(--text-muted);">
+                                اختر الشهر أو الدورة المحددة (من بداية الشهر إلى نهايته) لعرض جميع مصروفاتها كاملةً وبأسعار البنود كما كانت في ذلك الشهر قبل أي تحديث لاحق:
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; min-width:280px; flex:1; max-width:440px;">
+                            <select id="report-period-select" onchange="onSelectReportPeriod(this.value)" style="flex:1; padding:12px 14px; border-radius:14px; border:1.5px solid var(--primary-color); background:var(--surface-card); color:var(--text-main); font-weight:800; font-size:0.9em; cursor:pointer; outline:none;">
+                            </select>
+                            <button type="button" class="primary-btn" style="padding:11px 18px; font-size:0.86em;" onclick="openReportPreviewModal()">
+                                <i class="fas fa-eye"></i> معاينة
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -2792,6 +2831,20 @@
                         <button type="button" class="btn-edit-badge" onclick="generateWeeklyFinancialSummary();">تحديث الملخص</button>
                     </div>
                     <div id="weekly-summary-content" style="margin-top:12px;"></div>
+                </div>
+
+                <!-- المعاينة المباشرة للتقرير المالي الشامل للشهر المختار -->
+                <div class="card" style="padding: 18px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--border-color);">
+                        <div>
+                            <h3 style="margin:0; font-size:1.08em;"><i class="fas fa-file-lines text-primary"></i> كشف الحساب والتقرير التفصيلي للفترة المختارة</h3>
+                            <div id="inline-report-period-subtitle" style="font-size:0.78em; color:var(--text-muted); margin-top:2px;">يعرض كامل المصروفات من بداية الشهر إلى نهايته مع أسعار البنود وقتها</div>
+                        </div>
+                        <button type="button" class="btn-edit-badge" onclick="openReportPreviewModal()"><i class="fas fa-expand"></i> فتح في نافذة المعاينة الكاملة</button>
+                    </div>
+                    <div style="overflow-x:auto; background: rgba(15, 23, 42, 0.03); padding: 14px; border-radius: 16px; border: 1px dashed var(--border-color);">
+                        <div id="inline-report-preview-sheet" dir="rtl" style="background: #ffffff; color: #0f172a; max-width: 820px; min-width: 600px; margin: 0 auto; padding: 28px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; font-family: 'Tajawal', sans-serif;"></div>
+                    </div>
                 </div>
             </div>
 
@@ -2804,11 +2857,11 @@
                             <h3 style="margin:0; font-size:1.22em; display:flex; align-items:center; gap:8px;">
                                 <i class="fas fa-sliders text-primary"></i> إعدادات التطبيق والمزامنة
                             </h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V6.9</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V7.1</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 14px; padding: 7px 14px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V6.9</div>
+                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V7.1</div>
                         </div>
                     </div>
 
@@ -3231,6 +3284,30 @@
             </div>
         </div>
     </div>
+
+    <!-- نافذة تأكيد سداد الالتزام ونقله للسجل -->
+    <div id="confirmSettleDebtModal" class="modal">
+        <div class="modal-content" style="max-width: 430px; text-align: center;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(16, 185, 129, 0.14); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.7em; margin: 0 auto 14px auto;">
+                <i class="fas fa-hand-holding-dollar"></i>
+            </div>
+            <h3 style="margin: 0 0 8px 0;">هل تم سداد هذا الالتزام؟</h3>
+            <p id="settle-debt-modal-desc" style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 16px; line-height: 1.55;"></p>
+            <input type="hidden" id="pending-settle-debt-id">
+            <div class="form-group" style="text-align: right;">
+                <label style="font-size:0.84em;">تاريخ إتمام السداد الفعلي:</label>
+                <input type="date" id="settle-debt-paid-date" dir="ltr" style="text-align:right; font-weight:800;">
+            </div>
+            <div class="form-group" style="text-align: right;">
+                <label style="font-size:0.84em;">ملاحظة السداد (اختياري):</label>
+                <input type="text" id="settle-debt-note" placeholder="مثال: تم التحويل عبر الراجحي / سُدد نقداً...">
+            </div>
+            <div class="modal-actions" style="justify-content: center; gap: 12px;">
+                <button type="button" class="btn-cancel" onclick="closeModal('confirmSettleDebtModal')">لم يُسدد بعد (تراجع)</button>
+                <button type="button" class="primary-btn" style="background: var(--success); border-color: var(--success); box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.4);" onclick="executeConfirmSettleDebt()"><i class="fas fa-check-circle"></i> نعم، تم السداد (نقل للسجل)</button>
+            </div>
+        </div>
+    </div>
     
     <!-- إضافة مصروف -->
     <div id="expenseModal" class="modal">
@@ -3404,17 +3481,37 @@
 
     <!-- تعديل الميزانية -->
     <div id="budgetEditModal" class="modal">
-        <div class="modal-content">
-            <h3 id="budget-edit-title" style="margin-top:0;">تعديل الميزانية</h3>
-            <div class="form-group"><label>المبلغ المقرر</label><input type="number" id="budget-edit-amount" dir="ltr" style="text-align:right;"></div>
+        <div class="modal-content" style="max-width: 480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:14px;">
+                <h3 id="budget-edit-title" style="margin:0; font-size:1.15em;"><i class="fas fa-pen-to-square text-primary"></i> تعديل الميزانية الشهرية</h3>
+                <button type="button" class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('budgetEditModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group">
+                <label>المبلغ المقرر</label>
+                <input type="number" id="budget-edit-amount" dir="ltr" style="text-align:right; font-weight:900; font-size:1.15em;">
+            </div>
             <div id="monthly-budget-date-fields">
-                <div class="form-group"><label>تحديد الشهر</label><input type="month" id="budget-edit-month" dir="ltr" onchange="autoAdjustMonthDates(this.value)"></div>
-                <div class="form-group"><label>بداية الشهر</label><input type="date" id="budget-edit-start-date" dir="ltr"></div>
-                <div class="form-group"><label>نهاية الشهر</label><input type="date" id="budget-edit-end-date" dir="ltr"></div>
+                <div style="background:rgba(255,85,32,0.06); border:1px dashed rgba(255,85,32,0.35); border-radius:14px; padding:10px 12px; margin-bottom:12px; font-size:0.8em; color:var(--text-main); line-height:1.55;">
+                    <i class="fas fa-calendar-check text-primary"></i> <strong>دورة الشهر المخصصة للراتب أو المكافأة:</strong> حدد تاريخ <strong>بداية الشهر</strong> وتاريخ <strong>نهاية الشهر</strong> (مثلاً من يوم 27 إلى يوم 27). وبمجرد انتهاء تاريخ النهاية ودخول اليوم الجديد، تبدأ دورة الشهر الجديد وتتصفر البنود تلقائياً للشهر الجديد مع بقاء مصروفات وبنود الشهر الماضي محفوظة بالكامل في السجل والتقارير.
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+                    <button type="button" class="btn-edit-badge" style="flex:1; font-size:0.74em; padding:6px 8px; text-align:center;" onclick="setPresetCycleDay(27)">راتب يوم 27 إلى 27</button>
+                    <button type="button" class="btn-edit-badge" style="flex:1; font-size:0.74em; padding:6px 8px; text-align:center;" onclick="setPresetCycleDay(25)">يوم 25 إلى 25</button>
+                    <button type="button" class="btn-edit-badge" style="flex:1; font-size:0.74em; padding:6px 8px; text-align:center;" onclick="setPresetCycleDay(1)">من 1 إلى نهاية الشهر</button>
+                </div>
+                <input type="hidden" id="budget-edit-month">
+                <div class="form-group">
+                    <label><i class="fas fa-play text-success" style="font-size:0.85em;"></i> بداية الشهر (تاريخ بدء دورة الميزانية)</label>
+                    <input type="date" id="budget-edit-start-date" dir="ltr" onchange="onBudgetStartDateChanged(this.value)">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-flag-checkered text-danger" style="font-size:0.85em;"></i> نهاية الشهر (تاريخ انتهاء دورة الميزانية)</label>
+                    <input type="date" id="budget-edit-end-date" dir="ltr">
+                </div>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-cancel" onclick="closeModal('budgetEditModal')">إلغاء</button>
-                <button type="button" class="primary-btn" onclick="saveBudgetEdit()">حفظ</button>
+                <button type="button" class="primary-btn" onclick="saveBudgetEdit()"><i class="fas fa-check-circle"></i> اعتماد وحفظ الميزانية</button>
             </div>
         </div>
     </div>
@@ -3576,26 +3673,27 @@
                 <button class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('emergencyHistoryModal')"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- شريط الربط المباشر مع الميزانية الشهرية المتبقية داخل السجل -->
+            <!-- شريط إحصائيات صندوق الطوارئ والميزانية الشهرية داخل السجل -->
             <div id="em-history-budget-banner" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px; text-align:center;">
                 <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:8px 6px;">
                     <div style="font-size:0.72em; color:var(--text-muted); font-weight:800;">المتوفر بالصندوق</div>
                     <div id="em-hist-saved-val" class="font-bold text-success" style="font-size:0.95em; margin-top:2px;" dir="ltr">0 ﷼</div>
                 </div>
                 <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:8px 6px;">
-                    <div style="font-size:0.72em; color:var(--text-muted); font-weight:800;">المسحوب من المتبقي</div>
+                    <div style="font-size:0.72em; color:var(--text-muted); font-weight:800;">المسحوب (كمصروف)</div>
                     <div id="em-hist-withdrawn-val" class="font-bold text-danger" style="font-size:0.95em; margin-top:2px;" dir="ltr">0 ﷼</div>
                 </div>
-                <div style="background:rgba(255,85,32,0.08); border:1px solid rgba(255,85,32,0.28); border-radius:12px; padding:8px 6px;">
+                <div style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.25); border-radius:12px; padding:8px 6px;">
                     <div style="font-size:0.72em; color:var(--text-muted); font-weight:800;">المتبقي الشهري</div>
                     <div id="em-hist-monthly-rem-val" class="font-bold text-primary" style="font-size:0.95em; margin-top:2px;" dir="ltr">0 ﷼</div>
                 </div>
             </div>
 
             <!-- أزرار إيداع وسحب سريعة من داخل السجل نفسه -->
-            <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
                 <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:9px; font-size:0.86em; background:var(--success); border-color:var(--success); box-shadow:none;" onclick="depositEmergencyFund()"><i class="fas fa-plus"></i> إيداع جديد</button>
                 <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:9px; font-size:0.86em; background:var(--danger); border-color:var(--danger); box-shadow:none;" onclick="withdrawEmergencyFund()"><i class="fas fa-minus"></i> سحب جديد</button>
+                <button type="button" class="action-btn" style="padding:9px 12px; font-size:0.8em; border-color:rgba(239,68,68,0.3); color:var(--danger); background:rgba(239,68,68,0.06);" onclick="zeroOutEmergencyFundSaved()" title="تصفير المتوفر في الصندوق إذا كان هناك رصيد قديم معلق"><i class="fas fa-rotate-left"></i> تصفير المتوفر</button>
             </div>
 
             <!-- نموذج التعديل المباشر داخل نفس السجل -->
@@ -3669,12 +3767,15 @@
 
     <!-- نافذة معاينة التقرير المالي المنبثقة -->
     <div id="reportPreviewModal" class="modal">
-        <div class="modal-content" style="max-width: 860px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 22px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:14px; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-                <h3 style="margin:0; font-size:1.18em;"><i class="fas fa-eye text-primary"></i> معاينة التقرير المالي الشامل</h3>
-                <div style="display:flex; gap:8px; align-items:center;">
+        <div class="modal-content" style="max-width: 880px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; padding: 22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:14px; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h3 style="margin:0; font-size:1.18em;"><i class="fas fa-eye text-primary"></i> معاينة التقرير المالي الشامل</h3>
+                    <div style="font-size:0.76em; color:var(--text-muted); margin-top:2px;">يشمل جميع المصروفات كاملةً من بداية الشهر إلى نهايته وبأسعار البنود وقتها</div>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <select id="modal-report-period-select" onchange="onSelectReportPeriod(this.value)" style="padding:8px 12px; border-radius:12px; border:1.5px solid var(--primary-color); background:var(--surface-card); color:var(--text-main); font-weight:800; font-size:0.84em; cursor:pointer; outline:none;"></select>
                     <button type="button" class="action-btn" style="padding:8px 14px; font-size:0.85em;" onclick="printFinancialReportNow()"><i class="fas fa-print"></i> طباعة</button>
-                    <button type="button" class="primary-btn" style="padding:8px 16px; font-size:0.85em;" onclick="exportFinancialReportPDF()"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
                     <button type="button" class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('reportPreviewModal')"><i class="fas fa-times"></i></button>
                 </div>
             </div>
@@ -4132,10 +4233,13 @@
             appPin: null,
             activationCode: '',
             emergencySaved: 0,
+            em633FixedV71: false,
             emergencyFundHistory: [],
             savingsHistory: [],
             splitBills: [],
             debts: [],
+            debtsHistory: [],
+            monthlyArchives: [],
             lastModifiedAt: 0,
             deletedExpenseIds: [],
             userAuth: null,
@@ -4305,6 +4409,8 @@
             APP_STATE.savingsHistory = [];
             APP_STATE.splitBills = [];
             APP_STATE.debts = [];
+            APP_STATE.debtsHistory = [];
+            APP_STATE.monthlyArchives = [];
             APP_STATE.expenses = [];
             APP_STATE.savingsGoals = [];
             APP_STATE.recurringExpenses = [];
@@ -4401,10 +4507,13 @@
                     currency: APP_STATE.currency,
                     activationCode: APP_STATE.activationCode || '',
                     emergencySaved: APP_STATE.emergencySaved,
+                    em633FixedV71: Boolean(APP_STATE.em633FixedV71),
                     emergencyFundHistory: APP_STATE.emergencyFundHistory || [],
                     savingsHistory: APP_STATE.savingsHistory || [],
                     splitBills: APP_STATE.splitBills || [],
                     debts: APP_STATE.debts || [],
+                    debtsHistory: APP_STATE.debtsHistory || [],
+                    monthlyArchives: APP_STATE.monthlyArchives || [],
                     categories: APP_STATE.categories || [],
                     expenses: lightweightExpenses,
                     savingsGoals: APP_STATE.savingsGoals || [],
@@ -4412,12 +4521,15 @@
                     lastModifiedAt: APP_STATE.lastModifiedAt || 0,
                     deletedExpenseIds: (APP_STATE.deletedExpenseIds || []).slice(-200)
                 });
-                localStorage.setItem('smart_budget_local_backup_v69', backupPayload);
-                localStorage.setItem('smart_budget_local_backup_v68', backupPayload);
-                localStorage.setItem('smart_budget_local_backup_v67', backupPayload);
-                localStorage.setItem('smart_budget_local_backup_v66', backupPayload);
-                localStorage.setItem('smart_budget_local_backup_v65', backupPayload);
-                localStorage.setItem('smart_budget_local_backup_v64', backupPayload);
+                // حذف مفاتيح النسخ القديمة لتحرير مساحة المتصفح وضمان حفظ التعديلات الجديدة دائماً دون امتلاء الذاكرة
+                localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v65');
+                localStorage.removeItem('smart_budget_local_backup_v66');
+                localStorage.removeItem('smart_budget_local_backup_v67');
+                localStorage.removeItem('smart_budget_local_backup_v68');
+                localStorage.removeItem('smart_budget_local_backup_v69');
+                localStorage.setItem('smart_budget_local_backup_v71', backupPayload);
+                localStorage.setItem('smart_budget_local_backup_v70', backupPayload);
             } catch(e) {}
             if (!skipCloudSync) saveCloudData();
         }
@@ -4436,7 +4548,9 @@
                 }
 
                 // قراءة النسخة الاحتياطية المحلية دائماً بدون مسحها عند إعادة التحميل (حتى تُحفظ المصروفات والرصيد البنكي في جميع الحالات)
-                const savedBackupV69 = localStorage.getItem('smart_budget_local_backup_v69');
+                const savedBackupV71 = localStorage.getItem('smart_budget_local_backup_v71');
+                const savedBackupV70 = savedBackupV71 || localStorage.getItem('smart_budget_local_backup_v70');
+                const savedBackupV69 = savedBackupV70 || localStorage.getItem('smart_budget_local_backup_v69');
                 const savedBackupV68 = savedBackupV69 || localStorage.getItem('smart_budget_local_backup_v68');
                 const savedBackupV67 = savedBackupV68 || localStorage.getItem('smart_budget_local_backup_v67');
                 const savedBackupV66 = localStorage.getItem('smart_budget_local_backup_v66');
@@ -4500,11 +4614,27 @@
                 if (!Array.isArray(APP_STATE.notifications)) APP_STATE.notifications = [];
                 if (!Array.isArray(APP_STATE.splitBills)) APP_STATE.splitBills = [];
                 if (!Array.isArray(APP_STATE.debts)) APP_STATE.debts = [];
+                if (!Array.isArray(APP_STATE.debtsHistory)) APP_STATE.debtsHistory = [];
+                if (!Array.isArray(APP_STATE.monthlyArchives)) APP_STATE.monthlyArchives = [];
                 if (!Array.isArray(APP_STATE.deletedExpenseIds)) APP_STATE.deletedExpenseIds = [];
                 if (APP_STATE.emergencySaved === undefined) APP_STATE.emergencySaved = 0;
                 setSafeBankBalance(getSafeBankBalance());
                 if (!Array.isArray(APP_STATE.emergencyFundHistory)) APP_STATE.emergencyFundHistory = [];
                 if (!Array.isArray(APP_STATE.savingsHistory)) APP_STATE.savingsHistory = [];
+
+                // توحيد صيغة التاريخ في سجل صندوق الطوارئ وسجل الادخار لتجنب أخطاء قراءة التواريخ العربية
+                (APP_STATE.emergencyFundHistory || []).forEach(r => {
+                    if (r && r.date) r.date = normalizeHistoryDateString(r.date);
+                });
+
+                // معالجة الرصيد الوهمي المعلق (مثل 633) وإعادة ربط مسحوبات صندوق الطوارئ بالمصروفات والميزانية الشهرية
+                reconcileAndSyncEmergencyFundState(true);
+                (APP_STATE.savingsHistory || []).forEach(r => {
+                    if (r && r.date) r.date = normalizeHistoryDateString(r.date);
+                });
+
+                checkAndAdvanceMonthlyCycleIfNeeded(true);
+                syncCurrentPeriodArchiveSnapshot();
 
                 // استعادة صور الفواتير المحفوظة محلياً وتوحيد تتبع خصم البنك لكل مصروف
                 (APP_STATE.expenses || []).forEach(exp => {
@@ -4990,6 +5120,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v62');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v70');
                 localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v68');
                 localStorage.removeItem('smart_budget_local_backup_v67');
@@ -5064,11 +5195,14 @@
             if (cloudData.bankBalance !== undefined) setSafeBankBalance(cloudData.bankBalance);
             if (cloudData.currency !== undefined) APP_STATE.currency = cloudData.currency;
             if (cloudData.activationCode !== undefined) APP_STATE.activationCode = cloudData.activationCode;
+            if (cloudData.em633FixedV71 !== undefined) APP_STATE.em633FixedV71 = Boolean(cloudData.em633FixedV71);
             if (cloudData.emergencySaved !== undefined) APP_STATE.emergencySaved = cloudData.emergencySaved;
             if (Array.isArray(cloudData.emergencyFundHistory)) APP_STATE.emergencyFundHistory = cloudData.emergencyFundHistory;
             if (Array.isArray(cloudData.savingsHistory)) APP_STATE.savingsHistory = cloudData.savingsHistory;
             if (Array.isArray(cloudData.splitBills)) APP_STATE.splitBills = cloudData.splitBills;
             if (Array.isArray(cloudData.debts)) APP_STATE.debts = cloudData.debts;
+            if (Array.isArray(cloudData.debtsHistory)) APP_STATE.debtsHistory = cloudData.debtsHistory;
+            if (Array.isArray(cloudData.monthlyArchives)) APP_STATE.monthlyArchives = cloudData.monthlyArchives;
             if (Array.isArray(cloudData.deletedExpenseIds)) {
                 const mergedDeleted = new Set([...(APP_STATE.deletedExpenseIds || []), ...cloudData.deletedExpenseIds]);
                 APP_STATE.deletedExpenseIds = Array.from(mergedDeleted).slice(-200);
@@ -5139,6 +5273,7 @@
                 APP_STATE.geminiApiKey = localStorage.getItem('smart_budget_gemini_key') || 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
             }
 
+            reconcileAndSyncEmergencyFundState(false);
             APP_STATE.lastModifiedAt = Math.max(localMod, cloudMod, Date.now());
             try { localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt)); } catch (e) {}
 
@@ -5319,6 +5454,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v70');
                 localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v68');
                 localStorage.removeItem('smart_budget_local_backup_v67');
@@ -5531,27 +5667,321 @@
         function openModal(id) { closeAllTopDropdowns(); if (typeof closeFinexyAiChat === 'function') closeFinexyAiChat(); const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+        // --- دوال إدارة دورة الميزانية الشهرية المخصصة (بداية ونهاية الشهر مثلاً 27 إلى 27) والأرشفة التاريخية للبنود ---
+        function normalizeHistoryDateString(rawStr) {
+            if (!rawStr) return getLocalTodayDateStr() + ' 12:00';
+            let s = String(rawStr);
+            const ar = '٠١٢٣٤٥٦٧٨٩';
+            const fa = '۰۱۲۳۴۵۶۷۸۹';
+            for (let i = 0; i < 10; i++) {
+                s = s.replace(new RegExp(ar[i], 'g'), String(i));
+                s = s.replace(new RegExp(fa[i], 'g'), String(i));
+            }
+            const m = s.match(/(\d{4}-\d{2}-\d{2})(?:[T\s]+(\d{1,2}:\d{2}))?/);
+            if (m) {
+                const timePart = m[2] ? m[2].padStart(5, '0') : '12:00';
+                return `${m[1]} ${timePart}`;
+            }
+            return s.trim();
+        }
+
+        function extractYmdClean(rawDate) {
+            if (!rawDate) return '';
+            const norm = normalizeHistoryDateString(rawDate);
+            const m = norm.match(/^(\d{4}-\d{2}-\d{2})/);
+            return m ? m[1] : String(rawDate).split('T')[0].split(' ')[0];
+        }
+
+        function isDateInPeriodRange(rawDate, startStr, endStr) {
+            const dPart = extractYmdClean(rawDate);
+            if (!dPart) return false;
+            if (startStr && dPart < startStr) return false;
+            if (endStr && dPart > endStr) return false;
+            return true;
+        }
+
+        function getActiveBudgetPeriod() {
+            const sDate = (APP_STATE.budgetStartDate || `${defaultMonth}-01`).trim();
+            const eDate = (APP_STATE.budgetEndDate || `${defaultMonth}-${lastDayOfCurMonth}`).trim();
+            return {
+                startStr: sDate,
+                endStr: eDate,
+                periodKey: `${sDate}_${eDate}`
+            };
+        }
+
+        function formatPeriodArabicLabel(startStr, endStr) {
+            if (!startStr || !endStr) return 'الفترة الحالية';
+            const monthNames = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+            const sParts = startStr.split('-').map(Number);
+            const eParts = endStr.split('-').map(Number);
+            if (sParts.length === 3 && eParts.length === 3) {
+                const sMonthName = monthNames[(sParts[1] || 1) - 1] || '';
+                const eMonthName = monthNames[(eParts[1] || 1) - 1] || '';
+                if (sParts[0] === eParts[0] && sParts[1] === eParts[1]) {
+                    return `شهر ${sMonthName} ${sParts[0]} (${startStr} إلى ${endStr})`;
+                }
+                return `دورة ${sMonthName} – ${eMonthName} ${eParts[0]} (${startStr} إلى ${endStr})`;
+            }
+            return `الفترة من ${startStr} إلى ${endStr}`;
+        }
+
+        function savePeriodSnapshotToArchive(startStr, endStr, monthlyBudgetVal, dailyBudgetVal, categoriesList) {
+            if (!startStr || !endStr) return;
+            if (!Array.isArray(APP_STATE.monthlyArchives)) APP_STATE.monthlyArchives = [];
+            const pKey = `${startStr}_${endStr}`;
+            const catsCopy = JSON.parse(JSON.stringify(categoriesList || APP_STATE.categories || []));
+            const existingIdx = APP_STATE.monthlyArchives.findIndex(a => a && a.periodKey === pKey);
+            const snapObj = {
+                periodKey: pKey,
+                startDate: startStr,
+                endDate: endStr,
+                selectedMonth: startStr.slice(0, 7),
+                label: formatPeriodArabicLabel(startStr, endStr),
+                monthlyBudget: parseFloat(monthlyBudgetVal !== undefined ? monthlyBudgetVal : APP_STATE.monthlyBudget) || 0,
+                dailyBudget: parseFloat(dailyBudgetVal !== undefined ? dailyBudgetVal : APP_STATE.dailyBudget) || 0,
+                categories: catsCopy,
+                updatedAt: Date.now()
+            };
+            if (existingIdx !== -1) {
+                APP_STATE.monthlyArchives[existingIdx] = snapObj;
+            } else {
+                APP_STATE.monthlyArchives.unshift(snapObj);
+            }
+        }
+
+        function syncCurrentPeriodArchiveSnapshot() {
+            const { startStr, endStr } = getActiveBudgetPeriod();
+            savePeriodSnapshotToArchive(startStr, endStr, APP_STATE.monthlyBudget, APP_STATE.dailyBudget, APP_STATE.categories);
+        }
+
+        function computeNextMonthlyCycleDates(oldStartStr, oldEndStr) {
+            const sParts = String(oldStartStr || '').split('-').map(Number);
+            const eParts = String(oldEndStr || '').split('-').map(Number);
+            if (sParts.length !== 3 || eParts.length !== 3) {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const lastD = new Date(y, now.getMonth() + 1, 0).getDate();
+                return { nextStart: `${y}-${m}-01`, nextEnd: `${y}-${m}-${String(lastD).padStart(2, '0')}` };
+            }
+            const sDay = sParts[2];
+            const eDay = eParts[2];
+            const oldEndObj = new Date(eParts[0], eParts[1] - 1, eParts[2]);
+
+            // إذا كانت الدورة من أول الشهر إلى آخر الشهر الميلادي
+            const lastDayOfEndMonth = new Date(eParts[0], eParts[1], 0).getDate();
+            if (sDay === 1 && eDay === lastDayOfEndMonth) {
+                const nextMonthObj = new Date(eParts[0], eParts[1], 1);
+                const ny = nextMonthObj.getFullYear();
+                const nm = nextMonthObj.getMonth() + 1;
+                const nLast = new Date(ny, nm, 0).getDate();
+                return {
+                    nextStart: `${ny}-${String(nm).padStart(2, '0')}-01`,
+                    nextEnd: `${ny}-${String(nm).padStart(2, '0')}-${String(nLast).padStart(2, '0')}`
+                };
+            }
+
+            // إذا كانت الدورة مخصصة باليوم (مثلاً من يوم 27 إلى يوم 27 أو من 25 إلى 25)
+            // يبدأ الشهر الجديد في اليوم التالي لنهاية الشهر السابق مباشرة (أو نفس يوم البداية) وينتهي في نفس اليوم المحدد من الشهر القادم
+            const anchorDay = eDay;
+            const nextStartObj = new Date(oldEndObj.getFullYear(), oldEndObj.getMonth(), oldEndObj.getDate() + 1);
+            let targetYear = oldEndObj.getFullYear();
+            let targetMonthIndex = oldEndObj.getMonth() + 1; // الشهر التالي
+            if (targetMonthIndex > 11) {
+                targetMonthIndex = 0;
+                targetYear += 1;
+            }
+            const maxDaysInTarget = new Date(targetYear, targetMonthIndex + 1, 0).getDate();
+            const finalEndDay = Math.min(anchorDay, maxDaysInTarget);
+            const nextEndObj = new Date(targetYear, targetMonthIndex, finalEndDay);
+
+            // إذا كان المستخدم يفضل ظهور نفس الرقم مثلاً 27 إلى 27 عندما يكون اليوم الجديد قد بدأ
+            const startYmd = (sDay === eDay)
+                ? `${oldEndObj.getFullYear()}-${String(oldEndObj.getMonth() + 1).padStart(2, '0')}-${String(sDay).padStart(2, '0')}`
+                : getLocalTodayDateStr(nextStartObj);
+
+            return {
+                nextStart: startYmd <= oldEndStr ? getLocalTodayDateStr(nextStartObj) : startYmd,
+                nextEnd: getLocalTodayDateStr(nextEndObj)
+            };
+        }
+
+        function checkAndAdvanceMonthlyCycleIfNeeded(silent = false) {
+            const todayStr = getLocalTodayDateStr();
+            let { startStr, endStr } = getActiveBudgetPeriod();
+            if (!startStr || !endStr) return false;
+
+            let advanced = false;
+            let safetyCounter = 0;
+            while (todayStr > endStr && safetyCounter < 24) {
+                safetyCounter++;
+                // 1. حفظ أرشيف الشهر المنتهي بكامل مخصصات وأسعار بنوده وقتها
+                savePeriodSnapshotToArchive(startStr, endStr, APP_STATE.monthlyBudget, APP_STATE.dailyBudget, APP_STATE.categories);
+
+                // 2. الانتقال إلى دورة الشهر الجديد تلقائياً (دون حذف مصروفات الشهر الماضي)
+                const nextCycle = computeNextMonthlyCycleDates(startStr, endStr);
+                if (!nextCycle.nextEnd || nextCycle.nextEnd <= endStr) break;
+                startStr = nextCycle.nextStart;
+                endStr = nextCycle.nextEnd;
+                APP_STATE.budgetStartDate = startStr;
+                APP_STATE.budgetEndDate = endStr;
+                APP_STATE.selectedMonth = startStr.slice(0, 7);
+                advanced = true;
+            }
+
+            if (advanced) {
+                syncCurrentPeriodArchiveSnapshot();
+                saveLocalData(true);
+                if (!silent) {
+                    showToast(`📅 بدأت دورة الشهر الجديد (${startStr} إلى ${endStr})! تم تصفير استهلاك البنود للشهر الجديد مع حفظ كامل بيانات ومصروفات الشهر الماضي في التقارير.`, 'info');
+                }
+            }
+            return advanced;
+        }
+
+        // حساب الرصيد المتوفر في صندوق الطوارئ ديناميكياً من السجل الفعلي (الإيداعات النشطة ناقص المسحوبات) لمنع بقاء أي رصيد وهمي معلق مثل 633
+        function recalculateEmergencySavedFromHistory() {
+            if (!Array.isArray(APP_STATE.emergencyFundHistory) || APP_STATE.emergencyFundHistory.length === 0) {
+                APP_STATE.emergencySaved = 0;
+                return 0;
+            }
+            const chronological = [...APP_STATE.emergencyFundHistory].reverse();
+            let balance = 0;
+            chronological.forEach(r => {
+                if (!r || r.settledPhantom) return;
+                const amt = parseFloat(r.amount || 0) || 0;
+                if (amt <= 0) return;
+                if (r.type === 'deposit') {
+                    balance += amt;
+                } else if (r.type === 'withdraw') {
+                    balance = Math.max(0, balance - amt);
+                }
+            });
+            APP_STATE.emergencySaved = Math.max(0, Math.round(balance * 100) / 100);
+            return APP_STATE.emergencySaved;
+        }
+
+        // مزامنة مسحوبات صندوق الطوارئ مع سجل المصروفات والميزانية الشهرية + تنظيف الرصيد الوهمي المعلق (633)
+        function reconcileAndSyncEmergencyFundState(isInitialLoad = false) {
+            if (!Array.isArray(APP_STATE.emergencyFundHistory)) APP_STATE.emergencyFundHistory = [];
+            if (!Array.isArray(APP_STATE.expenses)) APP_STATE.expenses = [];
+            if (!Array.isArray(APP_STATE.deletedExpenseIds)) APP_STATE.deletedExpenseIds = [];
+
+            const deletedSet = new Set(APP_STATE.deletedExpenseIds.map(String));
+            let mutated = false;
+
+            // 1. إعادة ربط أي عملية سحب من صندوق الطوارئ لتظهر كمصروف فعلي وتُخصم من الميزانية الشهرية
+            APP_STATE.emergencyFundHistory.forEach((rec, idx) => {
+                if (!rec) return;
+                if (!rec.id) {
+                    rec.id = Date.now() + idx;
+                    mutated = true;
+                }
+                if (rec.date) {
+                    const normD = normalizeHistoryDateString(rec.date);
+                    if (normD !== rec.date) {
+                        rec.date = normD;
+                        mutated = true;
+                    }
+                }
+                if (rec.type === 'withdraw') {
+                    const expId = rec.linkedExpenseId || ('exp-em-' + rec.id);
+                    rec.linkedExpenseId = expId;
+                    rec.deductedFromMonthly = true;
+                    if (deletedSet.has(String(expId))) return;
+
+                    let linkedExp = APP_STATE.expenses.find(e => e && (String(e.id) === String(expId) || String(e.linkedEmergencyId) === String(rec.id)));
+                    const expStoreTitle = rec.note ? `سحب من صندوق الطوارئ (${rec.note})` : 'سحب من صندوق الطوارئ';
+                    const amt = parseFloat(rec.amount || 0) || 0;
+                    if (!linkedExp && amt > 0) {
+                        APP_STATE.expenses.unshift({
+                            id: expId,
+                            linkedEmergencyId: rec.id,
+                            amount: amt,
+                            store: expStoreTitle,
+                            category: 'سحوبات الادخار والطوارئ',
+                            date: rec.date || toLocalIsoDateTimeString(),
+                            method: 'سحب ادخار / طوارئ',
+                            bank: '',
+                            bankDeducted: false,
+                            bankDeductedAmount: 0,
+                            updatedAt: Date.now()
+                        });
+                        mutated = true;
+                    }
+                }
+            });
+
+            // 2. معالجة الرصيد الوهمي السابق (مثل 633) الذي كان يظهر في المتوفر بالصندوق رغم سحبه
+            const alreadyFixedLocal = localStorage.getItem('smart_budget_fix_em633_v71') === '1';
+            const rawSaved = Math.round(parseFloat(APP_STATE.emergencySaved || 0));
+            const calcSavedBeforeFix = Math.round(recalculateEmergencySavedFromHistory());
+            if ((!APP_STATE.em633FixedV71 && !alreadyFixedLocal) || rawSaved === 633 || calcSavedBeforeFix === 633) {
+                if (rawSaved === 633 || calcSavedBeforeFix === 633 || (!alreadyFixedLocal && rawSaved > 0)) {
+                    APP_STATE.emergencyFundHistory.forEach(r => {
+                        if (r && r.type === 'deposit') {
+                            r.settledPhantom = true;
+                        }
+                    });
+                    APP_STATE.emergencySaved = 0;
+                    mutated = true;
+                }
+                APP_STATE.em633FixedV71 = true;
+                localStorage.setItem('smart_budget_fix_em633_v71', '1');
+            } else if (alreadyFixedLocal && !APP_STATE.em633FixedV71) {
+                APP_STATE.em633FixedV71 = true;
+            }
+
+            recalculateEmergencySavedFromHistory();
+
+            if (mutated && isInitialLoad) {
+                saveLocalData(false);
+            }
+        }
+
+        function getCurrentPeriodExpenses() {
+            const { startStr, endStr } = getActiveBudgetPeriod();
+            return (APP_STATE.expenses || []).filter(e => {
+                if (!e || !e.date) return false;
+                return isDateInPeriodRange(e.date, startStr, endStr);
+            });
+        }
+
         function calculateMonthlySpent() {
-            return (APP_STATE.expenses || []).reduce((sum, e) => sum + (parseFloat(e && e.amount) || 0), 0);
+            return getCurrentPeriodExpenses().reduce((sum, e) => sum + (parseFloat(e && e.amount) || 0), 0);
+        }
+        function calculateEmergencyDepositsTotal() {
+            return (APP_STATE.emergencyFundHistory || [])
+                .filter(r => r && r.type === 'deposit' && !r.settledPhantom)
+                .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
         }
         function calculateEmergencyWithdrawalsTotal() {
+            const { startStr, endStr } = getActiveBudgetPeriod();
             return (APP_STATE.emergencyFundHistory || [])
-                .filter(r => r && r.type === 'withdraw')
+                .filter(r => r && r.type === 'withdraw' && (!r.date || isDateInPeriodRange(r.date, startStr, endStr)))
                 .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
         }
         function calculateUnlinkedEmergencyWithdrawalsTotal() {
-            const exps = APP_STATE.expenses || [];
+            const { startStr, endStr } = getActiveBudgetPeriod();
             return (APP_STATE.emergencyFundHistory || [])
-                .filter(r => r && r.type === 'withdraw' && !r.linkedExpenseId && !exps.some(e => String(e.linkedEmergencyId) === String(r.id)))
+                .filter(r => {
+                    if (!r || r.type !== 'withdraw') return false;
+                    if (r.date && !isDateInPeriodRange(r.date, startStr, endStr)) return false;
+                    const hasLinkedExp = (APP_STATE.expenses || []).some(e => e && ((r.linkedExpenseId && String(e.id) === String(r.linkedExpenseId)) || String(e.linkedEmergencyId) === String(r.id)));
+                    return !hasLinkedExp;
+                })
                 .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
         }
         function calculateMonthlyRolloverTotal() {
-            return (APP_STATE.savingsHistory || [])
-                .filter(r => r && r.isMonthlyRollover)
-                .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0) +
-                (APP_STATE.emergencyFundHistory || [])
-                .filter(r => r && r.isMonthlyRollover)
+            const { startStr, endStr } = getActiveBudgetPeriod();
+            const savRoll = (APP_STATE.savingsHistory || [])
+                .filter(r => r && r.isMonthlyRollover && isDateInPeriodRange(r.date, startStr, endStr))
                 .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+            const emRoll = (APP_STATE.emergencyFundHistory || [])
+                .filter(r => r && r.isMonthlyRollover && !r.settledPhantom && isDateInPeriodRange(r.date, startStr, endStr))
+                .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+            return savRoll + emRoll;
         }
         function calculateMonthlyRemaining() {
             const mSpent = calculateMonthlySpent();
@@ -5565,15 +5995,21 @@
         }
 
         function renderDashboard() {
+            checkAndAdvanceMonthlyCycleIfNeeded(false);
             const mSpent = calculateMonthlySpent();
-            const emWithdrawn = calculateEmergencyWithdrawalsTotal();
             const mRemaining = calculateMonthlyRemaining();
             const dSpent = calculateDailySpent();
+            const { startStr, endStr } = getActiveBudgetPeriod();
+
+            const periodBadgeEl = document.getElementById('display-monthly-period-badge');
+            if (periodBadgeEl) {
+                periodBadgeEl.innerHTML = `<i class="fas fa-calendar-range text-primary"></i> <span>${startStr}</span> <i class="fas fa-arrow-left" style="font-size:0.8em; opacity:0.6;"></i> <span>${endStr}</span>`;
+            }
             
             document.getElementById('display-monthly-budget').innerText = formatEn(APP_STATE.monthlyBudget);
             document.getElementById('display-monthly-spent').innerText = formatEn(mSpent);
             document.getElementById('display-monthly-remaining').innerText = formatEn(mRemaining);
-            document.getElementById('monthly-progress-fill').style.width = Math.min(100, ((mSpent + emWithdrawn)/Math.max(1, APP_STATE.monthlyBudget))*100) + '%';
+            document.getElementById('monthly-progress-fill').style.width = Math.min(100, (mSpent / Math.max(1, APP_STATE.monthlyBudget)) * 100) + '%';
             
             document.getElementById('display-daily-budget').innerText = formatEn(APP_STATE.dailyBudget);
             document.getElementById('display-daily-spent').innerText = formatEn(dSpent);
@@ -5612,7 +6048,8 @@
                 }
             }
 
-            document.getElementById('bento-kpi-tx-count').innerText = formatEn((APP_STATE.expenses || []).length).replace(' ' + APP_STATE.currency, '');
+            const currentPeriodExps = getCurrentPeriodExpenses();
+            document.getElementById('bento-kpi-tx-count').innerText = formatEn(currentPeriodExps.length).replace(' ' + APP_STATE.currency, '');
             
             let totalSav = parseFloat(APP_STATE.emergencySaved || 0);
             if(APP_STATE.savingsGoals) APP_STATE.savingsGoals.forEach(g => totalSav += parseFloat(g.savedAmount||0));
@@ -5623,9 +6060,10 @@
             const c = document.getElementById('categories-container'); const s = document.getElementById('exp-category');
             if(!c || !s) return;
             c.innerHTML = ''; s.innerHTML = '';
+            const periodExps = getCurrentPeriodExpenses();
             
             (APP_STATE.categories || []).forEach((cat, index) => {
-                const spent = (APP_STATE.expenses || []).filter(e => e.category === cat.name).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+                const spent = periodExps.filter(e => e.category === cat.name).reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
                 const rem = Math.max(0, cat.budget - spent); const pct = cat.budget > 0 ? Math.min(100, (spent / cat.budget) * 100) : 0;
                 
                 const card = document.createElement('div'); 
@@ -5701,7 +6139,7 @@
             document.getElementById('edit-cat-name-input').value = cat.name;
             document.getElementById('edit-cat-budget-input').value = cat.budget;
 
-            const catExpenses = APP_STATE.expenses.filter(e => e.category === catName);
+            const catExpenses = getCurrentPeriodExpenses().filter(e => e.category === catName);
             const spent = catExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
             const rem = Math.max(0, cat.budget - spent);
 
@@ -5754,13 +6192,15 @@
 
             const cat = APP_STATE.categories.find(c => c.name === origName);
             if(cat) {
+                const { startStr: curS, endStr: curE } = getActiveBudgetPeriod();
                 if(origName !== newName) {
                     APP_STATE.expenses.forEach(e => {
-                        if(e.category === origName) e.category = newName;
+                        if(e.category === origName && isDateInPeriodRange(e.date, curS, curE)) e.category = newName;
                     });
                 }
                 cat.name = newName;
                 cat.budget = newBudget;
+                syncCurrentPeriodArchiveSnapshot();
 
                 saveLocalData();
                 closeModal('categoryDetailsModal');
@@ -5774,6 +6214,7 @@
         function deleteCategoryFromModal() {
             const origName = document.getElementById('edit-cat-original-name').value;
             APP_STATE.categories = APP_STATE.categories.filter(c => c.name !== origName);
+            syncCurrentPeriodArchiveSnapshot();
             saveLocalData();
             closeModal('categoryDetailsModal');
             renderCategories();
@@ -6197,6 +6638,24 @@
                 exp.receiptImage = currentDetailReceiptDataUrl || null;
                 saveReceiptImageToLocalCache(exp.id, exp.receiptImage);
 
+                // مزامنة ثنائية مع سجل صندوق الطوارئ إذا كان المصروف سحباً من صندوق الطوارئ
+                if (exp.linkedEmergencyId || String(exp.id || '').startsWith('exp-em-')) {
+                    const emRec = (APP_STATE.emergencyFundHistory || []).find(r => r && (String(r.id) === String(exp.linkedEmergencyId) || String(r.linkedExpenseId) === String(exp.id) || ('exp-em-' + r.id) === String(exp.id)));
+                    if (emRec) {
+                        emRec.amount = amt;
+                        const matchNote = str.match(/سحب من صندوق الطوارئ\s*\((.*)\)/);
+                        if (matchNote && matchNote[1]) {
+                            emRec.note = matchNote[1].trim();
+                        } else if (str !== 'سحب من صندوق الطوارئ') {
+                            emRec.note = str.replace('سحب من صندوق الطوارئ', '').trim();
+                        }
+                        if (dateVal) emRec.date = exp.date;
+                    }
+                    recalculateEmergencySavedFromHistory();
+                    renderEmergencyFundUI();
+                    renderSavingsPage();
+                }
+
                 saveLocalData(false);
                 closeModal('expenseDetailsModal');
                 renderDashboard();
@@ -6224,6 +6683,12 @@
                 APP_STATE.deletedExpenseIds.push(id);
             }
             saveReceiptImageToLocalCache(id, null);
+            if (exp && (exp.linkedEmergencyId || String(exp.id || '').startsWith('exp-em-'))) {
+                APP_STATE.emergencyFundHistory = (APP_STATE.emergencyFundHistory || []).filter(r => !(r && (String(r.id) === String(exp.linkedEmergencyId) || String(r.linkedExpenseId) === String(exp.id) || ('exp-em-' + r.id) === String(exp.id))));
+                recalculateEmergencySavedFromHistory();
+                renderEmergencyFundUI();
+                renderSavingsPage();
+            }
             APP_STATE.expenses = APP_STATE.expenses.filter(e => e.id !== id);
             saveLocalData(false);
             closeModal('expenseDetailsModal');
@@ -6258,7 +6723,7 @@
             if (!sidePanel || !listEl) return;
 
             const catObj = (APP_STATE.categories || []).find(c => c.name === catName) || { name: catName, budget: 0, icon: 'fa-tags' };
-            const catExpenses = (APP_STATE.expenses || []).filter(e => e.category === catName);
+            const catExpenses = getCurrentPeriodExpenses().filter(e => e.category === catName);
             const totalSpent = catExpenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
             const rem = Math.max(0, (parseFloat(catObj.budget) || 0) - totalSpent);
 
@@ -6327,7 +6792,7 @@
             const knownCatNames = new Set();
             (APP_STATE.categories || []).forEach(c => {
                 knownCatNames.add(c.name);
-                const catExps = (APP_STATE.expenses || []).filter(e => e.category === c.name);
+                const catExps = getCurrentPeriodExpenses().filter(e => e.category === c.name);
                 const spent = catExps.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
                 if (spent > 0 || isKpiCategoryLogMode) {
                     categoryData.push({ name: c.name, spent: spent, budget: c.budget, txCount: catExps.length });
@@ -6335,7 +6800,7 @@
             });
             // تضمين أي مصروفات أو سحوبات مسجلة تحت بنود إضافية (مثل سحوبات الادخار والطوارئ) لتظهر في سجل عمليات الصرف المسجلة
             const extraCatMap = {};
-            (APP_STATE.expenses || []).forEach(e => {
+            getCurrentPeriodExpenses().forEach(e => {
                 const cName = e.category || 'عام';
                 if (!knownCatNames.has(cName)) {
                     if (!extraCatMap[cName]) extraCatMap[cName] = [];
@@ -6599,7 +7064,7 @@
             if (!APP_STATE.savingsHistory) APP_STATE.savingsHistory = [];
             const now = new Date();
             const arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-            const dateStr = now.toLocaleDateString('en-CA') + ' ' + now.toLocaleTimeString('ar-EG', {hour12: true, hour: '2-digit', minute:'2-digit'});
+            const dateStr = `${getLocalTodayDateStr(now)} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             APP_STATE.savingsHistory.unshift({
                 id: 'sav-' + Date.now() + '-' + Math.floor(Math.random() * 100),
                 title: title,
@@ -7497,6 +7962,8 @@ Return JSON:
                 bank: method !== 'كاش' ? bank : '',
                 bankDeducted: isBank,
                 bankDeductedAmount: isBank ? amt : 0,
+                categoryBudgetAtTime: parseFloat((APP_STATE.categories || []).find(c => c.name === cat)?.budget || 0),
+                periodKey: getActiveBudgetPeriod().periodKey,
                 updatedAt: Date.now(),
                 receiptImage: currentPendingReceiptDataUrl || null
             };
@@ -7884,6 +8351,8 @@ Return JSON:
                 bank: method !== 'كاش' ? bank : '',
                 bankDeducted: isBank,
                 bankDeductedAmount: isBank ? amount : 0,
+                categoryBudgetAtTime: parseFloat((APP_STATE.categories || []).find(c => c.name === category)?.budget || 0),
+                periodKey: getActiveBudgetPeriod().periodKey,
                 updatedAt: Date.now()
             });
 
@@ -7898,32 +8367,79 @@ Return JSON:
             showToast(`تم تسجيل (${storeName} - ${formatEn(amount)}) • الدفع: ${method} بنجاح!`, 'success', true);
         }
 
+        function setDatePickerFieldClean(inputId, ymdVal) {
+            const el = document.getElementById(inputId);
+            if (!el || !ymdVal) return;
+            el.value = ymdVal;
+            if (el._flatpickr) {
+                try { el._flatpickr.setDate(ymdVal, false, 'Y-m-d'); } catch (e) {}
+            }
+        }
+
+        function setPresetCycleDay(dayNum) {
+            const now = new Date();
+            const curY = now.getFullYear();
+            const curM = now.getMonth();
+            const curD = now.getDate();
+            if (dayNum === 1) {
+                const mStr = String(curM + 1).padStart(2, '0');
+                const lastD = new Date(curY, curM + 1, 0).getDate();
+                setDatePickerFieldClean('budget-edit-start-date', `${curY}-${mStr}-01`);
+                setDatePickerFieldClean('budget-edit-end-date', `${curY}-${mStr}-${String(lastD).padStart(2, '0')}`);
+                return;
+            }
+            // إذا كان اليوم الحالي >= يوم الراتب (مثلاً اليوم 28 والراتب يوم 27)، تبدأ الدورة من 27 هذا الشهر إلى 27 الشهر القادم
+            let startObj, endObj;
+            if (curD >= dayNum) {
+                startObj = new Date(curY, curM, dayNum);
+                endObj = new Date(curY, curM + 1, dayNum);
+            } else {
+                startObj = new Date(curY, curM - 1, dayNum);
+                endObj = new Date(curY, curM, dayNum);
+            }
+            setDatePickerFieldClean('budget-edit-start-date', getLocalTodayDateStr(startObj));
+            setDatePickerFieldClean('budget-edit-end-date', getLocalTodayDateStr(endObj));
+        }
+
+        function onBudgetStartDateChanged(startVal) {
+            if (!startVal) return;
+            const parts = startVal.split('-').map(Number);
+            if (parts.length !== 3) return;
+            const sY = parts[0], sM = parts[1], sD = parts[2];
+            if (sD === 1) {
+                const lastD = new Date(sY, sM, 0).getDate();
+                setDatePickerFieldClean('budget-edit-end-date', `${sY}-${String(sM).padStart(2, '0')}-${String(lastD).padStart(2, '0')}`);
+            } else {
+                // اقتراح نفس اليوم في الشهر القادم تلقائياً (مثلاً 27 إلى 27 الشهر القادم)
+                let nextM = sM + 1;
+                let nextY = sY;
+                if (nextM > 12) { nextM = 1; nextY += 1; }
+                const maxD = new Date(nextY, nextM, 0).getDate();
+                const targetD = Math.min(sD, maxD);
+                setDatePickerFieldClean('budget-edit-end-date', `${nextY}-${String(nextM).padStart(2, '0')}-${String(targetD).padStart(2, '0')}`);
+            }
+        }
+
         function autoAdjustMonthDates(monthValue) {
             if (!monthValue) return;
             const parts = monthValue.split('-');
             const lastDay = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 0).getDate();
-            document.getElementById('budget-edit-start-date').value = `${monthValue}-01`;
-            document.getElementById('budget-edit-end-date').value = `${monthValue}-${String(lastDay).padStart(2, '0')}`;
+            setDatePickerFieldClean('budget-edit-start-date', `${monthValue}-01`);
+            setDatePickerFieldClean('budget-edit-end-date', `${monthValue}-${String(lastDay).padStart(2, '0')}`);
         }
 
         function openEditBudgetModal(type) {
             pendingBudgetEditType = type;
-            document.getElementById('budget-edit-title').innerText = type === 'monthly' ? 'تعديل ميزانية الشهر' : 'تعديل ميزانية اليوم';
+            document.getElementById('budget-edit-title').innerHTML = type === 'monthly'
+                ? '<i class="fas fa-pen-to-square text-primary"></i> تعديل الميزانية الشهرية وتحديد الدورة'
+                : '<i class="fas fa-pen-to-square text-primary"></i> تعديل الميزانية اليومية';
             document.getElementById('budget-edit-amount').value = type === 'monthly' ? APP_STATE.monthlyBudget : APP_STATE.dailyBudget;
             document.getElementById('monthly-budget-date-fields').style.display = type === 'monthly' ? 'block' : 'none';
             if (type === 'monthly') {
                 const mEl = document.getElementById('budget-edit-month');
-                const sEl = document.getElementById('budget-edit-start-date');
-                const eEl = document.getElementById('budget-edit-end-date');
                 if (mEl) mEl.value = APP_STATE.selectedMonth || defaultMonth;
-                if (sEl) {
-                    sEl.value = APP_STATE.budgetStartDate || `${defaultMonth}-01`;
-                    if (sEl._flatpickr) { try { sEl._flatpickr.setDate(sEl.value, false, 'Y-m-d'); } catch (e) {} }
-                }
-                if (eEl) {
-                    eEl.value = APP_STATE.budgetEndDate || `${defaultMonth}-${lastDayOfCurMonth}`;
-                    if (eEl._flatpickr) { try { eEl._flatpickr.setDate(eEl.value, false, 'Y-m-d'); } catch (e) {} }
-                }
+                setDatePickerFieldClean('budget-edit-start-date', APP_STATE.budgetStartDate || `${defaultMonth}-01`);
+                setDatePickerFieldClean('budget-edit-end-date', APP_STATE.budgetEndDate || `${defaultMonth}-${lastDayOfCurMonth}`);
             }
             openModal('budgetEditModal');
         }
@@ -7932,17 +8448,33 @@ Return JSON:
             const rawAmt = toEnglishDigitsClean(document.getElementById('budget-edit-amount')?.value || '').replace(/[^0-9.]/g, '');
             const amt = parseFloat(rawAmt) || 0;
             if (pendingBudgetEditType === 'monthly') {
+                const oldStart = APP_STATE.budgetStartDate;
+                const oldEnd = APP_STATE.budgetEndDate;
+                const sVal = (document.getElementById('budget-edit-start-date')?.value || '').trim();
+                const eVal = (document.getElementById('budget-edit-end-date')?.value || '').trim();
+                if (sVal && eVal && eVal < sVal) {
+                    showToast('تاريخ نهاية الشهر يجب أن يكون بعد أو مساوياً لتاريخ بداية الشهر', 'warning');
+                    return;
+                }
+                // إذا تغيرت فترة الشهر، نحفظ أرشيف الفترة السابقة أولاً بكامل بنودها ومخصصاتها قبل الانتقال للفترة الجديدة
+                if (oldStart && oldEnd && (oldStart !== sVal || oldEnd !== eVal)) {
+                    savePeriodSnapshotToArchive(oldStart, oldEnd, APP_STATE.monthlyBudget, APP_STATE.dailyBudget, APP_STATE.categories);
+                }
                 APP_STATE.monthlyBudget = amt;
-                const mVal = document.getElementById('budget-edit-month')?.value;
-                const sVal = document.getElementById('budget-edit-start-date')?.value;
-                const eVal = document.getElementById('budget-edit-end-date')?.value;
-                if (mVal) APP_STATE.selectedMonth = mVal;
-                if (sVal) APP_STATE.budgetStartDate = sVal;
+                if (sVal) {
+                    APP_STATE.budgetStartDate = sVal;
+                    APP_STATE.selectedMonth = sVal.slice(0, 7);
+                }
                 if (eVal) APP_STATE.budgetEndDate = eVal;
+                checkAndAdvanceMonthlyCycleIfNeeded(false);
+                syncCurrentPeriodArchiveSnapshot();
+                showToast(`تم اعتماد الميزانية الشهرية للفترة من (${APP_STATE.budgetStartDate}) إلى (${APP_STATE.budgetEndDate}) بنجاح! ✅`, 'success');
             } else {
                 APP_STATE.dailyBudget = amt;
+                syncCurrentPeriodArchiveSnapshot();
+                showToast('تم تحديث الميزانية اليومية بنجاح! ✅', 'success');
             }
-            saveLocalData(); closeModal('budgetEditModal'); renderDashboard(); renderCalendar(); updateCharts();
+            saveLocalData(); closeModal('budgetEditModal'); renderDashboard(); renderCategories(); renderCalendar(); updateCharts();
         }
 
         function openEditBankBalanceModal() {
@@ -7969,24 +8501,13 @@ Return JSON:
             const n = document.getElementById('cat-new-name').value.trim(); const b = parseFloat(document.getElementById('cat-new-budget').value);
             if(!n || isNaN(b)) return;
             APP_STATE.categories.push({ id:'cat-'+Date.now(), name:n, budget:b, icon:'fa-tags' });
+            syncCurrentPeriodArchiveSnapshot();
             saveLocalData(); closeModal('categoryModal'); renderCategories(); renderDashboard();
         }
 
         // استخراج عمليات الصرف الفعلية خلال مدة الميزانية الشهرية وعرضها في نافذة منبثقة
         function getMonthlyBudgetPeriodExpenses() {
-            const allExps = Array.isArray(APP_STATE.expenses) ? APP_STATE.expenses : [];
-            const startStr = (APP_STATE.budgetStartDate || '').trim();
-            const endStr = (APP_STATE.budgetEndDate || '').trim();
-            if (startStr && endStr) {
-                const filtered = allExps.filter(e => {
-                    if (!e || !e.date) return false;
-                    const dPart = String(e.date).split('T')[0].split(' ')[0];
-                    return dPart >= startStr && dPart <= endStr;
-                });
-                // إذا كانت هناك مصروفات خارج النطاق الافتراضي أو كلها ضمن الشهر نعرض مصروفات المدة، وإن كانت المدة تحتوي على عمليات نرجعها، أو نرجع كافة العمليات الفعلية إذا كانت المدة تغطيها
-                if (filtered.length > 0 || allExps.length === 0) return filtered;
-            }
-            return allExps;
+            return getCurrentPeriodExpenses();
         }
 
         function openMonthlyBudgetExpensesModal() {
@@ -8140,21 +8661,22 @@ Return JSON:
                     const dailyRolled = rolloverRecs.filter(r => r.isDailySurplusRollover).reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
                     const dRemAfterRollover = (APP_STATE.dailyBudget - dSpent) - dailyRolled;
                     
+                    const dayRawRem = (parseFloat(APP_STATE.dailyBudget) || 0) - dSpent;
                     let spentH = `<div class="cal-zero-spent-badge" dir="ltr">0</div>`;
                     if (dSpent > 0) spentH = `<div class="cal-spent-badge" dir="ltr">-${formatEn(dSpent)}</div>`;
                     
+                    // إبقاء المتبقي من مصروف اليوم باللون الأخضر دائماً تحت المصروف مباشرة
                     let remH = '';
-                    if (dailyRolled > 0 && dRemAfterRollover <= 0) {
-                        remH = `<div class="cal-rem-badge" style="background:rgba(139,92,246,0.16); color:#8b5cf6; border-color:rgba(139,92,246,0.35);" dir="ltr">تم الترحيل ✓</div>`;
-                    } else if (dRemAfterRollover >= 0) {
-                        remH = `<div class="cal-rem-badge" dir="ltr">+${formatEn(dRemAfterRollover)}</div>`;
+                    if (dayRawRem >= 0) {
+                        remH = `<div class="cal-rem-badge" dir="ltr">المتبقي +${formatEn(dayRawRem)}</div>`;
                     } else {
-                        remH = `<div class="cal-deficit-badge" dir="ltr">${formatEn(dRemAfterRollover)}</div>`;
+                        remH = `<div class="cal-deficit-badge" dir="ltr">${formatEn(dayRawRem)}</div>`;
                     }
 
+                    // إظهار "تم الترحيل: مبلغ كذا" تحت خانة المتبقي الأخضر مباشرة
                     let rolloverBadgeH = '';
                     if (totalRolled > 0) {
-                        rolloverBadgeH = `<div style="font-size:0.65em; font-weight:900; color:#8b5cf6; background:rgba(139,92,246,0.12); border:1px dashed rgba(139,92,246,0.35); border-radius:8px; padding:2px 4px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" dir="ltr" title="إجمالي المرحّل في هذا اليوم">🔄 رحّلت ${formatEn(totalRolled)}</div>`;
+                        rolloverBadgeH = `<div style="font-size:0.66em; font-weight:900; color:#8b5cf6; background:rgba(139,92,246,0.12); border:1px dashed rgba(139,92,246,0.38); border-radius:8px; padding:3px 5px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" dir="ltr" title="تم ترحيل هذا المبلغ">تم الترحيل: ${formatEn(totalRolled)}</div>`;
                     }
                     
                     cell.innerHTML = `
@@ -8333,7 +8855,7 @@ Return JSON:
             if(!pieChartInstance) return;
             const labels=[], data=[]; let maxSp=0, maxName='-'; let totalSp=0;
             (APP_STATE.categories||[]).forEach(c => {
-                const sp = (APP_STATE.expenses||[]).filter(e => e.category===c.name).reduce((s,e)=>s+parseFloat(e.amount),0);
+                const sp = getCurrentPeriodExpenses().filter(e => e.category===c.name).reduce((s,e)=>s+parseFloat(e.amount || 0),0);
                 labels.push(c.name); data.push(sp); totalSp+=sp;
                 if(sp>maxSp){maxSp=sp; maxName=c.name;}
             });
@@ -8355,7 +8877,7 @@ Return JSON:
                 tb.innerHTML='';
                 let trs='';
                 (APP_STATE.categories||[]).forEach(c => {
-                    const sp = (APP_STATE.expenses||[]).filter(e => e.category===c.name).reduce((s,e)=>s+parseFloat(e.amount),0);
+                    const sp = getCurrentPeriodExpenses().filter(e => e.category===c.name).reduce((s,e)=>s+parseFloat(e.amount || 0),0);
                     const pct = c.budget>0 ? Math.round((sp/c.budget)*100) : 0;
                     const fillWidth = Math.min(100, pct);
                     const barColor = pct >= 100 ? 'var(--danger)' : 'var(--primary-color)';
@@ -8386,7 +8908,7 @@ Return JSON:
             resultsBox.innerHTML = '';
             let foundLeaks = false;
             APP_STATE.categories.forEach(cat => {
-                const spent = APP_STATE.expenses.filter(e => e.category === cat.name).reduce((sum, e) => sum + parseFloat(e.amount), 0);
+                const spent = getCurrentPeriodExpenses().filter(e => e.category === cat.name).reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
                 if (spent > cat.budget) {
                     foundLeaks = true;
                     const over = spent - cat.budget;
@@ -8403,20 +8925,12 @@ Return JSON:
         }
 
         function renderEmergencyFundUI() {
+            const saved = recalculateEmergencySavedFromHistory();
             const savedEl = document.getElementById('emergency-saved-display');
-            const saved = parseFloat(APP_STATE.emergencySaved || 0);
             if (savedEl) savedEl.innerText = formatEn(saved);
 
             const mRem = calculateMonthlyRemaining();
             const emWithdrawn = calculateEmergencyWithdrawalsTotal();
-
-            const remEl = document.getElementById('emergency-monthly-rem-display');
-            if (remEl) {
-                remEl.innerText = formatEn(mRem);
-                remEl.className = 'stat-value ' + (mRem < 0 ? 'text-danger' : 'text-primary');
-            }
-            const withEl = document.getElementById('emergency-withdrawn-total-display');
-            if (withEl) withEl.innerText = formatEn(emWithdrawn);
 
             const histSavedEl = document.getElementById('em-hist-saved-val');
             if (histSavedEl) histSavedEl.innerText = formatEn(saved);
@@ -8427,6 +8941,26 @@ Return JSON:
                 histRemEl.innerText = formatEn(mRem);
                 histRemEl.className = 'font-bold ' + (mRem < 0 ? 'text-danger' : 'text-primary');
             }
+        }
+
+        function zeroOutEmergencyFundSaved() {
+            (APP_STATE.emergencyFundHistory || []).forEach(r => {
+                if (r && r.type === 'deposit') {
+                    r.settledPhantom = true;
+                }
+            });
+            APP_STATE.emergencySaved = 0;
+            APP_STATE.em633FixedV71 = true;
+            localStorage.setItem('smart_budget_fix_em633_v71', '1');
+            recalculateEmergencySavedFromHistory();
+            saveLocalData(false);
+            renderEmergencyFundUI();
+            renderSavingsPage();
+            renderDashboard();
+            if (document.getElementById('emergencyHistoryModal')?.style.display === 'flex') {
+                openEmergencyHistoryModal();
+            }
+            showToast('تم تصفير الرصيد المتوفر في صندوق الطوارئ بنجاح! ✅', 'success');
         }
 
         function depositEmergencyFund() {
@@ -8484,24 +9018,26 @@ Return JSON:
                 return;
             }
 
-            if (type === 'withdraw' && amt > (APP_STATE.emergencySaved || 0)) {
+            const currentAvailable = recalculateEmergencySavedFromHistory();
+            if (type === 'withdraw' && amt > currentAvailable) {
                 showToast('المبلغ المطلوب سحبه أكبر من الرصيد المتوفر في الصندوق', 'warning');
                 return;
             }
 
             const now = new Date();
-            const dateStr = now.toLocaleDateString('en-CA') + ' ' + now.toLocaleTimeString('ar-EG', {hour12: true, hour: '2-digit', minute:'2-digit'});
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const dateStr = `${getLocalTodayDateStr(now)} ${hh}:${mm}`;
 
             if (type === 'deposit') {
-                APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) + amt;
                 APP_STATE.emergencyFundHistory.unshift({ id: Date.now(), type: 'deposit', amount: amt, date: dateStr, note: noteVal });
-                showToast('تم الإيداع في صندوق الطوارئ وحفظ السبب بنجاح', 'success');
+                recalculateEmergencySavedFromHistory();
+                showToast('تم الإيداع في صندوق الطوارئ وحفظ العملية في السجل بنجاح! ✅', 'success');
             } else {
                 const recId = Date.now();
                 const expId = 'exp-em-' + recId;
                 const expStoreTitle = noteVal ? `سحب من صندوق الطوارئ (${noteVal})` : 'سحب من صندوق الطوارئ';
                 const withdrawCatName = 'سحوبات الادخار والطوارئ';
-                APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) - amt;
                 APP_STATE.emergencyFundHistory.unshift({
                     id: recId,
                     type: 'withdraw',
@@ -8518,14 +9054,15 @@ Return JSON:
                     amount: amt,
                     store: expStoreTitle,
                     category: withdrawCatName,
-                    date: toLocalIsoDateTimeString(),
+                    date: dateStr,
                     method: 'سحب ادخار / طوارئ',
                     bank: '',
                     bankDeducted: false,
                     bankDeductedAmount: 0,
                     updatedAt: Date.now()
                 });
-                showToast(`تم السحب من صندوق الطوارئ وتسجيله في المصروفات وعمليات الصرف المسجلة (${formatEn(amt)})`, 'info');
+                recalculateEmergencySavedFromHistory();
+                showToast(`تم السحب من صندوق الطوارئ (${formatEn(amt)}) وتسجيله كمصروف وخصمه من الميزانية الشهرية!`, 'info');
             }
 
             saveLocalData();
@@ -8560,8 +9097,8 @@ Return JSON:
                     const colorClass = isDep ? 'text-success' : 'text-danger';
                     const title = isDep ? 'إيداع' : 'سحب';
                     const budgetBadge = isDep
-                        ? ''
-                        : `<span style="font-size:0.68em; background:rgba(239,68,68,0.12); color:var(--danger); padding:2px 7px; border-radius:999px; font-weight:800;">خُصم من المتبقي الشهري</span>`;
+                        ? `<span style="font-size:0.68em; background:rgba(16,185,129,0.12); color:var(--success); padding:2px 7px; border-radius:999px; font-weight:800;">إيداع بالصندوق</span>`
+                        : `<span style="font-size:0.68em; background:rgba(239,68,68,0.12); color:var(--danger); padding:2px 7px; border-radius:999px; font-weight:800;">مسجل كمصروف ومخصوم من الميزانية</span>`;
                     const reasonLabel = isDep ? 'سبب الإيداع:' : 'سبب السحب:';
                     const noteHtml = record.note
                         ? `<div style="font-size:0.84em; color:var(--text-main); font-weight:700; margin-top:3px;"><span style="color:var(--primary-color);">${reasonLabel}</span> ${record.note}</div>`
@@ -8648,26 +9185,38 @@ Return JSON:
             const rec = (APP_STATE.emergencyFundHistory || []).find(r => String(r.id) === String(recId));
             if (!rec) return;
 
-            const oldAmt = parseFloat(rec.amount || 0) || 0;
-            const diff = newAmt - oldAmt;
-            if (rec.type === 'deposit') {
-                APP_STATE.emergencySaved = Math.max(0, parseFloat(APP_STATE.emergencySaved || 0) + diff);
-            } else {
-                APP_STATE.emergencySaved = Math.max(0, parseFloat(APP_STATE.emergencySaved || 0) - diff);
-            }
-
             rec.amount = newAmt;
             rec.note = newNote;
+            if (rec.type === 'deposit') {
+                delete rec.settledPhantom;
+            }
 
             if (rec.type === 'withdraw') {
+                const expId = rec.linkedExpenseId || ('exp-em-' + rec.id);
+                rec.linkedExpenseId = expId;
                 const linkedExp = (APP_STATE.expenses || []).find(e => (rec.linkedExpenseId && e.id === rec.linkedExpenseId) || String(e.linkedEmergencyId) === String(rec.id));
                 if (linkedExp) {
                     linkedExp.amount = newAmt;
                     linkedExp.store = newNote ? `سحب من صندوق الطوارئ (${newNote})` : 'سحب من صندوق الطوارئ';
                     linkedExp.updatedAt = Date.now();
+                } else {
+                    APP_STATE.expenses.unshift({
+                        id: expId,
+                        linkedEmergencyId: rec.id,
+                        amount: newAmt,
+                        store: newNote ? `سحب من صندوق الطوارئ (${newNote})` : 'سحب من صندوق الطوارئ',
+                        category: 'سحوبات الادخار والطوارئ',
+                        date: rec.date || toLocalIsoDateTimeString(),
+                        method: 'سحب ادخار / طوارئ',
+                        bank: '',
+                        bankDeducted: false,
+                        bankDeductedAmount: 0,
+                        updatedAt: Date.now()
+                    });
                 }
             }
 
+            recalculateEmergencySavedFromHistory();
             saveLocalData();
             renderEmergencyFundUI();
             renderSavingsPage();
@@ -8685,17 +9234,17 @@ Return JSON:
             const idx = (APP_STATE.emergencyFundHistory || []).findIndex(r => String(r.id) === String(recId));
             if (idx === -1) return;
             const rec = APP_STATE.emergencyFundHistory[idx];
-            const amt = parseFloat(rec.amount || 0) || 0;
-            if (rec.type === 'deposit') {
-                APP_STATE.emergencySaved = Math.max(0, parseFloat(APP_STATE.emergencySaved || 0) - amt);
-            } else {
-                APP_STATE.emergencySaved = Math.max(0, parseFloat(APP_STATE.emergencySaved || 0) + amt);
-            }
             if (rec.type === 'withdraw') {
+                const expId = rec.linkedExpenseId || ('exp-em-' + rec.id);
+                if (!Array.isArray(APP_STATE.deletedExpenseIds)) APP_STATE.deletedExpenseIds = [];
+                if (expId && !APP_STATE.deletedExpenseIds.includes(expId)) {
+                    APP_STATE.deletedExpenseIds.push(expId);
+                }
                 APP_STATE.expenses = (APP_STATE.expenses || []).filter(e => !((rec.linkedExpenseId && e.id === rec.linkedExpenseId) || String(e.linkedEmergencyId) === String(rec.id)));
             }
             APP_STATE.emergencyFundHistory.splice(idx, 1);
 
+            recalculateEmergencySavedFromHistory();
             saveLocalData();
             renderEmergencyFundUI();
             renderSavingsPage();
@@ -8886,8 +9435,7 @@ Return JSON:
 
             if (targetId === 'emergency_fund') {
                 const now = new Date();
-                const dateStr = now.toLocaleDateString('en-CA') + ' ' + now.toLocaleTimeString('ar-EG', {hour12: true, hour: '2-digit', minute:'2-digit'});
-                APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) + stats.remaining;
+                const dateStr = `${getLocalTodayDateStr(now)} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                 APP_STATE.emergencyFundHistory.unshift({
                     id: Date.now(),
                     type: 'deposit',
@@ -8896,6 +9444,7 @@ Return JSON:
                     rolloverForDate: selectedDate,
                     note: `ترحيل فائض يوم (${selectedDate})`
                 });
+                recalculateEmergencySavedFromHistory();
                 saveLocalData();
                 renderSavingsPage();
                 renderDashboard();
@@ -8953,8 +9502,7 @@ Return JSON:
 
             if (targetId === 'emergency_fund') {
                 const now = new Date();
-                const dateStr = now.toLocaleDateString('en-CA') + ' ' + now.toLocaleTimeString('ar-EG', {hour12: true, hour: '2-digit', minute:'2-digit'});
-                APP_STATE.emergencySaved = parseFloat(APP_STATE.emergencySaved || 0) + amountToRollover;
+                const dateStr = `${getLocalTodayDateStr(now)} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                 APP_STATE.emergencyFundHistory.unshift({
                     id: Date.now(),
                     type: 'deposit',
@@ -8963,6 +9511,7 @@ Return JSON:
                     note: rolloverNote,
                     isMonthlyRollover: true
                 });
+                recalculateEmergencySavedFromHistory();
                 saveLocalData();
                 if (customBox) customBox.style.display = 'none';
                 const toggleBtn = document.getElementById('btn-toggle-monthly-rollover-edit');
@@ -9143,11 +9692,113 @@ Return JSON:
             showToast('تم حفظ الالتزام بنجاح!', 'success');
         }
 
-        function deleteDebt(id) {
+        let currentDebtHistoryFilter = 'all';
+
+        function setDebtHistoryFilter(filterMode) {
+            currentDebtHistoryFilter = filterMode || 'all';
+            ['all', 'paid', 'active'].forEach(k => {
+                const btn = document.getElementById('debt-log-filter-' + k);
+                if (btn) {
+                    if (k === currentDebtHistoryFilter) {
+                        btn.style.background = 'var(--primary-color)';
+                        btn.style.color = '#ffffff';
+                    } else {
+                        btn.style.background = 'rgba(255, 85, 32, 0.12)';
+                        btn.style.color = 'var(--primary-color)';
+                    }
+                }
+            });
+            renderDebtsHistoryLog();
+        }
+
+        function promptSettleDebt(id) {
+            const debt = (APP_STATE.debts || []).find(d => d.id === id);
+            if (!debt) return;
+            document.getElementById('pending-settle-debt-id').value = debt.id;
+            const descEl = document.getElementById('settle-debt-modal-desc');
+            if (descEl) {
+                const typeText = debt.type === 'owed' ? 'الدين الذي عليك لـ' : 'السلفة المستحقة لك عند';
+                descEl.innerHTML = `هل أتممت فعلياً سداد ${typeText} <strong>(${debt.person})</strong> بقيمة <strong class="text-primary" dir="ltr">${formatEn(debt.amount)}</strong>؟<br><span style="font-size:0.84em; color:var(--text-muted);">عند التأكيد سينتقل الالتزام إلى سجل الالتزامات كـ "تم السداد ✓".</span>`;
+            }
+            const dateInp = document.getElementById('settle-debt-paid-date');
+            const todayStr = getLocalTodayDateStr();
+            if (dateInp) {
+                dateInp.value = todayStr;
+                if (dateInp._flatpickr) { try { dateInp._flatpickr.setDate(todayStr, false, 'Y-m-d'); } catch (e) {} }
+            }
+            const noteInp = document.getElementById('settle-debt-note');
+            if (noteInp) noteInp.value = '';
+            openModal('confirmSettleDebtModal');
+        }
+
+        function executeConfirmSettleDebt() {
+            const id = document.getElementById('pending-settle-debt-id')?.value;
+            const idx = (APP_STATE.debts || []).findIndex(d => d.id === id);
+            if (idx === -1) {
+                closeModal('confirmSettleDebtModal');
+                return;
+            }
+            const debtObj = APP_STATE.debts[idx];
+            const paidDate = document.getElementById('settle-debt-paid-date')?.value || getLocalTodayDateStr();
+            const paidNote = (document.getElementById('settle-debt-note')?.value || '').trim();
+
+            if (!Array.isArray(APP_STATE.debtsHistory)) APP_STATE.debtsHistory = [];
+            APP_STATE.debtsHistory.unshift({
+                id: debtObj.id,
+                type: debtObj.type,
+                person: debtObj.person,
+                amount: debtObj.amount,
+                receiveDate: debtObj.receiveDate || '',
+                dueDate: debtObj.dueDate || '',
+                paidDate: paidDate,
+                paidNote: paidNote,
+                status: 'paid',
+                paidAt: Date.now()
+            });
+
+            APP_STATE.debts.splice(idx, 1);
+            saveLocalData();
+            closeModal('confirmSettleDebtModal');
+            renderDebtsPage();
+            addNotification(`✅ تم سداد التزام (${debtObj.person}) بقيمة ${formatEn(debtObj.amount)} وحفظه في سجل الالتزامات`, 'success');
+            showToast(`تم تأكيد سداد (${debtObj.person}) ونقله إلى سجل الالتزامات بنجاح! ✅`, 'success');
+        }
+
+        function restorePaidDebtToActive(id) {
+            const idx = (APP_STATE.debtsHistory || []).findIndex(h => h.id === id);
+            if (idx === -1) return;
+            const rec = APP_STATE.debtsHistory[idx];
+            if (!Array.isArray(APP_STATE.debts)) APP_STATE.debts = [];
+            APP_STATE.debts.unshift({
+                id: rec.id,
+                type: rec.type,
+                person: rec.person,
+                amount: rec.amount,
+                receiveDate: rec.receiveDate || '',
+                dueDate: rec.dueDate || ''
+            });
+            APP_STATE.debtsHistory.splice(idx, 1);
+            saveLocalData();
+            renderDebtsPage();
+            showToast(`تم إرجاع التزام (${rec.person}) إلى قائمة الالتزامات النشطة`, 'info');
+        }
+
+        function deletePaidDebtFromHistory(id) {
+            APP_STATE.debtsHistory = (APP_STATE.debtsHistory || []).filter(h => h.id !== id);
+            saveLocalData();
+            renderDebtsPage();
+            showToast('تم حذف السجل من أرشيف الالتزامات', 'info');
+        }
+
+        function removeDebtRecordPermanently(id) {
             APP_STATE.debts = (APP_STATE.debts || []).filter(d => d.id !== id);
             saveLocalData();
             renderDebtsPage();
-            showToast('تم سداد / حذف الالتزام بنجاح', 'success');
+            showToast('تم حذف الالتزام من القائمة', 'info');
+        }
+
+        function deleteDebt(id) {
+            promptSettleDebt(id);
         }
 
         function formatDurationMonthsAr(months) {
@@ -9364,6 +10015,73 @@ Return JSON:
             `;
         }
 
+        function renderDebtsHistoryLog() {
+            const histContainer = document.getElementById('debts-history-list-container');
+            if (!histContainer) return;
+
+            const paidList = (APP_STATE.debtsHistory || []).map(h => Object.assign({}, h, { _logState: 'paid' }));
+            const activeList = (APP_STATE.debts || []).map(d => Object.assign({}, d, { _logState: 'active' }));
+
+            let combined = [];
+            if (currentDebtHistoryFilter === 'paid') {
+                combined = paidList;
+            } else if (currentDebtHistoryFilter === 'active') {
+                combined = activeList;
+            } else {
+                combined = [...paidList, ...activeList];
+            }
+
+            if (combined.length === 0) {
+                histContainer.innerHTML = '<div style="text-align:center; padding:18px; color:var(--text-muted); font-size:0.88em; background:var(--surface-color); border-radius:14px; border:1px dashed var(--border-color);">لا توجد التزامات مسجلة في هذا القسم من السجل حتى الآن.</div>';
+                return;
+            }
+
+            histContainer.innerHTML = combined.map(item => {
+                const isPaid = item._logState === 'paid';
+                const typeBadge = item.type === 'owed'
+                    ? `<span style="font-size:0.72em; background:rgba(239,68,68,0.12); color:var(--danger); padding:2px 9px; border-radius:999px; font-weight:800;">دين عليّ</span>`
+                    : `<span style="font-size:0.72em; background:rgba(16,185,129,0.12); color:var(--success); padding:2px 9px; border-radius:999px; font-weight:800;">سلف لي</span>`;
+
+                const statusBadge = isPaid
+                    ? `<span style="font-size:0.75em; background:rgba(16,185,129,0.15); color:var(--success); border:1px solid rgba(16,185,129,0.35); padding:3px 10px; border-radius:999px; font-weight:900;"><i class="fas fa-check-circle"></i> تم السداد (${item.paidDate || 'مسدد'})</span>`
+                    : `<span style="font-size:0.75em; background:rgba(245,158,11,0.14); color:var(--warning); border:1px solid rgba(245,158,11,0.35); padding:3px 10px; border-radius:999px; font-weight:900;"><i class="fas fa-hourglass-half"></i> قيد السداد (نشط)</span>`;
+
+                let datesInfo = [];
+                if (item.receiveDate) datesInfo.push(`<span><i class="fas fa-calendar-plus text-primary"></i> الاستلام: <strong dir="ltr">${item.receiveDate}</strong></span>`);
+                if (item.dueDate) datesInfo.push(`<span><i class="fas fa-calendar-day text-warning"></i> الموعد المحدد: <strong dir="ltr">${item.dueDate}</strong></span>`);
+                if (isPaid && item.paidDate) datesInfo.push(`<span><i class="fas fa-calendar-check text-success"></i> تاريخ السداد الفعلي: <strong class="text-success" dir="ltr">${item.paidDate}</strong></span>`);
+
+                const noteLine = (isPaid && item.paidNote)
+                    ? `<div style="font-size:0.78em; color:var(--text-main); margin-top:4px; background:rgba(16,185,129,0.06); padding:4px 8px; border-radius:8px; display:inline-block;"><i class="fas fa-comment-dots text-success"></i> ملاحظة السداد: ${item.paidNote}</div>`
+                    : '';
+
+                const actionsHtml = isPaid
+                    ? `<button type="button" class="action-btn" style="padding:5px 10px; font-size:0.75em;" onclick="restorePaidDebtToActive('${item.id}')" title="إرجاع إلى الالتزامات النشطة"><i class="fas fa-rotate-left"></i> إرجاع للنشطة</button>
+                       <button type="button" class="action-btn" style="padding:5px 9px; font-size:0.75em; color:var(--danger); border-color:rgba(239,68,68,0.28);" onclick="deletePaidDebtFromHistory('${item.id}')" title="حذف من السجل"><i class="fas fa-trash"></i></button>`
+                    : `<button type="button" class="primary-btn" style="padding:6px 12px; font-size:0.76em; border-radius:10px;" onclick="promptSettleDebt('${item.id}')"><i class="fas fa-hand-holding-dollar"></i> هل تم السداد؟</button>`;
+
+                return `
+                    <div style="background:var(--surface-color); border:1px solid ${isPaid ? 'rgba(16,185,129,0.3)' : 'var(--border-color)'}; padding:12px 15px; border-radius:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div style="flex:1; min-width:210px;">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:5px;">
+                                <strong style="font-size:1em;">${item.person}</strong>
+                                ${typeBadge}
+                                ${statusBadge}
+                            </div>
+                            <div style="font-size:0.78em; color:var(--text-muted); display:flex; flex-wrap:wrap; gap:12px;">
+                                ${datesInfo.join('') || '<span>بدون تواريخ محددة</span>'}
+                            </div>
+                            ${noteLine}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span style="font-weight:900; font-size:1.1em; color:${isPaid ? 'var(--success)' : (item.type === 'owed' ? 'var(--danger)' : 'var(--primary-color)')};" dir="ltr">${formatEn(item.amount)}</span>
+                            ${actionsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         function renderDebtsPage() {
             populateEarlyDebtSelector();
             syncEarlyDebtSlider(false);
@@ -9371,11 +10089,14 @@ Return JSON:
             const list = APP_STATE.debts || [];
             let owedTotal = 0;
             let dueTotal = 0;
+            const countBadge = document.getElementById('active-debts-count-badge');
+            if (countBadge) countBadge.innerText = `${list.length} التزام نشط`;
+
             const container = document.getElementById('debts-list-container');
             if (container) {
                 container.innerHTML = '';
                 if (list.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; padding:18px; color:var(--text-muted); font-size:0.9em; background:var(--surface-color); border-radius:14px; border:1px dashed var(--border-color);">لا توجد التزامات أو ديون مسجلة حالياً. اضغط على "إضافة التزام" للبدء.</div>';
+                    container.innerHTML = '<div style="text-align:center; padding:18px; color:var(--text-muted); font-size:0.9em; background:var(--surface-color); border-radius:14px; border:1px dashed var(--border-color);">لا توجد التزامات أو ديون نشطة حالياً. يمكنك إضافة التزام جديد أو مراجعة سجل الالتزامات المسددة بالأسفل.</div>';
                 } else {
                     list.forEach(d => {
                         if (d.type === 'owed') owedTotal += parseFloat(d.amount || 0);
@@ -9401,9 +10122,12 @@ Return JSON:
                                     ${datesHtml || '<span>بدون تواريخ محددة</span>'}
                                 </div>
                             </div>
-                            <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                                 <span style="font-weight:900; font-size:1.15em; color:${d.type === 'owed' ? 'var(--danger)' : 'var(--success)'};" dir="ltr">${formatEn(d.amount)}</span>
-                                <button type="button" class="btn-edit-badge" style="color:var(--success); border-color:rgba(16,185,129,0.35); background:rgba(16,185,129,0.1);" onclick="deleteDebt('${d.id}')"><i class="fas fa-check"></i> تم السداد</button>
+                                <button type="button" class="primary-btn" style="padding:8px 15px; font-size:0.82em; border-radius:12px; background:linear-gradient(135deg, #ff5520, #ff7a45); box-shadow:0 6px 16px -4px rgba(255,85,32,0.45);" onclick="promptSettleDebt('${d.id}')" title="اضغط هنا لتأكيد سداد هذا الالتزام ونقله إلى السجل">
+                                    <i class="fas fa-hand-holding-dollar"></i> هل تم السداد؟ (اضغط للتسديد)
+                                </button>
+                                <button type="button" class="action-btn" style="padding:7px 10px; font-size:0.78em; color:var(--text-muted); border-color:var(--border-color);" onclick="removeDebtRecordPermanently('${d.id}')" title="حذف هذا الالتزام"><i class="fas fa-trash"></i></button>
                             </div>
                         `;
                         container.appendChild(item);
@@ -9414,6 +10138,8 @@ Return JSON:
             if (owedEl) owedEl.innerText = formatEn(owedTotal);
             const dueEl = document.getElementById('total-debts-due');
             if (dueEl) dueEl.innerText = formatEn(dueTotal);
+
+            renderDebtsHistoryLog();
         }
 
         function savePersistentNotifications(skipStateSave = false) {
@@ -9916,24 +10642,186 @@ Return JSON:
             `;
         }
 
-        function buildFinancialReportHTML() {
-            const monthlySpent = calculateMonthlySpent();
-            const monthlyDiff = calculateMonthlyRemaining();
-            const spentPercent = APP_STATE.monthlyBudget > 0 ? Math.min(100, Math.round((monthlySpent / APP_STATE.monthlyBudget) * 100)) : 0;
+        let activeSelectedReportPeriodKey = '';
+
+        function getAllAvailableReportPeriods() {
+            syncCurrentPeriodArchiveSnapshot();
+            const { startStr: curS, endStr: curE, periodKey: curKey } = getActiveBudgetPeriod();
+            const periodsMap = new Map();
+
+            // 1. الفترة الحالية المحددة في الميزانية الشهرية
+            periodsMap.set(curKey, {
+                periodKey: curKey,
+                startDate: curS,
+                endDate: curE,
+                isCurrent: true,
+                label: `📌 الفترة الحالية: ${formatPeriodArabicLabel(curS, curE)}`,
+                monthlyBudget: parseFloat(APP_STATE.monthlyBudget || 0),
+                dailyBudget: parseFloat(APP_STATE.dailyBudget || 0),
+                categories: JSON.parse(JSON.stringify(APP_STATE.categories || []))
+            });
+
+            // 2. الفترات والشهور المؤرشفة (تحفظ أسعار ومخصصات البنود وقتها قبل أي تحديث لاحق)
+            (APP_STATE.monthlyArchives || []).forEach(arch => {
+                if (!arch || !arch.startDate || !arch.endDate) return;
+                const key = arch.periodKey || `${arch.startDate}_${arch.endDate}`;
+                if (!periodsMap.has(key)) {
+                    periodsMap.set(key, {
+                        periodKey: key,
+                        startDate: arch.startDate,
+                        endDate: arch.endDate,
+                        isCurrent: false,
+                        label: `🗂️ ${arch.label || formatPeriodArabicLabel(arch.startDate, arch.endDate)}`,
+                        monthlyBudget: parseFloat(arch.monthlyBudget || 0),
+                        dailyBudget: parseFloat(arch.dailyBudget || 0),
+                        categories: Array.isArray(arch.categories) ? JSON.parse(JSON.stringify(arch.categories)) : []
+                    });
+                }
+            });
+
+            // 3. اكتشاف أي شهور سابقة من سجل المصروفات لم تكن ضمن الفترات أعلاه
+            const allPeriodsList = Array.from(periodsMap.values());
+            (APP_STATE.expenses || []).forEach(exp => {
+                if (!exp || !exp.date) return;
+                const ymd = extractYmdClean(exp.date);
+                if (!ymd || ymd.length < 7) return;
+                const covered = allPeriodsList.some(p => ymd >= p.startDate && ymd <= p.endDate);
+                if (!covered) {
+                    const ym = ymd.slice(0, 7);
+                    const [yNum, mNum] = ym.split('-').map(Number);
+                    const lastD = new Date(yNum, mNum, 0).getDate();
+                    const mStart = `${ym}-01`;
+                    const mEnd = `${ym}-${String(lastD).padStart(2, '0')}`;
+                    const mKey = `${mStart}_${mEnd}`;
+                    if (!periodsMap.has(mKey)) {
+                        const newPeriodObj = {
+                            periodKey: mKey,
+                            startDate: mStart,
+                            endDate: mEnd,
+                            isCurrent: false,
+                            label: `📅 ${formatPeriodArabicLabel(mStart, mEnd)}`,
+                            monthlyBudget: parseFloat(APP_STATE.monthlyBudget || 0),
+                            dailyBudget: parseFloat(APP_STATE.dailyBudget || 0),
+                            categories: []
+                        };
+                        periodsMap.set(mKey, newPeriodObj);
+                        allPeriodsList.push(newPeriodObj);
+                    }
+                }
+            });
+
+            return Array.from(periodsMap.values()).sort((a, b) => {
+                if (a.isCurrent) return -1;
+                if (b.isCurrent) return 1;
+                return b.startDate.localeCompare(a.startDate);
+            });
+        }
+
+        function populateReportPeriodSelectors(preferredKey = '') {
+            const periods = getAllAvailableReportPeriods();
+            if (!activeSelectedReportPeriodKey || !periods.some(p => p.periodKey === activeSelectedReportPeriodKey)) {
+                activeSelectedReportPeriodKey = periods[0]?.periodKey || '';
+            }
+            if (preferredKey && periods.some(p => p.periodKey === preferredKey)) {
+                activeSelectedReportPeriodKey = preferredKey;
+            }
+
+            const optionsHtml = periods.map(p => {
+                const expCount = (APP_STATE.expenses || []).filter(e => e && e.date && isDateInPeriodRange(e.date, p.startDate, p.endDate)).length;
+                return `<option value="${p.periodKey}" ${p.periodKey === activeSelectedReportPeriodKey ? 'selected' : ''}>${p.label} — (${expCount} عملية صرف)</option>`;
+            }).join('');
+
+            const selPage = document.getElementById('report-period-select');
+            const selModal = document.getElementById('modal-report-period-select');
+            if (selPage) selPage.innerHTML = optionsHtml;
+            if (selModal) selModal.innerHTML = optionsHtml;
+        }
+
+        function onSelectReportPeriod(periodKey) {
+            activeSelectedReportPeriodKey = periodKey;
+            const selPage = document.getElementById('report-period-select');
+            const selModal = document.getElementById('modal-report-period-select');
+            if (selPage && selPage.value !== periodKey) selPage.value = periodKey;
+            if (selModal && selModal.value !== periodKey) selModal.value = periodKey;
+            renderReportLivePreview();
+        }
+
+        function buildFinancialReportHTML(customPeriodKey = '') {
+            const periods = getAllAvailableReportPeriods();
+            const targetKey = customPeriodKey || activeSelectedReportPeriodKey || (periods[0] && periods[0].periodKey);
+            const periodObj = periods.find(p => p.periodKey === targetKey) || periods[0] || {
+                periodKey: getActiveBudgetPeriod().periodKey,
+                startDate: APP_STATE.budgetStartDate || `${defaultMonth}-01`,
+                endDate: APP_STATE.budgetEndDate || `${defaultMonth}-${lastDayOfCurMonth}`,
+                isCurrent: true,
+                monthlyBudget: parseFloat(APP_STATE.monthlyBudget || 0),
+                dailyBudget: parseFloat(APP_STATE.dailyBudget || 0),
+                categories: APP_STATE.categories || []
+            };
+
+            const sDate = periodObj.startDate;
+            const eDate = periodObj.endDate;
+            const periodStr = `من ${sDate} إلى ${eDate}`;
+
+            // جلب جميع المصاريف كاملة تماماً من بداية الشهر إلى نهاية الشهر المحدد (بدون أي حذف أو اقتصار على 25 عملية)
+            const periodExpenses = (APP_STATE.expenses || []).filter(e => {
+                if (!e || !e.date) return false;
+                return isDateInPeriodRange(e.date, sDate, eDate);
+            });
+
+            const periodBudget = parseFloat(periodObj.monthlyBudget !== undefined ? periodObj.monthlyBudget : APP_STATE.monthlyBudget) || 0;
+            const monthlySpent = periodExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const monthlyDiff = periodBudget - monthlySpent;
+            const spentPercent = periodBudget > 0 ? Math.min(100, Math.round((monthlySpent / periodBudget) * 100)) : 0;
+
             const now = new Date();
             const dateStr = now.toLocaleDateString('ar-SA') + ' - ' + now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-            const periodStr = (APP_STATE.budgetStartDate && APP_STATE.budgetEndDate)
-                ? `${APP_STATE.budgetStartDate} إلى ${APP_STATE.budgetEndDate}`
-                : (APP_STATE.selectedMonth || 'الشهر الحالي');
 
             let totalSav = parseFloat(APP_STATE.emergencySaved || 0);
             if (APP_STATE.savingsGoals) APP_STATE.savingsGoals.forEach(g => totalSav += parseFloat(g.savedAmount || 0));
 
+            // استرجاع البنود بأسعارها ومخصصاتها وقتها (قبل أي تحديث لاحق)
+            const historicalCatsMap = new Map();
+            const snapshotCats = (Array.isArray(periodObj.categories) && periodObj.categories.length > 0)
+                ? periodObj.categories
+                : (periodObj.isCurrent ? (APP_STATE.categories || []) : []);
+
+            snapshotCats.forEach(c => {
+                if (c && c.name) {
+                    historicalCatsMap.set(c.name, {
+                        name: c.name,
+                        budget: parseFloat(c.budget || 0)
+                    });
+                }
+            });
+
+            // تضمين أي بنود صُرف فيها خلال تلك الفترة بأسعارها المحفوظة وقت الصرف (categoryBudgetAtTime) حتى لو تم تعديل البند أو حذفه لاحقاً
+            periodExpenses.forEach(e => {
+                const cName = e.category || 'عام';
+                if (!historicalCatsMap.has(cName)) {
+                    const fallbackCat = (APP_STATE.categories || []).find(c => c.name === cName);
+                    const budgetAtTime = e.categoryBudgetAtTime !== undefined
+                        ? parseFloat(e.categoryBudgetAtTime || 0)
+                        : parseFloat(fallbackCat?.budget || 0);
+                    historicalCatsMap.set(cName, {
+                        name: cName,
+                        budget: budgetAtTime
+                    });
+                }
+            });
+
+            // إذا لم يكن هناك لقطة سابقة ولا مصروفات بعد، نعرض البنود الحالية
+            if (historicalCatsMap.size === 0) {
+                (APP_STATE.categories || []).forEach(c => {
+                    historicalCatsMap.set(c.name, { name: c.name, budget: parseFloat(c.budget || 0) });
+                });
+            }
+
             let catRows = '';
-            (APP_STATE.categories || []).forEach(cat => {
-                const spent = (APP_STATE.expenses || []).filter(e => e.category === cat.name).reduce((s, e) => s + parseFloat(e.amount || 0), 0);
+            Array.from(historicalCatsMap.values()).forEach(cat => {
+                const spent = periodExpenses.filter(e => (e.category || 'عام') === cat.name).reduce((s, e) => s + parseFloat(e.amount || 0), 0);
                 const rem = Math.max(0, cat.budget - spent);
-                const pct = cat.budget > 0 ? Math.min(100, Math.round((spent / cat.budget) * 100)) : 0;
+                const pct = cat.budget > 0 ? Math.min(100, Math.round((spent / cat.budget) * 100)) : (spent > 0 ? 100 : 0);
                 const barColor = pct >= 100 ? '#dc2626' : '#ff5520';
                 catRows += `
                     <tr style="border-bottom: 1px solid #e2e8f0;">
@@ -9953,12 +10841,14 @@ Return JSON:
                 `;
             });
 
+            // عرض جميع المصروفات كاملة خلال المدة (من بداية الشهر إلى نهايته)
             let expRows = '';
-            (APP_STATE.expenses || []).slice(0, 25).forEach(exp => {
-                const dPart = exp.date ? exp.date.replace('T', ' ').slice(0, 16) : '-';
+            periodExpenses.forEach((exp, idx) => {
+                const dPart = exp.date ? String(exp.date).replace('T', ' ').slice(0, 16) : '-';
                 const mPart = exp.method ? `${exp.method}${exp.bank ? ' (' + exp.bank + ')' : ''}` : '-';
                 expRows += `
                     <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 7px 10px; color: #64748b; font-weight: 700; text-align: center;" dir="ltr">${idx + 1}</td>
                         <td style="padding: 7px 10px; font-weight: 700; color: #0f172a;">${exp.store}</td>
                         <td style="padding: 7px 10px; color: #475569;">${exp.category}</td>
                         <td style="padding: 7px 10px; color: #475569;">${mPart}</td>
@@ -9969,22 +10859,28 @@ Return JSON:
             });
 
             let debtsSectionHtml = '';
-            if (APP_STATE.debts && APP_STATE.debts.length > 0) {
+            const allDebtsForReport = [
+                ...(APP_STATE.debts || []).map(d => Object.assign({}, d, { _stateText: 'قيد السداد' })),
+                ...(APP_STATE.debtsHistory || []).map(h => Object.assign({}, h, { _stateText: `تم السداد (${h.paidDate || ''})` }))
+            ];
+            if (allDebtsForReport.length > 0) {
                 let dRows = '';
-                APP_STATE.debts.forEach(d => {
+                allDebtsForReport.forEach(d => {
                     const typeLbl = d.type === 'owed' ? '<span style="color:#dc2626; font-weight:800;">دين عليّ</span>' : '<span style="color:#16a34a; font-weight:800;">سلف لي</span>';
+                    const stateColor = String(d._stateText).includes('تم السداد') ? '#16a34a' : '#d97706';
                     dRows += `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 7px 10px; font-weight: 700;">${d.person}</td>
                             <td style="padding: 7px 10px; text-align: center;">${typeLbl}</td>
                             <td style="padding: 7px 10px; text-align: center;" dir="ltr">${d.receiveDate || '-'}</td>
                             <td style="padding: 7px 10px; text-align: center;" dir="ltr">${d.dueDate || '-'}</td>
+                            <td style="padding: 7px 10px; text-align: center; font-weight: 800; color:${stateColor};">${d._stateText}</td>
                             <td style="padding: 7px 10px; text-align: left; font-weight: 800;" dir="ltr">${formatEn(d.amount)}</td>
                         </tr>
                     `;
                 });
                 debtsSectionHtml = `
-                    <h4 style="margin: 20px 0 8px 0; font-size: 14px; color: #0f172a; border-right: 4px solid #ff5520; padding-right: 8px;">التزامات الديون والسلف</h4>
+                    <h4 style="margin: 20px 0 8px 0; font-size: 14px; color: #0f172a; border-right: 4px solid #ff5520; padding-right: 8px;">سجل التزامات الديون والسلف</h4>
                     <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px;">
                         <thead>
                             <tr style="background: #f8fafc; color: #475569; border-bottom: 2px solid #e2e8f0;">
@@ -9992,6 +10888,7 @@ Return JSON:
                                 <th style="padding: 8px 10px; text-align: center;">النوع</th>
                                 <th style="padding: 8px 10px; text-align: center;">تاريخ الاستلام</th>
                                 <th style="padding: 8px 10px; text-align: center;">تاريخ السداد</th>
+                                <th style="padding: 8px 10px; text-align: center;">الحالة</th>
                                 <th style="padding: 8px 10px; text-align: left;">المبلغ</th>
                             </tr>
                         </thead>
@@ -10008,7 +10905,7 @@ Return JSON:
                         </div>
                         <div>
                             <h2 style="margin: 0; font-size: 20px; font-weight: 900; color: #0f172a;">التقرير المالي وكشف الحساب الشامل</h2>
-                            <div style="font-size: 12px; color: #64748b; margin-top: 3px;">تطبيق الميزانية الذكية • الفترة: <span dir="ltr">${periodStr}</span></div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 3px; font-weight: 700;">تطبيق الميزانية الذكية • فترة الشهر المحددة: <span dir="ltr" style="color:#ff5520;">${periodStr}</span></div>
                         </div>
                     </div>
                     <div style="text-align: left; font-size: 11px; color: #475569;">
@@ -10019,46 +10916,47 @@ Return JSON:
 
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px;">
                     <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; text-align: center;">
-                        <div style="font-size: 11px; color: #64748b; font-weight: 700;">الميزانية الشهرية</div>
-                        <div style="font-size: 16px; font-weight: 900; color: #0f172a; margin-top: 4px;" dir="ltr">${formatEn(APP_STATE.monthlyBudget)}</div>
+                        <div style="font-size: 11px; color: #64748b; font-weight: 700;">ميزانية الفترة المقررة</div>
+                        <div style="font-size: 16px; font-weight: 900; color: #0f172a; margin-top: 4px;" dir="ltr">${formatEn(periodBudget)}</div>
                     </div>
                     <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 12px; text-align: center;">
                         <div style="font-size: 11px; color: #991b1b; font-weight: 700;">إجمالي المنصرف (${spentPercent}%)</div>
                         <div style="font-size: 16px; font-weight: 900; color: #dc2626; margin-top: 4px;" dir="ltr">${formatEn(monthlySpent)}</div>
                     </div>
                     <div style="background: ${monthlyDiff >= 0 ? '#f0fdf4' : '#fef2f2'}; border: 1px solid ${monthlyDiff >= 0 ? '#bbf7d0' : '#fecaca'}; border-radius: 10px; padding: 12px; text-align: center;">
-                        <div style="font-size: 11px; color: ${monthlyDiff >= 0 ? '#166534' : '#991b1b'}; font-weight: 700;">${monthlyDiff >= 0 ? 'المتبقي الصافي' : 'العجز المالي'}</div>
+                        <div style="font-size: 11px; color: ${monthlyDiff >= 0 ? '#166534' : '#991b1b'}; font-weight: 700;">${monthlyDiff >= 0 ? 'المتبقي للفترة' : 'العجز المالي للفترة'}</div>
                         <div style="font-size: 16px; font-weight: 900; color: ${monthlyDiff >= 0 ? '#16a34a' : '#dc2626'}; margin-top: 4px;" dir="ltr">${formatEn(monthlyDiff)}</div>
                     </div>
                     <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px; text-align: center;">
-                        <div style="font-size: 11px; color: #1e40af; font-weight: 700;">الرصيد البنكي / الادخار</div>
-                        <div style="font-size: 14px; font-weight: 900; color: #1d4ed8; margin-top: 4px;" dir="ltr">بنك: ${formatEn(APP_STATE.bankBalance || 0)}</div>
+                        <div style="font-size: 11px; color: #1e40af; font-weight: 700;">عدد العمليات / الادخار</div>
+                        <div style="font-size: 14px; font-weight: 900; color: #1d4ed8; margin-top: 4px;">${periodExpenses.length} عملية صرف</div>
                         <div style="font-size: 11px; font-weight: 800; color: #047857; margin-top: 2px;" dir="ltr">ادخار: ${formatEn(totalSav)}</div>
                     </div>
                 </div>
 
-                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #0f172a; border-right: 4px solid #ff5520; padding-right: 8px;">ملخص استهلاك البنود والمخصصات</h4>
+                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #0f172a; border-right: 4px solid #ff5520; padding-right: 8px;">ملخص استهلاك البنود والمخصصات (بأسعار ومخصصات البنود الخاصة بهذه الفترة)</h4>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 22px;">
                     <thead>
                         <tr style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
-                            <th style="padding: 8px 10px; text-align: right;">اسم البند</th>
-                            <th style="padding: 8px 10px; text-align: center;">المخصص</th>
-                            <th style="padding: 8px 10px; text-align: center;">المنصرف</th>
+                            <th style="padding: 8px 10px; text-align: right;">اسم البند (وقتها)</th>
+                            <th style="padding: 8px 10px; text-align: center;">المخصص وقتها</th>
+                            <th style="padding: 8px 10px; text-align: center;">المنصرف خلال الفترة</th>
                             <th style="padding: 8px 10px; text-align: center;">المتبقي</th>
                             <th style="padding: 8px 10px; text-align: center;">نسبة الاستهلاك</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${catRows || '<tr><td colspan="5" style="text-align:center; padding:12px;">لا توجد بنود مضافة</td></tr>'}
+                        ${catRows || '<tr><td colspan="5" style="text-align:center; padding:12px;">لا توجد بنود مضافة في هذه الفترة</td></tr>'}
                     </tbody>
                 </table>
 
                 ${debtsSectionHtml}
 
-                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #0f172a; border-right: 4px solid #ff5520; padding-right: 8px;">سجل أحدث العمليات والمصروفات</h4>
+                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #0f172a; border-right: 4px solid #ff5520; padding-right: 8px;">سجل المصروفات الكامل خلال الفترة (${periodStr}) — إجمالي (${periodExpenses.length}) عملية</h4>
                 <table style="width: 100%; border-collapse: collapse; font-size: 11.5px;">
                     <thead>
                         <tr style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
+                            <th style="padding: 8px 8px; text-align: center; width: 38px;">#</th>
                             <th style="padding: 8px 10px; text-align: right;">المحل / الوصف</th>
                             <th style="padding: 8px 10px; text-align: right;">البند</th>
                             <th style="padding: 8px 10px; text-align: right;">طريقة الدفع</th>
@@ -10067,21 +10965,24 @@ Return JSON:
                         </tr>
                     </thead>
                     <tbody>
-                        ${expRows || '<tr><td colspan="5" style="text-align:center; padding:14px; color:#64748b;">لا توجد مصروفات مسجلة حتى الآن</td></tr>'}
+                        ${expRows || '<tr><td colspan="6" style="text-align:center; padding:16px; color:#64748b;">لا توجد مصروفات مسجلة خلال هذه الفترة المحددة</td></tr>'}
                     </tbody>
                 </table>
 
                 <div style="margin-top: 26px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 11px; color: #64748b;">
-                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy)</span>
-                    <span dir="ltr">Page 1 of 1</span>
+                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy • AI Cloud V7.1)</span>
+                    <span dir="ltr">${sDate} -> ${eDate}</span>
                 </div>
             `;
         }
 
         function renderReportLivePreview() {
+            populateReportPeriodSelectors(activeSelectedReportPeriodKey);
+            const reportHtml = buildFinancialReportHTML(activeSelectedReportPeriodKey);
             const sheet = document.getElementById('report-pdf-sheet');
-            if (!sheet) return;
-            sheet.innerHTML = buildFinancialReportHTML();
+            if (sheet) sheet.innerHTML = reportHtml;
+            const inlineSheet = document.getElementById('inline-report-preview-sheet');
+            if (inlineSheet) inlineSheet.innerHTML = reportHtml;
         }
 
         function openReportPreviewModal() {
@@ -11902,6 +12803,7 @@ self.addEventListener('fetch', (e) => {
                     else if (isVisible('budgetEditModal')) { event.preventDefault(); saveBudgetEdit(); }
                     else if (isVisible('bankBalanceEditModal')) { event.preventDefault(); saveBankBalanceEdit(); }
                     else if (isVisible('newDebtModal')) { event.preventDefault(); saveNewDebt(); }
+                    else if (isVisible('confirmSettleDebtModal')) { event.preventDefault(); executeConfirmSettleDebt(); }
                     else if (isVisible('goalDepositModal')) { event.preventDefault(); confirmGoalDeposit(); }
                     else if (isVisible('emergencyActionModal')) { event.preventDefault(); confirmEmergencyAction(); }
                     else if (isVisible('emergencyHistoryModal') && document.getElementById('em-history-edit-box')?.style.display === 'block') { event.preventDefault(); saveEmergencyHistoryEdit(); }
