@@ -2247,7 +2247,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V7.1</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V7.3</div>
             </div>
         </div>
 
@@ -2857,11 +2857,11 @@
                             <h3 style="margin:0; font-size:1.22em; display:flex; align-items:center; gap:8px;">
                                 <i class="fas fa-sliders text-primary"></i> إعدادات التطبيق والمزامنة
                             </h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V7.1</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V7.3</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 14px; padding: 7px 14px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V7.1</div>
+                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V7.3</div>
                         </div>
                     </div>
 
@@ -3111,10 +3111,10 @@
                                     <div class="settings-section-head">
                                         <h4><i class="fas fa-database text-primary"></i> إدارة النسخ الاحتياطي والبيانات</h4>
                                     </div>
-                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">يمكنك تصدير نسخة احتياطية كاملة من بياناتك المالية بصيغة (JSON) أو استعادتها في أي وقت:</p>
+                                    <p style="font-size: 0.82em; color: var(--text-muted); margin: 0 0 12px 0;">يمكنك تصدير نسخة احتياطية كاملة وشاملة لكافة بياناتك وصور الفواتير بصيغة (JSON) لحفظها في جهازك واستعادتها في أي وقت دون فقدان أي فاتورة:</p>
                                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                        <button type="button" class="primary-btn" onclick="saveLocalDataFile()"><i class="fas fa-download"></i> تصدير البيانات (JSON)</button>
-                                        <button type="button" class="action-btn" onclick="triggerFileInput()"><i class="fas fa-upload"></i> استعادة البيانات</button>
+                                        <button type="button" class="primary-btn" onclick="saveLocalDataFile()"><i class="fas fa-file-shield text-success"></i> تصدير نسخة احتياطية شاملة الفواتير (JSON)</button>
+                                        <button type="button" class="action-btn" onclick="triggerFileInput()"><i class="fas fa-upload"></i> استعادة نسخة محفوظة وفواتير</button>
                                     </div>
                                 </div>
                             </div>
@@ -4262,6 +4262,22 @@
         let isSavingToCloud = false;
         let hasPendingCloudSave = false;
         let lastLocalMutationTime = 0;
+        let hasCompletedInitialCloudSyncForCurrentSession = false;
+
+        // فحص دقيق لمعرفة ما إذا كانت حالة البيانات فارغة (صفرية) لمنع أي جهاز جديد فارغ من مسح بيانات السحابة
+        function isStateEffectivelyEmpty(st) {
+            if (!st || typeof st !== 'object') return true;
+            const hasExpenses = Array.isArray(st.expenses) && st.expenses.length > 0;
+            const hasBudget = (parseFloat(st.monthlyBudget) || 0) > 0 || (parseFloat(st.dailyBudget) || 0) > 0;
+            const hasBank = (parseFloat(st.bankBalance) || 0) !== 0;
+            const hasGoals = Array.isArray(st.savingsGoals) && st.savingsGoals.length > 0;
+            const hasDebts = (Array.isArray(st.debts) && st.debts.length > 0) || (Array.isArray(st.debtsHistory) && st.debtsHistory.length > 0);
+            const hasEm = (parseFloat(st.emergencySaved) || 0) > 0 || (Array.isArray(st.emergencyFundHistory) && st.emergencyFundHistory.some(r => r && !r.settledPhantom && (parseFloat(r.amount) || 0) > 0));
+            const hasSavHist = Array.isArray(st.savingsHistory) && st.savingsHistory.length > 0;
+            const hasSplit = Array.isArray(st.splitBills) && st.splitBills.length > 0;
+            const hasCustomCats = Array.isArray(st.categories) && st.categories.some(c => (parseFloat(c && c.budget) || 0) > 0);
+            return !(hasExpenses || hasBudget || hasBank || hasGoals || hasDebts || hasEm || hasSavHist || hasSplit || hasCustomCats);
+        }
         let pendingBudgetEditType = null;
 
         // متغير عالمي لتخزين مكتبات السحابة لتسريع المزامنة بشكل هائل
@@ -4421,39 +4437,207 @@
             APP_STATE.categories = getZeroedDefaultCategories();
         }
 
-        function saveReceiptImageToLocalCache(expId, dataUrl) {
+        // --- مستودع IndexedDB دائم لتخزين صور الفواتير بسعة تخزينية عملاقة (مئات الميغابايت) لمنع حذف الفواتير بسبب حد 5MB في localStorage ---
+        const RECEIPT_DB_NAME = 'FinexyReceiptsDB';
+        const RECEIPT_STORE_NAME = 'receipt_images';
+        let receiptDbInstance = null;
+        if (!window.RECEIPT_IMAGES_MEMORY_CACHE) window.RECEIPT_IMAGES_MEMORY_CACHE = {};
+
+        function getReceiptDb() {
+            return new Promise((resolve) => {
+                if (receiptDbInstance) return resolve(receiptDbInstance);
+                if (typeof window === 'undefined' || !window.indexedDB) return resolve(null);
+                try {
+                    const req = indexedDB.open(RECEIPT_DB_NAME, 1);
+                    req.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(RECEIPT_STORE_NAME)) {
+                            db.createObjectStore(RECEIPT_STORE_NAME, { keyPath: 'expId' });
+                        }
+                    };
+                    req.onsuccess = (e) => {
+                        receiptDbInstance = e.target.result;
+                        resolve(receiptDbInstance);
+                    };
+                    req.onerror = () => resolve(null);
+                } catch (e) {
+                    resolve(null);
+                }
+            });
+        }
+
+        async function saveReceiptImageToIndexedDB(expId, dataUrl) {
             if (!expId) return;
             try {
-                const raw = localStorage.getItem('smart_budget_receipt_images') || '{}';
-                const map = JSON.parse(raw);
+                const db = await getReceiptDb();
+                if (!db) return;
+                const tx = db.transaction(RECEIPT_STORE_NAME, 'readwrite');
+                const store = tx.objectStore(RECEIPT_STORE_NAME);
                 if (dataUrl) {
-                    map[expId] = dataUrl;
+                    store.put({ expId: String(expId), dataUrl, updatedAt: Date.now() });
                 } else {
-                    delete map[expId];
+                    store.delete(String(expId));
                 }
-                localStorage.setItem('smart_budget_receipt_images', JSON.stringify(map));
             } catch (e) {}
         }
 
-        function getReceiptImageFromLocalCache(expId) {
+        async function getReceiptImageFromIndexedDB(expId) {
             if (!expId) return null;
             try {
-                const raw = localStorage.getItem('smart_budget_receipt_images');
-                if (!raw) return null;
-                const map = JSON.parse(raw);
-                return map[expId] || null;
+                const db = await getReceiptDb();
+                if (!db) return null;
+                return new Promise((resolve) => {
+                    const tx = db.transaction(RECEIPT_STORE_NAME, 'readonly');
+                    const store = tx.objectStore(RECEIPT_STORE_NAME);
+                    const req = store.get(String(expId));
+                    req.onsuccess = () => resolve(req.result ? req.result.dataUrl : null);
+                    req.onerror = () => resolve(null);
+                });
             } catch (e) {
                 return null;
             }
         }
 
-        function saveLocalData(skipCloudSync = false) {
+        async function getAllReceiptImagesFromIndexedDB() {
             try {
-                if (!skipCloudSync) {
+                const db = await getReceiptDb();
+                if (!db) return {};
+                return new Promise((resolve) => {
+                    const tx = db.transaction(RECEIPT_STORE_NAME, 'readonly');
+                    const store = tx.objectStore(RECEIPT_STORE_NAME);
+                    const req = store.getAll();
+                    req.onsuccess = () => {
+                        const map = {};
+                        (req.result || []).forEach(item => {
+                            if (item && item.expId && item.dataUrl) map[String(item.expId)] = item.dataUrl;
+                        });
+                        resolve(map);
+                    };
+                    req.onerror = () => resolve({});
+                });
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveReceiptImageToLocalCache(expId, dataUrl) {
+            if (!expId) return;
+            const strId = String(expId);
+            if (!window.RECEIPT_IMAGES_MEMORY_CACHE) window.RECEIPT_IMAGES_MEMORY_CACHE = {};
+            if (dataUrl) {
+                window.RECEIPT_IMAGES_MEMORY_CACHE[strId] = dataUrl;
+            } else {
+                delete window.RECEIPT_IMAGES_MEMORY_CACHE[strId];
+            }
+
+            // حفظ دائم ومؤمن في مستودع IndexedDB
+            saveReceiptImageToIndexedDB(strId, dataUrl);
+
+            // حفظ إضافي في localStorage مع حماية من QuotaExceededError
+            try {
+                const raw = localStorage.getItem('smart_budget_receipt_images') || '{}';
+                const map = JSON.parse(raw);
+                if (dataUrl) {
+                    map[strId] = dataUrl;
+                } else {
+                    delete map[strId];
+                }
+                localStorage.setItem('smart_budget_receipt_images', JSON.stringify(map));
+            } catch (e) {
+                // امتلاء 5MB في localStorage لا يؤثر أبداً على وجود الصورة لأنها محفوظة في IndexedDB والذاكرة
+            }
+        }
+
+        function getReceiptImageFromLocalCache(expId) {
+            if (!expId) return null;
+            const strId = String(expId);
+            if (window.RECEIPT_IMAGES_MEMORY_CACHE && window.RECEIPT_IMAGES_MEMORY_CACHE[strId]) {
+                return window.RECEIPT_IMAGES_MEMORY_CACHE[strId];
+            }
+            try {
+                const raw = localStorage.getItem('smart_budget_receipt_images');
+                if (raw) {
+                    const map = JSON.parse(raw);
+                    if (map[strId]) {
+                        if (!window.RECEIPT_IMAGES_MEMORY_CACHE) window.RECEIPT_IMAGES_MEMORY_CACHE = {};
+                        window.RECEIPT_IMAGES_MEMORY_CACHE[strId] = map[strId];
+                        return map[strId];
+                    }
+                }
+            } catch (e) {}
+
+            // محاولة غير متزامنة للاسترجاع من IndexedDB وتحديث المصروف فور العثور عليها
+            getReceiptImageFromIndexedDB(strId).then(dbImg => {
+                if (dbImg) {
+                    if (!window.RECEIPT_IMAGES_MEMORY_CACHE) window.RECEIPT_IMAGES_MEMORY_CACHE = {};
+                    window.RECEIPT_IMAGES_MEMORY_CACHE[strId] = dbImg;
+                    const exp = (APP_STATE.expenses || []).find(e => String(e.id) === strId);
+                    if (exp && !exp.receiptImage) {
+                        exp.receiptImage = dbImg;
+                    }
+                }
+            });
+
+            return null;
+        }
+
+        // دالة موحدة لاسترجاع وتثبيت كافة صور الفواتير في الذاكرة عند تشغيل التطبيق أو تحديثه
+        async function initializeAllReceiptImages() {
+            if (!window.RECEIPT_IMAGES_MEMORY_CACHE) window.RECEIPT_IMAGES_MEMORY_CACHE = {};
+
+            // 1. قراءة ما يوجد في localStorage
+            try {
+                const raw = localStorage.getItem('smart_budget_receipt_images');
+                if (raw) {
+                    const localMap = JSON.parse(raw);
+                    Object.assign(window.RECEIPT_IMAGES_MEMORY_CACHE, localMap);
+                }
+            } catch (e) {}
+
+            // 2. قراءة كل الصور من IndexedDB ودمجها
+            try {
+                const idbMap = await getAllReceiptImagesFromIndexedDB();
+                if (idbMap && typeof idbMap === 'object') {
+                    Object.assign(window.RECEIPT_IMAGES_MEMORY_CACHE, idbMap);
+                }
+            } catch (e) {}
+
+            // 3. ربط الصور بكافة المصروفات الموجودة
+            let anyAttached = false;
+            (APP_STATE.expenses || []).forEach(exp => {
+                if (!exp) return;
+                const strId = String(exp.id);
+                if (exp.receiptImage) {
+                    window.RECEIPT_IMAGES_MEMORY_CACHE[strId] = exp.receiptImage;
+                    saveReceiptImageToIndexedDB(strId, exp.receiptImage);
+                } else if (window.RECEIPT_IMAGES_MEMORY_CACHE[strId]) {
+                    exp.receiptImage = window.RECEIPT_IMAGES_MEMORY_CACHE[strId];
+                    anyAttached = true;
+                }
+            });
+
+            if (anyAttached) {
+                renderRecentExpenses();
+                renderCalendar();
+            }
+        }
+
+        function saveLocalData(skipCloudSync = false) {
+            const stateIsEmpty = isStateEffectivelyEmpty(APP_STATE);
+            if (!stateIsEmpty && APP_STATE.isExplicitFactoryReset) {
+                APP_STATE.isExplicitFactoryReset = false;
+            }
+            const allowCloudMutation = !skipCloudSync && Boolean(APP_STATE.userAuth && APP_STATE.userAuth.phone) && (!stateIsEmpty || Boolean(APP_STATE.isExplicitFactoryReset));
+            try {
+                if (allowCloudMutation) {
                     const nowTs = Date.now();
                     lastLocalMutationTime = nowTs;
                     APP_STATE.lastModifiedAt = nowTs;
                     localStorage.setItem('smart_budget_last_modified_at', String(nowTs));
+                } else if (stateIsEmpty && !APP_STATE.isExplicitFactoryReset) {
+                    APP_STATE.lastModifiedAt = 0;
+                    lastLocalMutationTime = 0;
+                    localStorage.removeItem('smart_budget_last_modified_at');
                 }
                 if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
                     localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
@@ -4518,6 +4702,7 @@
                     expenses: lightweightExpenses,
                     savingsGoals: APP_STATE.savingsGoals || [],
                     recurringExpenses: APP_STATE.recurringExpenses || [],
+                    isExplicitFactoryReset: Boolean(APP_STATE.isExplicitFactoryReset),
                     lastModifiedAt: APP_STATE.lastModifiedAt || 0,
                     deletedExpenseIds: (APP_STATE.deletedExpenseIds || []).slice(-200)
                 });
@@ -4528,10 +4713,16 @@
                 localStorage.removeItem('smart_budget_local_backup_v67');
                 localStorage.removeItem('smart_budget_local_backup_v68');
                 localStorage.removeItem('smart_budget_local_backup_v69');
-                localStorage.setItem('smart_budget_local_backup_v71', backupPayload);
-                localStorage.setItem('smart_budget_local_backup_v70', backupPayload);
+                localStorage.removeItem('smart_budget_local_backup_v70');
+                localStorage.removeItem('smart_budget_local_backup_v71');
+                localStorage.setItem('smart_budget_local_backup_v73', backupPayload);
+                localStorage.setItem('smart_budget_local_backup_v72', backupPayload);
+                // حفظ نسخة محمية إضافية فقط عندما تحتوي البيانات على مصروفات أو ميزانية حقيقية، بحيث لا تمسحها أي حالة صفرية
+                if (!stateIsEmpty) {
+                    localStorage.setItem('smart_budget_last_non_empty_backup', backupPayload);
+                }
             } catch(e) {}
-            if (!skipCloudSync) saveCloudData();
+            if (allowCloudMutation) saveCloudData();
         }
 
         function loadLocalData() {
@@ -4547,37 +4738,64 @@
                     APP_STATE.userAuth = null;
                 }
 
-                // قراءة النسخة الاحتياطية المحلية دائماً بدون مسحها عند إعادة التحميل (حتى تُحفظ المصروفات والرصيد البنكي في جميع الحالات)
-                const savedBackupV71 = localStorage.getItem('smart_budget_local_backup_v71');
-                const savedBackupV70 = savedBackupV71 || localStorage.getItem('smart_budget_local_backup_v70');
-                const savedBackupV69 = savedBackupV70 || localStorage.getItem('smart_budget_local_backup_v69');
-                const savedBackupV68 = savedBackupV69 || localStorage.getItem('smart_budget_local_backup_v68');
-                const savedBackupV67 = savedBackupV68 || localStorage.getItem('smart_budget_local_backup_v67');
-                const savedBackupV66 = localStorage.getItem('smart_budget_local_backup_v66');
-                const savedBackupV65 = localStorage.getItem('smart_budget_local_backup_v65');
-                const savedBackupV64 = localStorage.getItem('smart_budget_local_backup_v64');
-                const savedBackupV63 = localStorage.getItem('smart_budget_local_backup_v63');
-                const savedBackupV62 = localStorage.getItem('smart_budget_local_backup_v62');
-                const savedBackupLegacy = !isLoggedOutFlag ? localStorage.getItem('smart_budget_local_backup_v48') : null;
-                const backupRaw = savedBackupV67 || savedBackupV66 || savedBackupV65 || savedBackupV64 || savedBackupV63 || savedBackupV62 || savedBackupLegacy;
+                // قراءة النسخة الاحتياطية المحلية مع ميزة الإنقاذ الذكي: إذا كانت النسخة الأحدث صفرية بالخطأ وتوجد نسخة سابقة غير فارغة، نستعيد النسخة الممتلئة تلقائياً
+                const candidateKeys = [
+                    'smart_budget_local_backup_v73',
+                    'smart_budget_local_backup_v72',
+                    'smart_budget_last_non_empty_backup',
+                    'smart_budget_local_backup_v71',
+                    'smart_budget_local_backup_v70',
+                    'smart_budget_local_backup_v69',
+                    'smart_budget_local_backup_v68',
+                    'smart_budget_local_backup_v67',
+                    'smart_budget_local_backup_v66',
+                    'smart_budget_local_backup_v65',
+                    'smart_budget_local_backup_v64',
+                    'smart_budget_local_backup_v63',
+                    'smart_budget_local_backup_v62'
+                ];
+                if (!isLoggedOutFlag) candidateKeys.push('smart_budget_local_backup_v48');
 
-                if (backupRaw) {
-                    const parsedBackup = JSON.parse(backupRaw);
-                    sanitizeLegacyDefaultBudgets(parsedBackup);
-                    Object.assign(APP_STATE, parsedBackup);
+                let firstValidParsed = null;
+                let firstNonEmptyParsed = null;
+                for (const k of candidateKeys) {
+                    const rawVal = localStorage.getItem(k);
+                    if (!rawVal) continue;
+                    try {
+                        const parsed = JSON.parse(rawVal);
+                        if (!parsed || typeof parsed !== 'object') continue;
+                        sanitizeLegacyDefaultBudgets(parsed);
+                        if (!firstValidParsed) firstValidParsed = parsed;
+                        if (!isStateEffectivelyEmpty(parsed)) {
+                            firstNonEmptyParsed = parsed;
+                            break;
+                        }
+                    } catch (e) {}
+                }
+
+                const chosenBackup = (firstValidParsed && firstValidParsed.isExplicitFactoryReset)
+                    ? firstValidParsed
+                    : (firstNonEmptyParsed || firstValidParsed);
+
+                if (chosenBackup) {
+                    Object.assign(APP_STATE, chosenBackup);
                     setSafeBankBalance(getSafeBankBalance());
+                    const hasRealData = !isStateEffectivelyEmpty(APP_STATE);
                     const storedLastMod = Number(APP_STATE.lastModifiedAt || localStorage.getItem('smart_budget_last_modified_at') || 0);
-                    const hasAnyData = (Array.isArray(APP_STATE.expenses) && APP_STATE.expenses.length > 0) || APP_STATE.bankBalance !== 0 || Number(APP_STATE.monthlyBudget) > 0;
-                    if (storedLastMod > 0) {
-                        APP_STATE.lastModifiedAt = storedLastMod;
-                    } else if (hasAnyData) {
-                        APP_STATE.lastModifiedAt = Date.now();
+                    if (hasRealData) {
+                        APP_STATE.lastModifiedAt = storedLastMod > 0 ? storedLastMod : Date.now();
                         localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
                     } else {
+                        // إذا كان الجهاز فارغاً تماماً، نصفر الطابع الزمني لمنع هذا الجهاز من مسح بيانات السحابة عند تسجيل الدخول
                         APP_STATE.lastModifiedAt = 0;
+                        lastLocalMutationTime = 0;
+                        localStorage.removeItem('smart_budget_last_modified_at');
                     }
                 } else {
                     resetAppStateToDefault();
+                    APP_STATE.lastModifiedAt = 0;
+                    lastLocalMutationTime = 0;
+                    localStorage.removeItem('smart_budget_last_modified_at');
                 }
 
                 const savedNotifs = localStorage.getItem('smart_budget_persistent_notifs');
@@ -4599,7 +4817,7 @@
                     if (savedActCode) APP_STATE.activationCode = savedActCode;
                 }
 
-                if (savedBackupLegacy || (!savedBackupV67 && backupRaw)) {
+                if (localStorage.getItem('smart_budget_local_backup_v48')) {
                     localStorage.removeItem('smart_budget_local_backup_v48');
                     saveLocalData(true);
                 }
@@ -4636,7 +4854,7 @@
                 checkAndAdvanceMonthlyCycleIfNeeded(true);
                 syncCurrentPeriodArchiveSnapshot();
 
-                // استعادة صور الفواتير المحفوظة محلياً وتوحيد تتبع خصم البنك لكل مصروف
+                // استعادة وتثبيت صور الفواتير المحفوظة محلياً وتوحيد تتبع خصم البنك لكل مصروف
                 (APP_STATE.expenses || []).forEach(exp => {
                     normalizeExpenseBankTracking(exp);
                     if (!exp.receiptImage) {
@@ -4644,6 +4862,7 @@
                         if (cachedImg) exp.receiptImage = cachedImg;
                     }
                 });
+                initializeAllReceiptImages();
             } catch(e) {}
             updateAuthHeaderLabel();
         }
@@ -4888,19 +5107,31 @@
 
             savePhoneEmailMappingLocally(phone, newEmail);
             localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
-            saveLocalData(false);
+            saveLocalData(true);
             updateAuthHeaderLabel();
 
-            // تحديث الوثيقة السحابية فوراً لربط البريد الجديد برقم الجوال في Firebase
+            // إذا كان الجهاز الحالي فارغاً، نسحب بيانات الحساب من السحابة أولاً ولا نمسحها أبداً، ثم نحدث البريد الإلكتروني فقط
             if (firestoreDb && FB) {
                 try {
                     const phoneKey = phone.replace(/[^0-9+]/g, '');
-                    await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), {
+                    const docRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
+                    if (isStateEffectivelyEmpty(APP_STATE)) {
+                        await pullCloudAccountDataOnLogin(phone);
+                    }
+                    const updatePayload = {
                         phone: phone,
                         email: newEmail,
-                        state: APP_STATE,
                         updatedAt: new Date().toISOString()
-                    }, { merge: true });
+                    };
+                    if (!isStateEffectivelyEmpty(APP_STATE)) {
+                        const cleanState = JSON.parse(JSON.stringify(APP_STATE));
+                        if (Array.isArray(cleanState.expenses)) {
+                            cleanState.expenses.forEach(exp => { if (exp && exp.receiptImage) delete exp.receiptImage; });
+                        }
+                        updatePayload.state = cleanState;
+                        updatePayload.lastNonEmptyState = cleanState;
+                    }
+                    await FB.setDoc(docRef, updatePayload, { merge: true });
                     await subscribeToActiveCloudDocument();
                 } catch (e) {}
             }
@@ -4958,10 +5189,17 @@
                 return;
             }
 
-            // إذا كان هذا الجهاز متعرفاً عليه مسبقاً لهذا الرقم، نسجل الدخول مباشرة بدون الحاجة لإرسال رمز تحقق جديد
+            // إذا كان هذا الجهاز متعرفاً عليه مسبقاً لهذا الرقم، نسجل الدخول مباشرة ونجلب بيانات السحابة دون رفع أي بيانات فارغة
             const recognized = getRecognizedDeviceAccount(phone);
             if (recognized && (!emailInputVal || !recognized.email || emailInputVal === recognized.email)) {
                 const finalEmail = emailInputVal || recognized.email || getPhoneEmailMappingLocally(phone) || '';
+                hasCompletedInitialCloudSyncForCurrentSession = false;
+                hasPendingCloudSave = false;
+                lastLocalMutationTime = 0;
+                if (isStateEffectivelyEmpty(APP_STATE)) {
+                    APP_STATE.lastModifiedAt = 0;
+                    localStorage.removeItem('smart_budget_last_modified_at');
+                }
                 APP_STATE.userAuth = { phone, email: finalEmail, linkedAt: new Date().toISOString() };
                 const restoredPin = getAccountPinForPhone(phone);
                 if (restoredPin) {
@@ -4976,8 +5214,9 @@
                 renderPinSettings();
                 renderLinkedAccountSettings();
                 closeModal('userAuthModal');
+                await pullCloudAccountDataOnLogin(phone);
                 await subscribeToActiveCloudDocument();
-                showToast(`تم التعرف على جهازك وتسجيل الدخول مباشرة برقم (${phone}) بنجاح! 📱✅`, 'success');
+                showToast(`تم تسجيل الدخول وجلب بيانات حسابك من السحابة برقم (${phone}) بنجاح! 📱☁️`, 'success');
                 return;
             }
 
@@ -5062,6 +5301,13 @@
             }
 
             const { phone, email } = pendingAuthData;
+            hasCompletedInitialCloudSyncForCurrentSession = false;
+            hasPendingCloudSave = false;
+            lastLocalMutationTime = 0;
+            if (isStateEffectivelyEmpty(APP_STATE)) {
+                APP_STATE.lastModifiedAt = 0;
+                localStorage.removeItem('smart_budget_last_modified_at');
+            }
             APP_STATE.userAuth = { phone, email, linkedAt: new Date().toISOString() };
             const restoredPin = getAccountPinForPhone(phone);
             if (restoredPin) {
@@ -5072,7 +5318,7 @@
             markDeviceRecognizedForAccount(phone, email);
             localStorage.removeItem('smart_budget_is_logged_out');
             
-            // حفظ الجلسة بشكل مستمر في LocalStorage ليبقى متصلاً دائماً
+            // حفظ الجلسة بشكل مستمر في LocalStorage ليبقى متصلاً دائماً دون رفع أي بيانات فارغة للسحابة
             localStorage.setItem('smart_budget_auth_session', JSON.stringify(APP_STATE.userAuth));
             saveLocalData(true);
             updateAuthHeaderLabel();
@@ -5080,10 +5326,11 @@
             renderLinkedAccountSettings();
             closeModal('userAuthModal');
 
-            // إعادة ربط المستمع السحابي بملف رقم الجوال الخاص بالمستخدم
+            // سحب وتنزيل بيانات الحساب من السحابة أولاً إلى الجهاز الجديد قبل تشغيل المستمع اللحظي
+            await pullCloudAccountDataOnLogin(phone);
             await subscribeToActiveCloudDocument();
 
-            showToast(`تم التحقق وربط الحساب والتعرف على الجهاز بنجاح برقم (${phone}) 📱`, 'success');
+            showToast(`تم ربط الحساب وتنزيل بياناتك من السحابة بنجاح برقم (${phone}) 📱☁️`, 'success');
         }
 
         async function logoutUserSession() {
@@ -5120,6 +5367,10 @@
                 localStorage.removeItem('smart_budget_local_backup_v62');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v73');
+                localStorage.removeItem('smart_budget_local_backup_v72');
+                localStorage.removeItem('smart_budget_local_backup_v71');
+                localStorage.removeItem('smart_budget_last_non_empty_backup');
                 localStorage.removeItem('smart_budget_local_backup_v70');
                 localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v68');
@@ -5172,15 +5423,59 @@
             showToast('تم تسجيل الخروج وإلغاء قفل الرمز من التطبيق لعدم وجود حساب نشط', 'info');
         }
 
-        function applyCloudDataToAppState(cloudData) {
+        // جلب وتنزيل بيانات الحساب من السحابة مباشرة عند تسجيل الدخول على جهاز جديد (بدون رفع أي حالة صفرية من الجهاز الجديد)
+        async function pullCloudAccountDataOnLogin(phone) {
+            if (!firestoreDb || !FB || !phone) return false;
+            const phoneKey = String(phone).replace(/[^0-9+]/g, '');
+            if (!phoneKey) return false;
+            try {
+                const targetDocRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
+                let docSnap = null;
+                try {
+                    docSnap = await FB.getDocFromServer(targetDocRef);
+                } catch (e) {
+                    docSnap = await FB.getDoc(targetDocRef);
+                }
+                if (docSnap && docSnap.exists()) {
+                    const rawData = docSnap.data();
+                    let statePayload = rawData.state ? rawData.state : rawData;
+                    // إنقاذ تلقائي: إذا كانت النسخة السحابية الحالية قد تصفرت بالخطأ وتوجد نسخة سحابية غير فارغة (lastNonEmptyState)، نسترجعها فوراً
+                    if (isStateEffectivelyEmpty(statePayload) && !statePayload?.isExplicitFactoryReset && rawData.lastNonEmptyState && !isStateEffectivelyEmpty(rawData.lastNonEmptyState)) {
+                        statePayload = rawData.lastNonEmptyState;
+                    }
+                    if (statePayload) {
+                        applyCloudDataToAppState(statePayload, true);
+                        hasCompletedInitialCloudSyncForCurrentSession = true;
+                        return true;
+                    }
+                }
+                hasCompletedInitialCloudSyncForCurrentSession = true;
+            } catch (err) {
+                console.error('Error pulling cloud account data on login:', err);
+            }
+            return false;
+        }
+
+        function applyCloudDataToAppState(cloudData, forceCloudOverwrite = false) {
             if (!cloudData) return;
 
-            const localMod = Number(APP_STATE.lastModifiedAt || localStorage.getItem('smart_budget_last_modified_at') || 0);
+            const localIsEmpty = isStateEffectivelyEmpty(APP_STATE);
+            const cloudIsEmpty = isStateEffectivelyEmpty(cloudData);
+            const localMod = localIsEmpty ? 0 : Number(APP_STATE.lastModifiedAt || localStorage.getItem('smart_budget_last_modified_at') || 0);
             const cloudMod = Number(cloudData.lastModifiedAt || 0);
-            const hasLocalData = localMod > 0 || (Array.isArray(APP_STATE.expenses) && APP_STATE.expenses.length > 0) || getSafeBankBalance() !== 0 || Number(APP_STATE.monthlyBudget) > 0;
 
-            // حماية الرصيد البنكي والتعديلات المحلية: إذا كانت البيانات المحلية أحدث أو مساوية للنسخة السحابية أو تم التعديل محلياً للتو، لا نسمح للنسخة السحابية القديمة بإرجاع الرصيد البنكي أو إلغاء تعديل الكاش/البطاقة
-            if (hasLocalData && (localMod >= cloudMod || isSavingToCloud || hasPendingCloudSave || (Date.now() - lastLocalMutationTime < 8000))) {
+            // حماية ذهبية 1: إذا كان هذا الجهاز يحتوي على بيانات حقيقية (مصروفات/ميزانية/أهداف) بينما السحابة فارغة (بسبب فتح جهاز جديد فارغ سابقاً)،
+            // نمنع السحابة الفارغة من تصفير هذا الجهاز، بل نرفع بيانات هذا الجهاز الحقيقية فوراً لإصلاح واستعادة الحساب في السحابة!
+            if (!localIsEmpty && cloudIsEmpty && !cloudData.isExplicitFactoryReset) {
+                hasCompletedInitialCloudSyncForCurrentSession = true;
+                hasPendingCloudSave = true;
+                setTimeout(() => saveCloudData(), 150);
+                return;
+            }
+
+            // حماية ذهبية 2: إذا كان الجهاز الجديد فارغاً (localIsEmpty === true) والسحابة فيها بيانات، ننزل بيانات السحابة دائماً وفوراً على الجهاز الجديد مهما كانت التواريخ!
+            // أما إذا كان كلاهما يحتوي على بيانات حقيقية ولم يكن طلب سحب مباشر عند تسجيل الدخول (forceCloudOverwrite === false)، فنحترم الأحدث زمنياً.
+            if (!forceCloudOverwrite && !localIsEmpty && !cloudIsEmpty && (localMod >= cloudMod || isSavingToCloud || hasPendingCloudSave || (Date.now() - lastLocalMutationTime < 8000))) {
                 if (localMod > cloudMod) {
                     hasPendingCloudSave = true;
                     setTimeout(() => saveCloudData(), 150);
@@ -5190,6 +5485,7 @@
 
             isSyncingFromCloud = true;
             sanitizeLegacyDefaultBudgets(cloudData);
+            APP_STATE.isExplicitFactoryReset = Boolean(cloudData.isExplicitFactoryReset);
             if (cloudData.monthlyBudget !== undefined) APP_STATE.monthlyBudget = cloudData.monthlyBudget;
             if (cloudData.dailyBudget !== undefined) APP_STATE.dailyBudget = cloudData.dailyBudget;
             if (cloudData.bankBalance !== undefined) setSafeBankBalance(cloudData.bankBalance);
@@ -5210,7 +5506,7 @@
             if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) APP_STATE.categories = cloudData.categories;
             if (Array.isArray(cloudData.expenses)) {
                 const deletedSet = new Set(APP_STATE.deletedExpenseIds || []);
-                const currentLocal = Array.isArray(APP_STATE.expenses) ? APP_STATE.expenses : [];
+                const currentLocal = (!localIsEmpty && Array.isArray(APP_STATE.expenses)) ? APP_STATE.expenses : [];
                 const localMap = new Map();
                 currentLocal.forEach(e => {
                     if (e && e.id && !deletedSet.has(e.id)) localMap.set(e.id, normalizeExpenseBankTracking(e));
@@ -5219,7 +5515,7 @@
                 const mergedList = [];
                 const seenIds = new Set();
 
-                // دمج ذكي يحترم أحدث تعديل (updatedAt) لكل مصروف حتى لا ترجع عملية تم تحويلها بين كاش وبطاقة إلى حالتها القديمة
+                // دمج ذكي يحترم أحدث تعديل (updatedAt) لكل مصروف مع حماية صور الفواتير المحلية
                 cloudData.expenses.forEach(cExp => {
                     if (!cExp || !cExp.id || deletedSet.has(cExp.id)) return;
                     normalizeExpenseBankTracking(cExp);
@@ -5227,8 +5523,13 @@
                         const lExp = localMap.get(cExp.id);
                         const lTime = Number(lExp.updatedAt || 0);
                         const cTime = Number(cExp.updatedAt || 0);
-                        mergedList.push(lTime > cTime ? lExp : cExp);
+                        const chosen = lTime > cTime ? lExp : cExp;
+                        if (!chosen.receiptImage) {
+                            chosen.receiptImage = lExp.receiptImage || getReceiptImageFromLocalCache(chosen.id);
+                        }
+                        mergedList.push(chosen);
                     } else {
+                        cExp.receiptImage = getReceiptImageFromLocalCache(cExp.id) || null;
                         mergedList.push(cExp);
                     }
                     seenIds.add(cExp.id);
@@ -5274,8 +5575,13 @@
             }
 
             reconcileAndSyncEmergencyFundState(false);
-            APP_STATE.lastModifiedAt = Math.max(localMod, cloudMod, Date.now());
-            try { localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt)); } catch (e) {}
+            if (!isStateEffectivelyEmpty(APP_STATE)) {
+                APP_STATE.lastModifiedAt = Math.max(localMod, cloudMod, Date.now());
+                try { localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt)); } catch (e) {}
+            } else {
+                APP_STATE.lastModifiedAt = 0;
+                try { localStorage.removeItem('smart_budget_last_modified_at'); } catch (e) {}
+            }
 
             saveLocalData(true);
             renderPinSettings();
@@ -5289,7 +5595,7 @@
             try { updateCharts(); } catch (e) {}
             setTimeout(() => {
                 isSyncingFromCloud = false;
-                if (hasPendingCloudSave) {
+                if (hasPendingCloudSave && !isStateEffectivelyEmpty(APP_STATE)) {
                     saveCloudData();
                 }
             }, 250);
@@ -5313,21 +5619,41 @@
                 const phoneKey = APP_STATE.userAuth.phone.replace(/[^0-9+]/g, '');
                 const targetDocRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
 
+                // إذا كان الجهاز فارغاً عند بدء الاشتراك، نسحب بيانات الحساب من السيرفر أولاً قبل أي شيء
+                if (isStateEffectivelyEmpty(APP_STATE) && !hasCompletedInitialCloudSyncForCurrentSession) {
+                    await pullCloudAccountDataOnLogin(APP_STATE.userAuth.phone);
+                }
+
                 unsubscribeCloudSnapshot = FB.onSnapshot(targetDocRef, (docSnap) => {
                     isCloudConnected = true;
                     updateCloudSyncStatusBadge();
-                    // تجاهل الارتداد المحلي (Local Echo) أو أي لقطة سحابية أثناء الحفظ المحلي أو بعده مباشرة لمنع رجوع الرصيد البنكي للخلف
                     if (docSnap.metadata && docSnap.metadata.hasPendingWrites) return;
-                    if (isSavingToCloud || hasPendingCloudSave || isSyncingFromCloud) return;
-                    if (Date.now() - lastLocalMutationTime < 6000) return;
+                    if (isSavingToCloud || isSyncingFromCloud) return;
+
+                    const localIsEmpty = isStateEffectivelyEmpty(APP_STATE);
+                    const isFirstSync = !hasCompletedInitialCloudSyncForCurrentSession;
+
+                    // إذا كان الجهاز محتوياً على بيانات وتم التعديل عليه محلياً للتو، نتجاهل الارتداد القديم؛ أما إذا كان الجهاز الجديد فارغاً فنستقبل السحابة دائماً
+                    if (!localIsEmpty && !isFirstSync && (hasPendingCloudSave || (Date.now() - lastLocalMutationTime < 6000))) {
+                        return;
+                    }
+
                     if (docSnap.exists()) {
                         const rawData = docSnap.data();
-                        const statePayload = rawData.state ? rawData.state : rawData;
+                        let statePayload = rawData.state ? rawData.state : rawData;
+                        if (isStateEffectivelyEmpty(statePayload) && !statePayload?.isExplicitFactoryReset && rawData.lastNonEmptyState && !isStateEffectivelyEmpty(rawData.lastNonEmptyState)) {
+                            statePayload = rawData.lastNonEmptyState;
+                        }
+                        hasCompletedInitialCloudSyncForCurrentSession = true;
                         if (statePayload && !isSyncingFromCloud) {
-                            applyCloudDataToAppState(statePayload);
+                            applyCloudDataToAppState(statePayload, localIsEmpty || isFirstSync);
                         }
                     } else {
-                        saveCloudData();
+                        hasCompletedInitialCloudSyncForCurrentSession = true;
+                        // مهم جداً: إذا لم يكن هناك مستند سحابي بعد وكان الجهاز الجديد فارغاً، لا نرفع أصفاراً للسحابة إطلاقاً!
+                        if (!localIsEmpty) {
+                            saveCloudData();
+                        }
                     }
                 }, () => {
                     isCloudConnected = false;
@@ -5369,7 +5695,7 @@
                 }
 
                 await subscribeToActiveCloudDocument();
-                if (hasPendingCloudSave) {
+                if (hasPendingCloudSave && !isStateEffectivelyEmpty(APP_STATE)) {
                     saveCloudData();
                 }
             } catch (err) {
@@ -5380,8 +5706,16 @@
 
         async function saveCloudData() {
             if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) return;
-            if (!isCloudConnected || !firestoreDb || !FB || isSyncingFromCloud || isSavingToCloud) {
-                hasPendingCloudSave = true;
+            // حماية قاطعة: يمنع منعاً باتاً رفع حالة فارغة (كلها أصفار) إلى السحابة من جهاز جديد ما لم يضغط المستخدم "مسح كافة البيانات" يدوياً
+            const localIsEmpty = isStateEffectivelyEmpty(APP_STATE);
+            if (localIsEmpty && !APP_STATE.isExplicitFactoryReset) {
+                hasPendingCloudSave = false;
+                return;
+            }
+            if (!isCloudConnected || !firestoreDb || !FB || isSyncingFromCloud || isSavingToCloud || !hasCompletedInitialCloudSyncForCurrentSession) {
+                if (!localIsEmpty || APP_STATE.isExplicitFactoryReset) {
+                    hasPendingCloudSave = true;
+                }
                 return;
             }
             isSavingToCloud = true;
@@ -5401,18 +5735,23 @@
                         }
                     });
                 }
-                await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), {
+                const cloudPayload = {
                     phone: APP_STATE.userAuth.phone,
                     email: APP_STATE.userAuth.email || '',
                     state: cleanState,
                     lastModifiedAt: cleanState.lastModifiedAt,
                     updatedAt: new Date().toISOString()
-                }, { merge: true });
+                };
+                // حفظ نسخة محمية غير فارغة داخل مستند السحابة نفسه لاسترجاعها تلقائياً لو حدث أي طارئ مستقبلاً
+                if (!localIsEmpty) {
+                    cloudPayload.lastNonEmptyState = cleanState;
+                }
+                await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), cloudPayload, { merge: true });
             } catch (err) {
                 writeFailed = true;
             } finally {
                 isSavingToCloud = false;
-                if (hasPendingCloudSave && !writeFailed && isCloudConnected && !isSyncingFromCloud) {
+                if (hasPendingCloudSave && !writeFailed && isCloudConnected && !isSyncingFromCloud && (!isStateEffectivelyEmpty(APP_STATE) || APP_STATE.isExplicitFactoryReset)) {
                     setTimeout(() => saveCloudData(), 250);
                 }
             }
@@ -5454,6 +5793,10 @@
                 localStorage.removeItem('smart_budget_local_backup_v48');
                 localStorage.removeItem('smart_budget_local_backup_v63');
                 localStorage.removeItem('smart_budget_local_backup_v64');
+                localStorage.removeItem('smart_budget_local_backup_v73');
+                localStorage.removeItem('smart_budget_local_backup_v72');
+                localStorage.removeItem('smart_budget_local_backup_v71');
+                localStorage.removeItem('smart_budget_last_non_empty_backup');
                 localStorage.removeItem('smart_budget_local_backup_v70');
                 localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v68');
@@ -5466,6 +5809,7 @@
                 localStorage.removeItem('smart_budget_activation_code');
             } catch(e) {}
             resetAppStateToDefault();
+            APP_STATE.isExplicitFactoryReset = true;
 
             saveLocalData(false);
             updateAuthHeaderLabel();
@@ -5936,7 +6280,7 @@
             recalculateEmergencySavedFromHistory();
 
             if (mutated && isInitialLoad) {
-                saveLocalData(false);
+                saveLocalData(true);
             }
         }
 
@@ -10970,7 +11314,7 @@ Return JSON:
                 </table>
 
                 <div style="margin-top: 26px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 11px; color: #64748b;">
-                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy • AI Cloud V7.1)</span>
+                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy • AI Cloud V7.3)</span>
                     <span dir="ltr">${sDate} -> ${eDate}</span>
                 </div>
             `;
@@ -11475,29 +11819,144 @@ Return JSON:
             }
         }
 
-        function saveLocalDataFile() {
-            const safeExportState = Object.assign({}, APP_STATE);
-            delete safeExportState.geminiApiKey;
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(safeExportState, null, 2));
-            const dlAnchor = document.createElement('a'); dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `نسخة-الميزانية-${new Date().toISOString().split('T')[0]}.json`);
-            dlAnchor.click(); showToast('تم التصدير بنجاح!', 'success');
+        // --- تصدير نسخة احتياطية شاملة لكافة البيانات مع صور الفواتير كاملة (JSON) لحفظها في الجهاز واستعادتها دون فقدان أي صورة ---
+        async function saveLocalDataFile() {
+            showToast('جاري تجهيز النسخة الاحتياطية الشاملة مع الفواتير...', 'info');
+
+            // 1. التأكد من قراءة وتجميع كافة صور الفواتير من IndexedDB والذاكرة
+            if (!window.RECEIPT_IMAGES_MEMORY_CACHE) window.RECEIPT_IMAGES_MEMORY_CACHE = {};
+            try {
+                const idbMap = await getAllReceiptImagesFromIndexedDB();
+                Object.assign(window.RECEIPT_IMAGES_MEMORY_CACHE, idbMap);
+            } catch (e) {}
+
+            // 2. خريطة موحدة لكافة صور الفواتير وتضمينها مع المصروفات
+            const fullReceiptsMap = Object.assign({}, window.RECEIPT_IMAGES_MEMORY_CACHE);
+            const enrichedExpenses = (APP_STATE.expenses || []).map(exp => {
+                if (!exp) return exp;
+                const copy = Object.assign({}, exp);
+                const strId = String(exp.id);
+                const img = exp.receiptImage || fullReceiptsMap[strId] || getReceiptImageFromLocalCache(strId);
+                if (img) {
+                    copy.receiptImage = img;
+                    fullReceiptsMap[strId] = img;
+                }
+                return copy;
+            });
+
+            const exportPayload = {
+                monthlyBudget: APP_STATE.monthlyBudget,
+                dailyBudget: APP_STATE.dailyBudget,
+                bankBalance: APP_STATE.bankBalance,
+                selectedMonth: APP_STATE.selectedMonth,
+                budgetStartDate: APP_STATE.budgetStartDate,
+                budgetEndDate: APP_STATE.budgetEndDate,
+                currency: APP_STATE.currency,
+                activationCode: APP_STATE.activationCode || '',
+                emergencySaved: APP_STATE.emergencySaved,
+                em633FixedV71: Boolean(APP_STATE.em633FixedV71),
+                emergencyFundHistory: APP_STATE.emergencyFundHistory || [],
+                savingsHistory: APP_STATE.savingsHistory || [],
+                splitBills: APP_STATE.splitBills || [],
+                debts: APP_STATE.debts || [],
+                debtsHistory: APP_STATE.debtsHistory || [],
+                monthlyArchives: APP_STATE.monthlyArchives || [],
+                categories: APP_STATE.categories || [],
+                expenses: enrichedExpenses,
+                receiptImagesMap: fullReceiptsMap, // خريطة مخصصة لصور الفواتير لضمان عدم فقدان أي فاتورة
+                savingsGoals: APP_STATE.savingsGoals || [],
+                recurringExpenses: APP_STATE.recurringExpenses || [],
+                notifications: APP_STATE.notifications || [],
+                lastModifiedAt: APP_STATE.lastModifiedAt || Date.now(),
+                backupFormat: 'Finexy-Full-With-Receipts',
+                backupVersion: 'Finexy • AI Cloud V7.3',
+                exportedAt: new Date().toISOString(),
+                receiptsCount: Object.keys(fullReceiptsMap).length
+            };
+
+            const jsonStr = JSON.stringify(exportPayload, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", url);
+            dlAnchor.setAttribute("download", `نسخة-الميزانية-الشاملة-مع-الفواتير-${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            setTimeout(() => {
+                document.body.removeChild(dlAnchor);
+                URL.revokeObjectURL(url);
+            }, 1000);
+
+            const count = Object.keys(fullReceiptsMap).length;
+            showToast(`تم تصدير النسخة الاحتياطية بنجاح! تم تضمين (${count}) صورة فاتورة كاملة في الملف. ✅`, 'success', true);
         }
+
         function triggerFileInput() {
-            let input = document.getElementById('import-file'); input.value = ''; input.click();
+            let input = document.getElementById('import-file');
+            if (!input) return;
+            input.value = '';
+            input.click();
         }
+
+        // --- استعادة نسخة احتياطية محفوظة واسترجاع كافة المصروفات وصور الفواتير بالكامل وتخزينها في IndexedDB ---
         function importLocalDataFile(event) {
-            const file = event.target.files[0]; if (!file) return;
+            const file = event.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    Object.assign(APP_STATE, data); 
-                    APP_STATE.geminiApiKey = 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
-                    saveLocalData();
-                    renderDashboard(); renderCategories(); renderRecentExpenses(); renderCalendar(); renderDebtsPage(); updateCharts();
-                    showToast('تم الاستعادة والحفظ بنجاح!', 'success');
-                } catch(err) { showToast('ملف غير صالح', 'danger'); }
+                    if (!data || typeof data !== 'object') {
+                        showToast('ملف النسخة الاحتياطية غير صالح', 'danger', true);
+                        return;
+                    }
+
+                    // استعادة بيانات الحساب الأساسية
+                    Object.assign(APP_STATE, data);
+                    APP_STATE.geminiApiKey = localStorage.getItem('smart_budget_gemini_key') || 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
+
+                    // استعادة وتثبيت كافة صور الفواتير في الذاكرة ومستودع IndexedDB
+                    if (!window.RECEIPT_IMAGES_MEMORY_CACHE) window.RECEIPT_IMAGES_MEMORY_CACHE = {};
+                    const incomingReceipts = data.receiptImagesMap || {};
+                    let restoredCount = 0;
+
+                    // 1. استخراج الصور من خريطة الفواتير
+                    for (const [expId, imgData] of Object.entries(incomingReceipts)) {
+                        if (expId && imgData) {
+                            saveReceiptImageToLocalCache(expId, imgData);
+                            restoredCount++;
+                        }
+                    }
+
+                    // 2. استخراج الصور المضمنة في قائمة المصروفات
+                    if (Array.isArray(APP_STATE.expenses)) {
+                        for (const exp of APP_STATE.expenses) {
+                            if (exp && exp.id) {
+                                const img = exp.receiptImage || incomingReceipts[String(exp.id)];
+                                if (img) {
+                                    exp.receiptImage = img;
+                                    saveReceiptImageToLocalCache(exp.id, img);
+                                    if (!incomingReceipts[String(exp.id)]) restoredCount++;
+                                }
+                            }
+                        }
+                    }
+
+                    saveLocalData(false);
+                    renderDashboard();
+                    renderCategories();
+                    renderRecentExpenses();
+                    renderCalendar();
+                    renderDebtsPage();
+                    renderSavingsPage();
+                    try { updateCharts(); } catch (err) {}
+
+                    showToast(`تمت استعادة كافة البيانات و(${restoredCount}) صورة فاتورة بنجاح! ✅`, 'success', true);
+                } catch(err) {
+                    showToast('حدث خطأ أثناء قراءة ملف النسخة الاحتياطية', 'danger', true);
+                } finally {
+                    event.target.value = '';
+                }
             };
             reader.readAsText(file);
         }
