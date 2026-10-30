@@ -1535,6 +1535,13 @@
                 gap: 4px !important;
                 white-space: nowrap;
             }
+            #header-cloud-save-btn {
+                padding: 6px 10px !important;
+                font-size: 0.75em !important;
+                gap: 4px !important;
+                white-space: nowrap !important;
+                height: 33px !important;
+            }
 
             .header-icon-btn {
                 width: 33px !important;
@@ -2259,7 +2266,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V7.4</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V7.6</div>
             </div>
         </div>
 
@@ -2317,6 +2324,16 @@
             <button type="button" class="primary-btn" style="padding: 10px 18px; font-size: 0.9em; background: linear-gradient(135deg, #8b5cf6, #ff5520);" onclick="openUserAuthModal()">
                 <i class="fas fa-user-circle" style="font-size: 1.1em;"></i> <span id="header-auth-btn-label" dir="ltr">تسجيل الدخول</span>
             </button>
+
+            <!-- زر الحفظ المباشر بضغطة واحدة (للجوال والكمبيوتر) + الحفظ التلقائي كل دقيقتين -->
+            <div class="tooltip-wrapper">
+                <button type="button" class="action-btn" id="header-cloud-save-btn" onclick="manualSaveToCloudNow(false)" style="border-radius: 999px; padding: 8px 14px; font-size: 0.85em; font-weight: 900; background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.45); color: #34d399; display: inline-flex; align-items: center; gap: 6px; position: relative; cursor: pointer;">
+                    <i class="fas fa-floppy-disk" id="header-cloud-save-icon"></i>
+                    <span id="header-cloud-save-label">حفظ</span>
+                    <span id="header-unsaved-dot" style="display: none; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 8px #f59e0b;"></span>
+                </button>
+                <span class="tooltip-text" id="header-cloud-save-tooltip">حفظ</span>
+            </div>
 
                         <!-- يظهر زر علامة الجوال تلقائياً عند فتح الموقع من الجوال فقط، ويختفي تماماً عند الفتح من الكمبيوتر أو اللابتوب -->
             <div class="tooltip-wrapper" id="header-install-mobile-wrapper">
@@ -2709,21 +2726,28 @@
                         <div>
                             <span class="feature-tag-pill" style="margin-bottom:6px;"><i class="fas fa-gauge-high"></i> حاسبة السداد المبكر الذكية</span>
                             <h3 style="margin:0; font-size:1.15em;">خطط للتخلص من ديونك في وقت قياسي</h3>
-                            <p style="margin:4px 0 0 0; font-size:0.82em; color:var(--text-muted);">احسب بدقة كم شهراً ستوفر ومتى ستنتهي من سداد التزامك عند زيادة قسطك الشهري</p>
-                        </div>
-                        <div style="min-width:220px;">
-                            <select id="early-debt-select-existing" onchange="onSelectExistingDebtForEarlyCalc()" style="width:100%; padding:10px 14px; border-radius:14px; border:1px solid var(--border-color); background:var(--surface-card); color:var(--text-main); font-weight:700; font-size:0.85em; outline:none; cursor:pointer;">
-                                <option value="">✏️ إدخال مبلغ الدين يدوياً</option>
-                            </select>
+                            <p style="margin:4px 0 0 0; font-size:0.82em; color:var(--text-muted);">اختر أي دين من التزاماتك المسجلة أو أدخل مبلغ الدين يدوياً لحساب خطة السداد المبكر</p>
                         </div>
                     </div>
 
                     <div class="dashboard-grid" style="align-items:stretch;">
                         <div style="background:var(--surface-color); border:1px solid var(--border-color); border-radius:20px; padding:18px; display:flex; flex-direction:column; justify-content:space-between;">
                             <div>
+                                <!-- خانة واضحة ومميزة لاختيار الدين المسجل (بنفس وضوح اختيار المصروف في تقسيم الفاتورة) أو الإدخال اليدوي -->
+                                <div class="form-group" style="margin-bottom:16px; background:rgba(255,85,32,0.06); border:1.5px solid rgba(255,85,32,0.3); border-radius:16px; padding:12px 14px;">
+                                    <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-weight:900; color:var(--primary-color);">
+                                        <span><i class="fas fa-hand-pointer"></i> اختر الدين أو الالتزام المسجل لحساب سداده:</span>
+                                        <span id="early-debt-selector-badge" style="font-size:0.75em; background:rgba(255,85,32,0.14); color:var(--primary-color); padding:2px 9px; border-radius:999px; font-weight:800;">اختيار أو يدوي</span>
+                                    </label>
+                                    <select id="early-debt-select-existing" onchange="onSelectExistingDebtForEarlyCalc()" style="width:100%; padding:11px 14px; border-radius:12px; border:1.5px solid var(--border-color); background:var(--surface-card); color:var(--text-main); font-weight:800; font-size:0.9em; outline:none; cursor:pointer;">
+                                        <option value="">📋 اختر من الديون المسجلة أو اكتب المبلغ يدوياً بالأسفل...</option>
+                                    </select>
+                                    <div id="early-debt-quick-chips" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"></div>
+                                </div>
+
                                 <div class="form-group" style="margin-bottom:14px;">
                                     <label style="display:flex; justify-content:space-between; align-items:center;">
-                                        <span><i class="fas fa-coins text-danger" style="width:18px;"></i> إجمالي مبلغ الدين المتبقي</span>
+                                        <span><i class="fas fa-coins text-danger" style="width:18px;"></i> إجمالي مبلغ الدين المتبقي (يدوي أو تلقائي)</span>
                                         <span style="font-size:0.76em; color:var(--text-muted); font-weight:600;">كم باقي عليك؟</span>
                                     </label>
                                     <input type="number" id="early-debt-balance" value="12000" min="0" step="100" oninput="calculateEarlyDebtPayoff()" style="font-size:1.1em; font-weight:800;">
@@ -2882,11 +2906,11 @@
                             <h3 style="margin:0; font-size:1.22em; display:flex; align-items:center; gap:8px;">
                                 <i class="fas fa-sliders text-primary"></i> إعدادات التطبيق والمزامنة
                             </h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V7.4</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V7.6</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 14px; padding: 7px 14px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V7.4</div>
+                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V7.6</div>
                         </div>
                     </div>
 
@@ -3749,28 +3773,62 @@
         </div>
     </div>
 
-    <!-- نافذة تفاصيل الفاتورة المقسمة -->
+    <!-- نافذة تفاصيل وتعديل الفاتورة المقسمة -->
     <div id="splitBillDetailsModal" class="modal">
-        <div class="modal-content" style="max-width: 440px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:16px;">
-                <h3 style="margin:0; font-size:1.15em;"><i class="fas fa-file-invoice text-primary"></i> تفاصيل الفاتورة المقسمة</h3>
+        <div class="modal-content" style="max-width: 480px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:14px;">
+                <h3 style="margin:0; font-size:1.15em;"><i class="fas fa-file-invoice text-primary"></i> تفاصيل وتعديل الفاتورة المقسمة</h3>
                 <button class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('splitBillDetailsModal')"><i class="fas fa-times"></i></button>
             </div>
-            
-            <div class="stat-row"><span>اسم المصروف:</span><span class="stat-value" id="split-detail-store"></span></div>
-            <div class="stat-row"><span>المبلغ الإجمالي:</span><span class="stat-value text-danger" id="split-detail-amount" dir="ltr"></span></div>
-            <div class="stat-row"><span>تم تقسيمها على:</span><span class="stat-value"><span id="split-detail-days"></span> أيام</span></div>
-            <div class="stat-row" style="flex-direction:column; align-items:stretch; gap:8px;">
-                <span style="font-size:0.88em; color:var(--text-muted); font-weight:700;">فترة التقسيم (من — إلى):</span>
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-color); padding:10px 14px; border-radius:12px; border:1px solid var(--border-color); font-weight:800; font-size:0.92em;">
-                    <span>من <strong id="split-detail-start-date" class="text-primary" dir="ltr"></strong></span>
-                    <span style="flex:1; height:2px; background:linear-gradient(90deg, var(--primary-color), var(--success)); border-radius:999px; min-width:28px;"></span>
-                    <span>إلى <strong id="split-detail-end-date" class="text-success" dir="ltr"></strong></span>
+            <input type="hidden" id="split-detail-current-id">
+
+            <!-- عرض التفاصيل الأساسية -->
+            <div id="split-detail-view-box">
+                <div class="stat-row"><span>اسم المصروف:</span><span class="stat-value" id="split-detail-store"></span></div>
+                <div class="stat-row"><span>المبلغ الإجمالي:</span><span class="stat-value text-danger" id="split-detail-amount" dir="ltr"></span></div>
+                <div class="stat-row"><span>تم تقسيمها على:</span><span class="stat-value"><span id="split-detail-days"></span> أيام</span></div>
+                <div class="stat-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+                    <span style="font-size:0.88em; color:var(--text-muted); font-weight:700;">فترة التقسيم (من — إلى):</span>
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-color); padding:10px 14px; border-radius:12px; border:1px solid var(--border-color); font-weight:800; font-size:0.92em;">
+                        <span>من <strong id="split-detail-start-date" class="text-primary" dir="ltr"></strong></span>
+                        <span style="flex:1; height:2px; background:linear-gradient(90deg, var(--primary-color), var(--success)); border-radius:999px; min-width:28px;"></span>
+                        <span>إلى <strong id="split-detail-end-date" class="text-success" dir="ltr"></strong></span>
+                    </div>
                 </div>
+                <div class="stat-row"><span>قيمة السحب اليومي:</span><span class="stat-value text-warning" id="split-detail-daily" dir="ltr"></span></div>
             </div>
-            <div class="stat-row"><span>قيمة السحب اليومي:</span><span class="stat-value text-warning" id="split-detail-daily" dir="ltr"></span></div>
+
+            <!-- خانة تعديل الفاتورة المقسمة داخل نفس النافذة -->
+            <div id="split-detail-edit-box" style="display:none; background:rgba(255,85,32,0.06); border:1.5px solid var(--primary-color); border-radius:16px; padding:14px; margin-top:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <strong style="font-size:0.95em; color:var(--primary-color);"><i class="fas fa-pen-to-square"></i> تعديل بيانات الفاتورة المقسمة</strong>
+                    <button type="button" class="btn-edit-badge" onclick="toggleSplitBillEditMode(false)" style="padding:3px 10px; font-size:0.75em;">إغلاق التعديل</button>
+                </div>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:0.82em;">اسم المصروف / الفاتورة</label>
+                    <input type="text" id="split-edit-store" placeholder="اسم المتجر أو الفاتورة">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="font-size:0.82em;">المبلغ الإجمالي</label>
+                        <input type="number" id="split-edit-amount" min="1" step="0.01" dir="ltr" oninput="updateSplitBillEditPreview()">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="font-size:0.82em;">تقسيم على (الأيام)</label>
+                        <input type="number" id="split-edit-days" min="2" max="365" dir="ltr" oninput="updateSplitBillEditPreview()">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label style="font-size:0.82em;">تاريخ بداية التقسيم</label>
+                    <input type="date" id="split-edit-start-date" dir="ltr" onchange="updateSplitBillEditPreview()" oninput="updateSplitBillEditPreview()">
+                </div>
+                <div id="split-edit-preview-summary" style="background:var(--surface-card); border:1px solid var(--border-color); border-radius:12px; padding:9px 12px; font-size:0.82em; margin-bottom:12px; text-align:center; font-weight:800;"></div>
+                <button type="button" class="primary-btn" style="width:100%; justify-content:center; padding:10px;" onclick="saveEditedSplitBill()">
+                    <i class="fas fa-check-circle"></i> حفظ التعديل وتحديث الجدولة
+                </button>
+            </div>
             
-            <div id="split-detail-actions" style="margin-top: 20px;"></div>
+            <div id="split-detail-actions" style="margin-top: 16px; display:flex; flex-direction:column; gap:10px;"></div>
         </div>
     </div>
 
@@ -3932,6 +3990,60 @@
                     <button type="button" class="btn-cancel" onclick="closeModal('allNotificationsModal')">إغلاق النافذة</button>
                 </div>
             </div>
+        </div>
+
+        <!-- نافذة التحكم بالحفظ اليدوي والمزامنة السحابية وتأكيد الحفظ قبل الإغلاق -->
+        <div id="cloudSaveControlModal" class="modal">
+            <div class="modal-content" style="max-width: 480px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:14px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:42px; height:42px; border-radius:12px; background:rgba(16,185,129,0.12); color:var(--success); display:flex; align-items:center; justify-content:center; font-size:1.25em;">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin:0; font-size:1.12em;">إدارة الحفظ والمزامنة السحابية</h3>
+                            <div id="cloud-modal-status-subtitle" style="font-size:0.78em; color:var(--text-muted); margin-top:2px;">تحكم كامل في حفظ بياناتك أو جلبها من السحابة</div>
+                        </div>
+                    </div>
+                    <button type="button" class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('cloudSaveControlModal')"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div id="cloud-unsaved-warning-banner" style="display:none; background:rgba(245,158,11,0.1); border:1.5px solid rgba(245,158,11,0.35); border-radius:14px; padding:12px 14px; margin-bottom:14px; font-size:0.86em; line-height:1.55;">
+                    <div style="font-weight:900; color:var(--warning); margin-bottom:4px;"><i class="fas fa-triangle-exclamation"></i> لديك تعديلات جديدة غير محفوظة في السحابة!</div>
+                    <div style="color:var(--text-main);">هل تريد حفظ واعتماد هذه التعديلات الآن في السحابة، أو سيتم حفظها تلقائياً خلال <strong id="cloud-modal-countdown" dir="ltr">02:00</strong>؟</div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button type="button" class="primary-btn" style="width:100%; justify-content:center; padding:13px 16px; font-size:0.95em; background:var(--success); border-color:var(--success); box-shadow:0 8px 20px -4px rgba(16,185,129,0.35);" onclick="manualSaveToCloudNow(true)">
+                        <i class="fas fa-floppy-disk"></i> حفظ واعتماد بيانات هذا الجهاز في السحابة الآن
+                    </button>
+
+                    <button type="button" class="action-btn" style="width:100%; justify-content:center; padding:12px 16px; font-size:0.9em; border-color:rgba(59,130,246,0.4); color:#3b82f6; background:rgba(59,130,246,0.08); font-weight:800;" onclick="forcePullCleanStateFromCloud()">
+                        <i class="fas fa-cloud-arrow-down"></i> جلب واستبدال البيانات من السحابة لهذا الجهاز
+                    </button>
+                </div>
+
+                <div style="margin-top:14px; padding:10px 12px; border-radius:12px; background:var(--surface-color); border:1px solid var(--border-color); font-size:0.78em; color:var(--text-muted); line-height:1.55;">
+                    <i class="fas fa-shield-halved text-primary"></i> <strong>كيف يعمل النظام الذكي؟</strong><br>
+                    • عند فتح التطبيق من الجوال أو أي جهاز آخر، يتم استبدال أي بيانات قديمة مخبوصة في الجهاز بالنسخة النظيفة المعتمدة في السحابة تلقائياً.<br>
+                    • عند إجراء أي تعديل، يمكنك الضغط على <strong>حفظ الآن</strong> أو سيقوم التطبيق بالحفظ التلقائي كل <strong>دقيقتين</strong>، مع تنبيهك قبل إغلاق الصفحة إذا لم تحفظ.
+                </div>
+
+                <div class="modal-actions" style="justify-content:flex-end; margin-top:14px;">
+                    <button type="button" class="btn-cancel" onclick="closeModal('cloudSaveControlModal')">إغلاق</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط عائم مبسط للحفظ المباشر أو الحفظ التلقائي كل دقيقتين -->
+        <div id="unsaved-cloud-changes-bar" style="display:none; position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:2200; background:rgba(15,23,42,0.95); color:#ffffff; border:1.5px solid rgba(245,158,11,0.55); border-radius:999px; padding:7px 14px 7px 10px; box-shadow:0 14px 35px rgba(0,0,0,0.35); backdrop-filter:blur(16px); align-items:center; gap:10px; max-width:94vw; flex-wrap:wrap; justify-content:center;">
+            <span style="font-size:0.8em; font-weight:800; display:flex; align-items:center; gap:6px;">
+                <span style="width:8px; height:8px; border-radius:50%; background:#f59e0b; display:inline-block; box-shadow:0 0 8px #f59e0b;"></span>
+                <span>حفظ تلقائي خلال <span id="unsaved-bar-countdown" dir="ltr" style="color:#fbbf24;">02:00</span></span>
+            </span>
+            <button type="button" onclick="manualSaveToCloudNow(false)" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; border-radius:999px; padding:6px 16px; font-size:0.82em; font-weight:900; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 4px 12px rgba(16,185,129,0.4);">
+                <i class="fas fa-floppy-disk"></i> حفظ
+            </button>
         </div>
 
     <!-- نافذة عرض صورة الفاتورة بحجم كامل (Lightbox) -->
@@ -4331,6 +4443,140 @@
         let hasPendingCloudSave = false;
         let lastLocalMutationTime = 0;
         let hasCompletedInitialCloudSyncForCurrentSession = false;
+        let hasUnsavedUserChanges = false;
+        let autoSaveRemainingSeconds = 120;
+        let autoSaveIntervalId = null;
+
+        function formatCountdownMMSS(sec) {
+            const s = Math.max(0, Math.floor(sec));
+            const mm = String(Math.floor(s / 60)).padStart(2, '0');
+            const ss = String(s % 60).padStart(2, '0');
+            return `${mm}:${ss}`;
+        }
+
+        function updateUnsavedChangesUI() {
+            const dot = document.getElementById('header-unsaved-dot');
+            const btn = document.getElementById('header-cloud-save-btn');
+            const lbl = document.getElementById('header-cloud-save-label');
+            const bar = document.getElementById('unsaved-cloud-changes-bar');
+            const barCd = document.getElementById('unsaved-bar-countdown');
+            const modalWarn = document.getElementById('cloud-unsaved-warning-banner');
+            const modalCd = document.getElementById('cloud-modal-countdown');
+            const cdText = formatCountdownMMSS(autoSaveRemainingSeconds);
+
+            if (barCd) barCd.innerText = cdText;
+            if (modalCd) modalCd.innerText = cdText;
+
+            if (hasUnsavedUserChanges) {
+                if (dot) dot.style.display = 'inline-block';
+                if (btn) {
+                    btn.style.background = 'rgba(245, 158, 11, 0.2)';
+                    btn.style.borderColor = '#f59e0b';
+                    btn.style.color = '#fbbf24';
+                }
+                if (lbl) lbl.innerText = 'حفظ';
+                if (bar) bar.style.display = 'inline-flex';
+                if (modalWarn) modalWarn.style.display = 'block';
+            } else {
+                if (dot) dot.style.display = 'none';
+                if (btn) {
+                    btn.style.background = 'rgba(16, 185, 129, 0.16)';
+                    btn.style.borderColor = 'rgba(16, 185, 129, 0.45)';
+                    btn.style.color = '#34d399';
+                }
+                if (lbl) lbl.innerText = 'حفظ';
+                if (bar) bar.style.display = 'none';
+                if (modalWarn) modalWarn.style.display = 'none';
+            }
+        }
+
+        function markUnsavedUserChange() {
+            hasUnsavedUserChanges = true;
+            autoSaveRemainingSeconds = 120; // عداد الحفظ التلقائي كل دقيقتين (120 ثانية)
+            const nowTs = Date.now();
+            lastLocalMutationTime = nowTs;
+            APP_STATE.lastModifiedAt = nowTs;
+            try { localStorage.setItem('smart_budget_last_modified_at', String(nowTs)); } catch (e) {}
+            updateUnsavedChangesUI();
+            ensureAutoSaveTimerRunning();
+        }
+
+        function clearUnsavedUserChangeFlag() {
+            hasUnsavedUserChanges = false;
+            autoSaveRemainingSeconds = 120;
+            updateUnsavedChangesUI();
+        }
+
+        function ensureAutoSaveTimerRunning() {
+            if (autoSaveIntervalId) return;
+            autoSaveIntervalId = setInterval(() => {
+                if (!hasUnsavedUserChanges) return;
+                autoSaveRemainingSeconds = Math.max(0, autoSaveRemainingSeconds - 1);
+                updateUnsavedChangesUI();
+                if (autoSaveRemainingSeconds <= 0) {
+                    autoSaveRemainingSeconds = 120;
+                    if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                        manualSaveToCloudNow(false, true);
+                    }
+                }
+            }, 1000);
+        }
+
+        function openCloudSaveControlModal() {
+            updateUnsavedChangesUI();
+            const sub = document.getElementById('cloud-modal-status-subtitle');
+            if (sub) {
+                if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                    sub.innerHTML = `الحساب المتصل: <strong dir="ltr">${APP_STATE.userAuth.phone}</strong> • ${hasUnsavedUserChanges ? '<span style="color:var(--warning); font-weight:800;">توجد تعديلات بانتظار الحفظ</span>' : '<span style="color:var(--success); font-weight:800;">جميع البيانات محفوظة ومحدثة ✓</span>'}`;
+                } else {
+                    sub.innerHTML = '<span style="color:var(--warning);">يرجى تسجيل الدخول برقم الجوال لتفعيل المزامنة السحابية</span>';
+                }
+            }
+            openModal('cloudSaveControlModal');
+        }
+
+        async function manualSaveToCloudNow(closeControlModal = false, isAutoTimer = false) {
+            saveLocalData(true);
+            if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+                clearUnsavedUserChangeFlag();
+                if (closeControlModal) closeModal('cloudSaveControlModal');
+                showToast('تم حفظ البيانات محلياً في الجهاز بنجاح! (سجل الدخول لحفظها في السحابة أيضاً) ✅', 'success', true);
+                return;
+            }
+            const nowTs = Date.now();
+            APP_STATE.lastModifiedAt = nowTs;
+            lastLocalMutationTime = nowTs;
+            hasCompletedInitialCloudSyncForCurrentSession = true;
+            try { localStorage.setItem('smart_budget_last_modified_at', String(nowTs)); } catch (e) {}
+            saveLocalData(true);
+            await saveCloudData(true);
+            clearUnsavedUserChangeFlag();
+            if (closeControlModal) closeModal('cloudSaveControlModal');
+            if (isAutoTimer) {
+                showToast('تم الحفظ التلقائي بنجاح ✅', 'info');
+            } else {
+                showToast('تم الحفظ بنجاح! ✅', 'success', true);
+            }
+        }
+
+        async function forcePullCleanStateFromCloud() {
+            if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) {
+                showToast('يرجى تسجيل الدخول برقم جوالك أولاً لجلب بياناتك من السحابة', 'warning');
+                return;
+            }
+            showToast('جاري جلب النسخة المعتمدة من السحابة واستبدال البيانات القديمة...', 'info');
+            hasUnsavedUserChanges = false;
+            hasPendingCloudSave = false;
+            lastLocalMutationTime = 0;
+            const ok = await pullCloudAccountDataOnLogin(APP_STATE.userAuth.phone, true);
+            clearUnsavedUserChangeFlag();
+            closeModal('cloudSaveControlModal');
+            if (ok) {
+                showToast('✅ تم جلب أحدث نسخة من السحابة وتنظيف البيانات القديمة على هذا الجهاز بنجاح!', 'success', true);
+            } else {
+                showToast('لم يتم العثور على بيانات محفوظة في السحابة لهذا الرقم بعد', 'warning');
+            }
+        }
 
         // فحص دقيق للبيانات المالية الأساسية لمعرفة ما إذا كانت النسخة فارغة أو مصفرة (حتى لو بقي فيها سجل تاريخي فرعي قديم)
         function isStateEffectivelyEmpty(st) {
@@ -4709,9 +4955,12 @@
             if (!stateIsEmpty && APP_STATE.isExplicitFactoryReset) {
                 APP_STATE.isExplicitFactoryReset = false;
             }
-            const allowCloudMutation = !skipCloudSync && Boolean(APP_STATE.userAuth && APP_STATE.userAuth.phone) && (!stateIsEmpty || Boolean(APP_STATE.isExplicitFactoryReset));
+            if (!skipCloudSync && !isSyncingFromCloud && (!stateIsEmpty || Boolean(APP_STATE.isExplicitFactoryReset))) {
+                markUnsavedUserChange();
+            }
+            const allowCloudMutation = !skipCloudSync && !isSyncingFromCloud && Boolean(APP_STATE.userAuth && APP_STATE.userAuth.phone) && (!stateIsEmpty || Boolean(APP_STATE.isExplicitFactoryReset));
             try {
-                if (allowCloudMutation) {
+                if (!skipCloudSync && (!stateIsEmpty || Boolean(APP_STATE.isExplicitFactoryReset))) {
                     const nowTs = Date.now();
                     lastLocalMutationTime = nowTs;
                     APP_STATE.lastModifiedAt = nowTs;
@@ -4797,6 +5046,8 @@
                 localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v70');
                 localStorage.removeItem('smart_budget_local_backup_v71');
+                localStorage.setItem('smart_budget_local_backup_v76', backupPayload);
+                localStorage.setItem('smart_budget_local_backup_v75', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v74', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v73', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v72', backupPayload);
@@ -4823,8 +5074,10 @@
 
                 // قراءة النسخة الاحتياطية المحلية مع ميزة الإنقاذ الذكي: إذا كانت النسخة الأحدث صفرية بالخطأ وتوجد نسخة سابقة غير فارغة، نستعيد النسخة الممتلئة تلقائياً
                 const candidateKeys = [
-                    'smart_budget_last_non_empty_backup',
+                    'smart_budget_local_backup_v76',
+                    'smart_budget_local_backup_v75',
                     'smart_budget_local_backup_v74',
+                    'smart_budget_last_non_empty_backup',
                     'smart_budget_local_backup_v73',
                     'smart_budget_local_backup_v72',
                     'smart_budget_last_non_empty_backup',
@@ -4868,8 +5121,7 @@
                     const hasRealData = !isStateEffectivelyEmpty(APP_STATE);
                     const storedLastMod = Number(APP_STATE.lastModifiedAt || localStorage.getItem('smart_budget_last_modified_at') || 0);
                     if (hasRealData) {
-                        APP_STATE.lastModifiedAt = storedLastMod > 0 ? storedLastMod : Date.now();
-                        localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
+                        APP_STATE.lastModifiedAt = storedLastMod > 0 ? storedLastMod : 1000;
                     } else {
                         // إذا كان الجهاز فارغاً تماماً، نصفر الطابع الزمني لمنع هذا الجهاز من مسح بيانات السحابة عند تسجيل الدخول
                         APP_STATE.lastModifiedAt = 0;
@@ -5509,9 +5761,8 @@
         }
 
         // جلب ومزامنة بيانات الحساب من السحابة بذكاء:
-        // - إذا كان الجهاز الجديد فارغاً والسحابة فيها بيانات -> ينزل بيانات السحابة فوراً.
-        // - إذا كان الجهاز فيه بياناتك الحقيقية والسحابة مصفرة -> يحافظ على بيانات جهازك ويرفعها لإصلاح السحابة!
-        async function pullCloudAccountDataOnLogin(phone) {
+        // - عند تسجيل الدخول أو الضغط على "جلب من السحابة"، إذا كانت السحابة تحتوي على بيانات حقيقية، يستبدل البيانات القديمة في الجهاز بنسخة السحابة النظيفة دون خلطها بالبيانات المخبوصة.
+        async function pullCloudAccountDataOnLogin(phone, forceReplaceLocal = false) {
             if (!firestoreDb || !FB || !phone) return false;
             const phoneKey = String(phone).replace(/[^0-9+]/g, '');
             if (!phoneKey) return false;
@@ -5532,25 +5783,18 @@
                     }
                     const cloudIsEmpty = isStateEffectivelyEmpty(statePayload);
                     hasCompletedInitialCloudSyncForCurrentSession = true;
-                    if (!localIsEmpty && cloudIsEmpty) {
-                        // الجهاز الحالي يحتوي على بياناتك بينما النسخة السحابية مصفرة -> نحافظ على بيانات جهازك ونحدث السحابة بها فوراً!
-                        APP_STATE.lastModifiedAt = Date.now();
-                        localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
-                        await saveCloudData();
+                    if (!localIsEmpty && cloudIsEmpty && !forceReplaceLocal) {
+                        // الجهاز الحالي يحتوي على بياناتك بينما النسخة السحابية مصفرة -> نحافظ على بيانات جهازك
                         return true;
                     }
-                    if (statePayload) {
-                        // لا نفرض الكتابة الفوقية (forceCloudOverwrite) إلا إذا كان الجهاز الحالي فارغاً تماماً
-                        applyCloudDataToAppState(statePayload, localIsEmpty);
+                    if (statePayload && !cloudIsEmpty) {
+                        // إذا لم يقم المستخدم بتعديل محلي غير محفوظ في هذه الجلسة، نعتمد النسخة السحابية الأحدث وننظف أي بيانات قديمة مخبوصة في الجوال
+                        const shouldForceCleanReplace = forceReplaceLocal || localIsEmpty || !hasUnsavedUserChanges;
+                        applyCloudDataToAppState(statePayload, shouldForceCleanReplace);
                         return true;
                     }
                 } else {
                     hasCompletedInitialCloudSyncForCurrentSession = true;
-                    if (!localIsEmpty) {
-                        APP_STATE.lastModifiedAt = Date.now();
-                        localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
-                        await saveCloudData();
-                    }
                 }
             } catch (err) {
                 console.error('Error pulling cloud account data on login:', err);
@@ -5567,28 +5811,15 @@
             const localMod = localIsEmpty ? 0 : Number(APP_STATE.lastModifiedAt || localStorage.getItem('smart_budget_last_modified_at') || 0);
             const cloudMod = Number(cloudData.lastModifiedAt || 0);
 
-            // حماية ذهبية 1: إذا كان هذا الجهاز يحتوي على بيانات حقيقية بينما السحابة فارغة أو مصفرة،
-            // نمنع السحابة الفارغة من تصفير هذا الجهاز قطعياً، ونرفع بيانات الجهاز الحقيقية لإصلاح السحابة!
-            if (!localIsEmpty && cloudIsEmpty) {
+            // حماية ذهبية 1: إذا كان هذا الجهاز يحتوي على بيانات حقيقية بينما السحابة فارغة أو مصفرة، نرفض النسخة السحابية الفارغة تماماً
+            if (!localIsEmpty && cloudIsEmpty && !cloudData.isExplicitFactoryReset) {
                 hasCompletedInitialCloudSyncForCurrentSession = true;
-                APP_STATE.lastModifiedAt = Date.now();
-                localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
-                hasPendingCloudSave = true;
-                setTimeout(() => saveCloudData(), 100);
                 return;
             }
 
-            // حماية ذهبية 2: إذا كان كلا الجهاز والسحابة يحتويان على بيانات، ولكن النسخة المحلية أحدث زمنياً أو أغنى بالبيانات بينما النسخة السحابية مصفرة الميزانية، نحمي النسخة المحلية
-            const localScore = getFinancialStateRichnessScore(APP_STATE);
-            const cloudScore = getFinancialStateRichnessScore(cloudData);
-            if (!localIsEmpty && !cloudIsEmpty && !forceCloudOverwrite) {
-                if (localMod >= cloudMod || isSavingToCloud || hasPendingCloudSave || (Date.now() - lastLocalMutationTime < 8000) || (localScore > cloudScore && (parseFloat(cloudData.monthlyBudget) || 0) === 0 && (parseFloat(APP_STATE.monthlyBudget) || 0) > 0)) {
-                    if (localMod > cloudMod || localScore > cloudScore) {
-                        APP_STATE.lastModifiedAt = Date.now();
-                        localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
-                        hasPendingCloudSave = true;
-                        setTimeout(() => saveCloudData(), 150);
-                    }
+            // حماية ذهبية 2: إذا كان لدى المستخدم تعديلات محلية جديدة غير محفوظة قام بها الآن على هذا الجهاز (hasUnsavedUserChanges)، لا نسمح للسحابة القديمة بمسحها قبل أن يحفظها
+            if (!forceCloudOverwrite && !localIsEmpty && !cloudIsEmpty) {
+                if (hasUnsavedUserChanges || isSavingToCloud || hasPendingCloudSave || (Date.now() - lastLocalMutationTime < 10000) || (localMod > cloudMod)) {
                     return;
                 }
             }
@@ -5597,76 +5828,43 @@
             sanitizeLegacyDefaultBudgets(cloudData);
             APP_STATE.isExplicitFactoryReset = Boolean(cloudData.isExplicitFactoryReset);
 
-            // عدم السماح لقيمة صفرية قادمة من لقطة سحابية قديمة بمسح ميزانية أو رصيد غير صفري موجود محلياً ما لم يكن الجهاز المحلي فارغاً
-            if (cloudData.monthlyBudget !== undefined && (localIsEmpty || (parseFloat(cloudData.monthlyBudget) || 0) > 0 || (parseFloat(APP_STATE.monthlyBudget) || 0) === 0 || cloudData.isExplicitFactoryReset)) {
-                APP_STATE.monthlyBudget = cloudData.monthlyBudget;
-            }
-            if (cloudData.dailyBudget !== undefined && (localIsEmpty || (parseFloat(cloudData.dailyBudget) || 0) > 0 || (parseFloat(APP_STATE.dailyBudget) || 0) === 0 || cloudData.isExplicitFactoryReset)) {
-                APP_STATE.dailyBudget = cloudData.dailyBudget;
-            }
-            if (cloudData.bankBalance !== undefined && (localIsEmpty || (parseFloat(cloudData.bankBalance) || 0) !== 0 || getSafeBankBalance() === 0 || cloudData.isExplicitFactoryReset)) {
-                setSafeBankBalance(cloudData.bankBalance);
-            }
+            // استبدال كامل ونظيف ببيانات السحابة المعتمدة حتى لا تبقى أي بيانات أو تواريخ أو مصروفات قديمة مخبوصة في الجوال
+            if (cloudData.monthlyBudget !== undefined) APP_STATE.monthlyBudget = cloudData.monthlyBudget;
+            if (cloudData.dailyBudget !== undefined) APP_STATE.dailyBudget = cloudData.dailyBudget;
+            if (cloudData.bankBalance !== undefined) setSafeBankBalance(cloudData.bankBalance);
+            if (cloudData.selectedMonth !== undefined) APP_STATE.selectedMonth = cloudData.selectedMonth;
+            if (cloudData.budgetStartDate !== undefined) APP_STATE.budgetStartDate = cloudData.budgetStartDate;
+            if (cloudData.budgetEndDate !== undefined) APP_STATE.budgetEndDate = cloudData.budgetEndDate;
             if (cloudData.currency !== undefined) APP_STATE.currency = cloudData.currency;
-            if (cloudData.activationCode !== undefined && (cloudData.activationCode || localIsEmpty)) APP_STATE.activationCode = cloudData.activationCode;
+            if (cloudData.activationCode !== undefined) APP_STATE.activationCode = cloudData.activationCode;
             if (cloudData.em633FixedV71 !== undefined) APP_STATE.em633FixedV71 = Boolean(cloudData.em633FixedV71);
             if (cloudData.emergencySaved !== undefined) APP_STATE.emergencySaved = cloudData.emergencySaved;
-            if (Array.isArray(cloudData.emergencyFundHistory) && (cloudData.emergencyFundHistory.length > 0 || localIsEmpty)) APP_STATE.emergencyFundHistory = cloudData.emergencyFundHistory;
-            if (Array.isArray(cloudData.savingsHistory) && (cloudData.savingsHistory.length > 0 || localIsEmpty)) APP_STATE.savingsHistory = cloudData.savingsHistory;
-            if (Array.isArray(cloudData.splitBills) && (cloudData.splitBills.length > 0 || localIsEmpty)) APP_STATE.splitBills = cloudData.splitBills;
-            if (Array.isArray(cloudData.debts) && (cloudData.debts.length > 0 || localIsEmpty)) APP_STATE.debts = cloudData.debts;
-            if (Array.isArray(cloudData.debtsHistory) && (cloudData.debtsHistory.length > 0 || localIsEmpty)) APP_STATE.debtsHistory = cloudData.debtsHistory;
-            if (Array.isArray(cloudData.monthlyArchives) && (cloudData.monthlyArchives.length > 0 || localIsEmpty)) APP_STATE.monthlyArchives = cloudData.monthlyArchives;
+            if (Array.isArray(cloudData.emergencyFundHistory)) APP_STATE.emergencyFundHistory = cloudData.emergencyFundHistory;
+            if (Array.isArray(cloudData.savingsHistory)) APP_STATE.savingsHistory = cloudData.savingsHistory;
+            if (Array.isArray(cloudData.splitBills)) APP_STATE.splitBills = cloudData.splitBills;
+            if (Array.isArray(cloudData.debts)) APP_STATE.debts = cloudData.debts;
+            if (Array.isArray(cloudData.debtsHistory)) APP_STATE.debtsHistory = cloudData.debtsHistory;
+            if (Array.isArray(cloudData.monthlyArchives)) APP_STATE.monthlyArchives = cloudData.monthlyArchives;
             if (Array.isArray(cloudData.deletedExpenseIds)) {
-                const mergedDeleted = new Set([...(APP_STATE.deletedExpenseIds || []), ...cloudData.deletedExpenseIds]);
-                APP_STATE.deletedExpenseIds = Array.from(mergedDeleted).slice(-200);
+                APP_STATE.deletedExpenseIds = cloudData.deletedExpenseIds.slice(-200);
             }
             if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
-                const cloudHasCatBudget = cloudData.categories.some(c => (parseFloat(c && c.budget) || 0) > 0);
-                const localHasCatBudget = Array.isArray(APP_STATE.categories) && APP_STATE.categories.some(c => (parseFloat(c && c.budget) || 0) > 0);
-                if (localIsEmpty || cloudHasCatBudget || !localHasCatBudget || cloudData.isExplicitFactoryReset) {
-                    APP_STATE.categories = cloudData.categories;
-                }
+                APP_STATE.categories = cloudData.categories;
             }
             if (Array.isArray(cloudData.expenses)) {
                 const deletedSet = new Set(APP_STATE.deletedExpenseIds || []);
-                const currentLocal = (!localIsEmpty && Array.isArray(APP_STATE.expenses)) ? APP_STATE.expenses : [];
-                const localMap = new Map();
-                currentLocal.forEach(e => {
-                    if (e && e.id && !deletedSet.has(e.id)) localMap.set(e.id, normalizeExpenseBankTracking(e));
-                });
-
-                const mergedList = [];
-                const seenIds = new Set();
-
-                // دمج ذكي يحترم أحدث تعديل (updatedAt) لكل مصروف مع حماية صور الفواتير المحلية
+                const cleanCloudExpenses = [];
+                // اعتماد قائمة مصروفات السحابة النظيفة مباشرة دون إرجاع المصروفات القديمة المخبوصة من ذاكرة الجوال
                 cloudData.expenses.forEach(cExp => {
                     if (!cExp || !cExp.id || deletedSet.has(cExp.id)) return;
                     normalizeExpenseBankTracking(cExp);
-                    if (localMap.has(cExp.id)) {
-                        const lExp = localMap.get(cExp.id);
-                        const lTime = Number(lExp.updatedAt || 0);
-                        const cTime = Number(cExp.updatedAt || 0);
-                        const chosen = lTime > cTime ? lExp : cExp;
-                        if (!chosen.receiptImage) {
-                            chosen.receiptImage = lExp.receiptImage || getReceiptImageFromLocalCache(chosen.id);
-                        }
-                        mergedList.push(chosen);
-                    } else {
+                    if (!cExp.receiptImage) {
                         cExp.receiptImage = getReceiptImageFromLocalCache(cExp.id) || null;
-                        mergedList.push(cExp);
                     }
-                    seenIds.add(cExp.id);
+                    cleanCloudExpenses.push(cExp);
                 });
 
-                currentLocal.forEach(lExp => {
-                    if (lExp && lExp.id && !seenIds.has(lExp.id) && !deletedSet.has(lExp.id)) {
-                        mergedList.unshift(normalizeExpenseBankTracking(lExp));
-                        hasPendingCloudSave = true;
-                    }
-                });
-
-                APP_STATE.expenses = mergedList;
+                APP_STATE.expenses = cleanCloudExpenses;
                 APP_STATE.expenses.forEach(exp => {
                     if (exp.receiptImage) {
                         saveReceiptImageToLocalCache(exp.id, exp.receiptImage);
@@ -5700,13 +5898,14 @@
 
             reconcileAndSyncEmergencyFundState(false);
             if (!isStateEffectivelyEmpty(APP_STATE)) {
-                APP_STATE.lastModifiedAt = Math.max(localMod, cloudMod, Date.now());
+                APP_STATE.lastModifiedAt = cloudMod > 0 ? cloudMod : Date.now();
                 try { localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt)); } catch (e) {}
             } else {
                 APP_STATE.lastModifiedAt = 0;
                 try { localStorage.removeItem('smart_budget_last_modified_at'); } catch (e) {}
             }
 
+            clearUnsavedUserChangeFlag();
             saveLocalData(true);
             renderPinSettings();
             renderActivationCodeSettings();
@@ -5743,9 +5942,9 @@
                 const phoneKey = APP_STATE.userAuth.phone.replace(/[^0-9+]/g, '');
                 const targetDocRef = FB.doc(firestoreDb, 'user_profiles', phoneKey);
 
-                // إذا كان الجهاز فارغاً عند بدء الاشتراك، نسحب بيانات الحساب من السيرفر أولاً قبل أي شيء
-                if (isStateEffectivelyEmpty(APP_STATE) && !hasCompletedInitialCloudSyncForCurrentSession) {
-                    await pullCloudAccountDataOnLogin(APP_STATE.userAuth.phone);
+                // عند فتح التطبيق لأول مرة في الجلسة (وقبل إجراء أي تعديل محلي جديد)، نسحب النسخة المعتمدة من السيرفر مباشرة لتحديث الجوال وإزالة أي بيانات قديمة مخبوصة
+                if (!hasCompletedInitialCloudSyncForCurrentSession && !hasUnsavedUserChanges) {
+                    await pullCloudAccountDataOnLogin(APP_STATE.userAuth.phone, false);
                 }
 
                 unsubscribeCloudSnapshot = FB.onSnapshot(targetDocRef, (docSnap) => {
@@ -5822,7 +6021,7 @@
             }
         }
 
-        async function saveCloudData() {
+        async function saveCloudData(isManualOrForced = false) {
             if (!APP_STATE.userAuth || !APP_STATE.userAuth.phone) return;
             // حماية قاطعة: يمنع منعاً باتاً رفع حالة فارغة (كلها أصفار) إلى السحابة من جهاز جديد ما لم يضغط المستخدم "مسح كافة البيانات" يدوياً
             const localIsEmpty = isStateEffectivelyEmpty(APP_STATE);
@@ -5830,7 +6029,12 @@
                 hasPendingCloudSave = false;
                 return;
             }
-            if (!isCloudConnected || !firestoreDb || !FB || isSyncingFromCloud || isSavingToCloud || !hasCompletedInitialCloudSyncForCurrentSession) {
+            // لا نرفع أي بيانات قديمة من الجهاز إلى السحابة تلقائياً عند فتح التطبيق إذا لم يقم المستخدم بتعديل فعلي (hasUnsavedUserChanges) أو ضغط زر الحفظ اليدوي
+            if (!isManualOrForced && !hasUnsavedUserChanges && !APP_STATE.isExplicitFactoryReset) {
+                hasPendingCloudSave = false;
+                return;
+            }
+            if (!isCloudConnected || !firestoreDb || !FB || isSyncingFromCloud || isSavingToCloud || (!hasCompletedInitialCloudSyncForCurrentSession && !isManualOrForced)) {
                 if (!localIsEmpty || APP_STATE.isExplicitFactoryReset) {
                     hasPendingCloudSave = true;
                 }
@@ -5865,6 +6069,7 @@
                     cloudPayload.lastNonEmptyState = cleanState;
                 }
                 await FB.setDoc(FB.doc(firestoreDb, 'user_profiles', phoneKey), cloudPayload, { merge: true });
+                clearUnsavedUserChangeFlag();
             } catch (err) {
                 writeFailed = true;
             } finally {
@@ -10287,34 +10492,69 @@ Return JSON:
 
         function populateEarlyDebtSelector() {
             const sel = document.getElementById('early-debt-select-existing');
+            const chipsBox = document.getElementById('early-debt-quick-chips');
+            const badgeEl = document.getElementById('early-debt-selector-badge');
             if (!sel) return;
             const currentVal = sel.value;
-            const owedDebts = (APP_STATE.debts || []).filter(d => d.type === 'owed' && parseFloat(d.amount) > 0);
-            let html = `<option value="">✏️ إدخال مبلغ الدين يدوياً</option>`;
-            if (owedDebts.length > 0) {
-                const totalOwed = owedDebts.reduce((s, d) => s + parseFloat(d.amount || 0), 0);
-                if (owedDebts.length > 1) {
-                    html += `<option value="all_owed">📊 إجمالي كل الديون عليّ (${formatEn(totalOwed)})</option>`;
-                }
-                owedDebts.forEach(d => {
-                    html += `<option value="${d.id}">📌 ${d.person} (${formatEn(d.amount)})</option>`;
-                });
+            const allDebts = (APP_STATE.debts || []).filter(d => d && parseFloat(d.amount) > 0);
+            const owedDebts = allDebts.filter(d => d.type === 'owed');
+            const listToUse = owedDebts.length > 0 ? owedDebts : allDebts;
+
+            if (badgeEl) {
+                badgeEl.innerText = listToUse.length > 0 ? `${listToUse.length} التزام متاح للاختيار` : 'إدخال يدوي';
             }
+
+            let html = `<option value="">✏️ إدخال مبلغ الدين يدوياً (أو اختر التزاماً مسجلاً من هنا)</option>`;
+            let chipsHtml = `<button type="button" class="btn-edit-badge" style="padding:4px 10px; font-size:0.75em;" onclick="selectEarlyDebtQuickChip('')">✏️ إدخال يدوي</button>`;
+
+            if (listToUse.length > 0) {
+                const totalOwed = listToUse.reduce((s, d) => s + parseFloat(d.amount || 0), 0);
+                if (listToUse.length > 1) {
+                    html += `<option value="all_owed">📊 إجمالي كل الالتزامات المسجلة (${formatEn(totalOwed)})</option>`;
+                    chipsHtml += `<button type="button" class="btn-edit-badge" style="padding:4px 10px; font-size:0.75em; border-color:var(--primary-color); color:var(--primary-color);" onclick="selectEarlyDebtQuickChip('all_owed')">📊 الإجمالي (${formatEn(totalOwed)})</button>`;
+                }
+                listToUse.forEach(d => {
+                    html += `<option value="${d.id}">📌 ${d.person} — (${formatEn(d.amount)})</option>`;
+                    chipsHtml += `<button type="button" class="btn-edit-badge" style="padding:4px 10px; font-size:0.75em;" onclick="selectEarlyDebtQuickChip('${d.id}')">📌 ${d.person} (${formatEn(d.amount)})</button>`;
+                });
+            } else {
+                chipsHtml += `<span style="font-size:0.75em; color:var(--text-muted); display:inline-flex; align-items:center;">أضف التزاماً في القائمة أعلاه ليظهر هنا أو اكتب المبلغ يدوياً بالأسفل</span>`;
+            }
+
             sel.innerHTML = html;
+            if (chipsBox) chipsBox.innerHTML = chipsHtml;
             if (currentVal && [...sel.options].some(o => o.value === currentVal)) {
                 sel.value = currentVal;
             }
         }
 
+        function selectEarlyDebtQuickChip(val) {
+            const sel = document.getElementById('early-debt-select-existing');
+            if (!sel) return;
+            sel.value = val;
+            if (!val) {
+                const balInput = document.getElementById('early-debt-balance');
+                if (balInput) {
+                    balInput.focus();
+                    balInput.select();
+                }
+                showToast('يمكنك الآن كتابة مبلغ الدين يدوياً في الحقل ✏️', 'info');
+                return;
+            }
+            onSelectExistingDebtForEarlyCalc();
+        }
+
         function onSelectExistingDebtForEarlyCalc() {
             const sel = document.getElementById('early-debt-select-existing');
             if (!sel || !sel.value) return;
-            const owedDebts = (APP_STATE.debts || []).filter(d => d.type === 'owed' && parseFloat(d.amount) > 0);
+            const allDebts = (APP_STATE.debts || []).filter(d => d && parseFloat(d.amount) > 0);
+            const owedDebts = allDebts.filter(d => d.type === 'owed');
+            const listToUse = owedDebts.length > 0 ? owedDebts : allDebts;
             let targetBalance = 0;
             if (sel.value === 'all_owed') {
-                targetBalance = owedDebts.reduce((s, d) => s + parseFloat(d.amount || 0), 0);
+                targetBalance = listToUse.reduce((s, d) => s + parseFloat(d.amount || 0), 0);
             } else {
-                const found = owedDebts.find(d => d.id === sel.value);
+                const found = allDebts.find(d => d.id === sel.value);
                 if (found) targetBalance = parseFloat(found.amount || 0);
             }
             if (targetBalance > 0) {
@@ -11549,7 +11789,7 @@ Return JSON:
                 </table>
 
                 <div style="margin-top: 26px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 11px; color: #64748b;">
-                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy • AI Cloud V7.4)</span>
+                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy • AI Cloud V7.6)</span>
                     <span dir="ltr">${sDate} -> ${eDate}</span>
                 </div>
             `;
@@ -11816,7 +12056,10 @@ Return JSON:
         function openSplitBillModal(id) {
             const sb = APP_STATE.splitBills.find(s => s.id === id);
             if(!sb) return;
-            
+
+            const curIdInp = document.getElementById('split-detail-current-id');
+            if (curIdInp) curIdInp.value = sb.id;
+
             const { startStr, endStr } = computeSplitStartAndEndDates(sb.startDate, sb.days);
             const finalEndStr = sb.endDate ? sb.endDate.split('T')[0] : endStr;
 
@@ -11828,15 +12071,139 @@ Return JSON:
             const endEl = document.getElementById('split-detail-end-date');
             if (endEl) endEl.innerText = finalEndStr;
             document.getElementById('split-detail-daily').innerText = formatEn(sb.dailyAmount);
-            
+
+            toggleSplitBillEditMode(false);
+
             const actionsDiv = document.getElementById('split-detail-actions');
             if(sb.status === 'active') {
-                actionsDiv.innerHTML = `<button type="button" class="action-btn" style="width:100%; justify-content:center; background:rgba(239,68,68,0.12); color:var(--danger); border-color:rgba(239,68,68,0.35);" onclick="promptCancelSplitBill('${sb.id}')"><i class="fas fa-ban"></i> إلغاء التقسيم واسترجاع المصروف الأصلي</button>`;
+                actionsDiv.innerHTML = `
+                    <button type="button" class="primary-btn" id="btn-open-split-edit" style="width:100%; justify-content:center; padding:11px;" onclick="toggleSplitBillEditMode(true)">
+                        <i class="fas fa-pen-to-square"></i> تعديل الفاتورة المقسمة
+                    </button>
+                    <button type="button" class="action-btn" style="width:100%; justify-content:center; background:rgba(239,68,68,0.12); color:var(--danger); border-color:rgba(239,68,68,0.35);" onclick="promptCancelSplitBill('${sb.id}')">
+                        <i class="fas fa-ban"></i> إلغاء التقسيم واسترجاع المصروف الأصلي
+                    </button>
+                `;
             } else {
                 actionsDiv.innerHTML = `<div style="text-align:center; padding:10px; border-radius:8px; background:rgba(15,23,42,0.05); color:var(--text-muted); font-size:0.85em;">هذا التقسيم ملغى ولا يمكن التعديل عليه.</div>`;
             }
             
             openModal('splitBillDetailsModal');
+        }
+
+        function toggleSplitBillEditMode(showEdit) {
+            const editBox = document.getElementById('split-detail-edit-box');
+            const editBtn = document.getElementById('btn-open-split-edit');
+            const id = document.getElementById('split-detail-current-id')?.value;
+            const sb = (APP_STATE.splitBills || []).find(s => s.id === id);
+            if (!editBox) return;
+
+            if (showEdit && sb) {
+                const { startStr } = computeSplitStartAndEndDates(sb.startDate, sb.days);
+                const storeInp = document.getElementById('split-edit-store');
+                const amtInp = document.getElementById('split-edit-amount');
+                const daysInp = document.getElementById('split-edit-days');
+                const startInp = document.getElementById('split-edit-start-date');
+                if (storeInp) storeInp.value = sb.origExp.store || '';
+                if (amtInp) amtInp.value = parseFloat(sb.origExp.amount || 0);
+                if (daysInp) daysInp.value = parseInt(sb.days || 2);
+                if (startInp) {
+                    startInp.value = startStr;
+                    if (startInp._flatpickr) startInp._flatpickr.setDate(startStr, false);
+                }
+                editBox.style.display = 'block';
+                if (editBtn) editBtn.style.display = 'none';
+                updateSplitBillEditPreview();
+            } else {
+                editBox.style.display = 'none';
+                if (editBtn) editBtn.style.display = 'inline-flex';
+            }
+        }
+
+        function updateSplitBillEditPreview() {
+            const rawAmt = toEnglishDigitsClean(document.getElementById('split-edit-amount')?.value || '').replace(/[^0-9.]/g, '');
+            const rawDays = toEnglishDigitsClean(document.getElementById('split-edit-days')?.value || '').replace(/[^0-9]/g, '');
+            const amt = parseFloat(rawAmt) || 0;
+            const days = Math.max(2, parseInt(rawDays) || 2);
+            const startVal = document.getElementById('split-edit-start-date')?.value || getLocalTodayDateStr();
+            const previewEl = document.getElementById('split-edit-preview-summary');
+            if (!previewEl) return;
+
+            const { startStr, endStr } = computeSplitStartAndEndDates(startVal, days);
+            const daily = +(amt / days).toFixed(2);
+            previewEl.innerHTML = `القسط اليومي الجديد: <span class="text-warning" dir="ltr">${formatEn(daily)}</span> • من <span class="text-primary" dir="ltr">${startStr}</span> إلى <span class="text-success" dir="ltr">${endStr}</span>`;
+        }
+
+        function saveEditedSplitBill() {
+            const id = document.getElementById('split-detail-current-id')?.value;
+            const sb = (APP_STATE.splitBills || []).find(s => s.id === id);
+            if (!sb || sb.status !== 'active') return;
+
+            const newStore = (document.getElementById('split-edit-store')?.value || '').trim() || sb.origExp.store || 'فاتورة مقسمة';
+            const rawAmt = toEnglishDigitsClean(document.getElementById('split-edit-amount')?.value || '').replace(/[^0-9.]/g, '');
+            const rawDays = toEnglishDigitsClean(document.getElementById('split-edit-days')?.value || '').replace(/[^0-9]/g, '');
+            const newAmt = parseFloat(rawAmt);
+            const newDays = parseInt(rawDays);
+            const startVal = document.getElementById('split-edit-start-date')?.value || sb.startDate || getLocalTodayDateStr();
+
+            if (isNaN(newAmt) || newAmt <= 0) {
+                showToast('يرجى إدخال مبلغ إجمالي صحيح أكبر من الصفر', 'warning');
+                return;
+            }
+            if (isNaN(newDays) || newDays < 2) {
+                showToast('يرجى إدخال عدد أيام لا يقل عن يومين (2)', 'warning');
+                return;
+            }
+
+            const oldAmt = parseFloat(sb.origExp.amount || 0) || 0;
+            if (sb.origExp.bankDeducted && oldAmt !== newAmt) {
+                const delta = oldAmt - newAmt;
+                setSafeBankBalance(getSafeBankBalance() + delta);
+                sb.origExp.bankDeductedAmount = newAmt;
+            }
+
+            const { startObj, startStr, endStr } = computeSplitStartAndEndDates(startVal, newDays);
+            const newDaily = +(newAmt / newDays).toFixed(2);
+            const origTimePart = (sb.origExp.date && String(sb.origExp.date).includes('T'))
+                ? String(sb.origExp.date).split('T')[1]
+                : '12:00';
+
+            sb.origExp.store = newStore;
+            sb.origExp.amount = newAmt;
+            sb.days = newDays;
+            sb.dailyAmount = newDaily;
+            sb.startDate = startStr;
+            sb.endDate = endStr;
+
+            // إزالة الأقساط القديمة الخاصة بهذه التقسيمة وإنشاء الأقساط المحدثة
+            APP_STATE.expenses = (APP_STATE.expenses || []).filter(e => e.splitId !== id);
+            for (let i = 0; i < newDays; i++) {
+                const targetDate = new Date(startObj.getFullYear(), startObj.getMonth(), startObj.getDate() + i);
+                const dayYmd = getLocalTodayDateStr(targetDate);
+                APP_STATE.expenses.unshift({
+                    id: 'exp-' + Date.now() + '-' + i,
+                    amount: newDaily,
+                    store: newStore + ` (قسط ${i+1}/${newDays})`,
+                    category: sb.origExp.category,
+                    date: `${dayYmd}T${origTimePart}`,
+                    method: sb.origExp.method,
+                    bank: sb.origExp.bank,
+                    bankDeducted: sb.origExp.bankDeducted,
+                    bankDeductedAmount: sb.origExp.bankDeducted ? newDaily : 0,
+                    splitId: id,
+                    updatedAt: Date.now()
+                });
+            }
+
+            saveLocalData();
+            initBillSplitter();
+            renderSplitBillsHistory();
+            renderDashboard();
+            renderCategories();
+            renderRecentExpenses();
+            renderCalendar();
+            openSplitBillModal(id);
+            showToast('تم تعديل الفاتورة المقسمة وتحديث الأقساط بنجاح! ✅', 'success');
         }
 
         function promptCancelSplitBill(id) {
@@ -12104,7 +12471,7 @@ Return JSON:
                 notifications: APP_STATE.notifications || [],
                 lastModifiedAt: APP_STATE.lastModifiedAt || Date.now(),
                 backupFormat: 'Finexy-Full-With-Receipts',
-                backupVersion: 'Finexy • AI Cloud V7.4',
+                backupVersion: 'Finexy • AI Cloud V7.6',
                 exportedAt: new Date().toISOString(),
                 receiptsCount: Object.keys(fullReceiptsMap).length
             };
@@ -12186,7 +12553,11 @@ Return JSON:
                         }
                     }
 
+                    markUnsavedUserChange();
                     saveLocalData(false);
+                    if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
+                        manualSaveToCloudNow(false, false);
+                    }
                     renderDashboard();
                     renderCategories();
                     renderRecentExpenses();
@@ -12980,11 +13351,24 @@ ${debtsText}
             syncDevicePlatformUI();
             window.addEventListener('resize', syncDevicePlatformUI);
 
-            // تسجيل Service Worker تلقائياً عند وجود sw.js على GitHub Pages لتفعيل التثبيت المباشر للجوال والكمبيوتر
+            // تنظيف أي كاش قديم في متصفح الجوال والكمبيوتر تلقائياً لضمان عمل أحدث إصدار (V7.6) على الجهازين معاً
+            if (typeof caches !== 'undefined' && caches.keys) {
+                caches.keys().then(keys => {
+                    keys.forEach(k => {
+                        if (k !== 'finexy-pwa-v76') {
+                            caches.delete(k).catch(() => {});
+                        }
+                    });
+                }).catch(() => {});
+            }
+
+            // تسجيل وتحديث Service Worker تلقائياً لتفعيل التحديث الفوري على متصفح الجوال ومتصفح الكمبيوتر
             if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
                 fetch('./sw.js', { method: 'HEAD' }).then(res => {
                     if (res && res.ok) {
-                        navigator.serviceWorker.register('./sw.js').catch(() => {});
+                        navigator.serviceWorker.register('./sw.js').then(reg => {
+                            if (reg && typeof reg.update === 'function') reg.update().catch(() => {});
+                        }).catch(() => {});
                     }
                 }).catch(() => {});
                 fetch('./manifest.json', { method: 'HEAD' }).then(res => {
@@ -13361,16 +13745,25 @@ self.addEventListener('fetch', (e) => {
                 };
                 zip.file('manifest.json', JSON.stringify(manifestJson, null, 2));
 
-                const swJs = `const CACHE_NAME = 'finexy-pwa-v66';
+                const swJs = `const CACHE_NAME = 'finexy-pwa-v76';
 self.addEventListener('install', (e) => {
     self.skipWaiting();
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./', './index.html', './manifest.json'])));
 });
 self.addEventListener('activate', (e) => {
-    e.waitUntil(self.clients.claim());
+    e.waitUntil(
+        caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+        .then(() => self.clients.claim())
+    );
 });
 self.addEventListener('fetch', (e) => {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    e.respondWith(
+        fetch(e.request).then(res => {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(e.request, copy)).catch(() => {});
+            return res;
+        }).catch(() => caches.match(e.request))
+    );
 });`;
                 zip.file('sw.js', swJs);
 
@@ -13458,6 +13851,27 @@ self.addEventListener('fetch', (e) => {
                 if (lockScreen) lockScreen.style.display = 'none';
                 executePostUnlockInitialization();
             }
+
+            ensureAutoSaveTimerRunning();
+            updateUnsavedChangesUI();
+
+            // تنبيه المستخدم قبل إغلاق المتصفح أو التبويب إذا كانت هناك تعديلات لم تُحفظ بعد في السحابة
+            window.addEventListener('beforeunload', function(e) {
+                if (hasUnsavedUserChanges) {
+                    saveLocalData(true);
+                    const msg = 'لديك تعديلات جديدة لم يتم حفظها في السحابة بعد. هل تريد المغادرة قبل الحفظ؟';
+                    e.preventDefault();
+                    e.returnValue = msg;
+                    return msg;
+                }
+            });
+
+            // على الجوال والكمبيوتر: عند إخفاء التبويب أو الخروج مع وجود تعديلات جديدة، يحفظها تلقائياً في الخلفية
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden' && hasUnsavedUserChanges) {
+                    manualSaveToCloudNow(false, true);
+                }
+            });
 
             // التقاط أي أخطاء برمجية غير متوقعة في الصفحة وإظهارها في الواجهة ومركز الإشعارات
             window.addEventListener('error', function(e) {
