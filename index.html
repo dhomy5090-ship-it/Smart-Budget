@@ -276,11 +276,18 @@
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            position: relative;
-            z-index: 1200;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            z-index: 1250 !important;
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
             border-bottom: 1px solid rgba(255, 255, 255, 0.09);
             flex-shrink: 0;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
         }
 
         .v13-brand-cluster {
@@ -1474,8 +1481,13 @@
 
             /* ترويسة علوية متناسقة مع مسافة آمنة واضحة تحت شريط الوقت والتاريخ والبطارية والشبكة */
             .v13-top-header-shell {
-                position: relative !important;
-                z-index: 1100 !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                z-index: 1250 !important;
                 flex-wrap: wrap !important;
                 padding: calc(max(env(safe-area-inset-top, 0px), 44px) + 12px) max(12px, env(safe-area-inset-right, 12px)) 12px max(12px, env(safe-area-inset-left, 12px)) !important;
                 min-height: auto !important;
@@ -2247,7 +2259,7 @@
             <div class="finexy-logo-circle"><i class="fas fa-wallet"></i></div>
             <div>
                 <h1 class="v13-brand-title">الميزانية الذكية <span id="header-cloud-dot" class="cloud-status-dot" title="جاري الاتصال بالسحابة..."></span></h1>
-                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V7.3</div>
+                <div style="font-size: 0.8em; color: rgba(255,255,255,0.6); font-weight: 600;" id="header-app-version-text">Finexy • AI Cloud V7.4</div>
             </div>
         </div>
 
@@ -2334,9 +2346,21 @@
                     <span class="notif-badge" id="notif-badge">0</span>
                 </button>
                 <div class="top-glass-dropdown-menu" onclick="event.stopPropagation()">
-                    <div style="font-weight:900; padding-bottom:8px; border-bottom:1px solid var(--border-color);">مركز الإشعارات</div>
-                    <div id="notifications-list-box" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; padding-top:8px;"></div>
-                    <button type="button" class="btn-edit-badge" style="width:100%; justify-content:center; margin-top:8px;" onclick="clearAllNotifications()">مسح الكل</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:8px; border-bottom:1px solid var(--border-color);">
+                        <span style="font-weight:900;"><i class="fas fa-bell text-primary"></i> مركز الإشعارات</span>
+                        <button type="button" class="btn-edit-badge" style="padding:4px 10px; font-size:0.76em; background:rgba(255,85,32,0.12); color:var(--primary-color); border-color:rgba(255,85,32,0.3);" onclick="openAllNotificationsModal()">
+                            <i class="fas fa-up-right-and-down-left-from-center"></i> فتح الكل
+                        </button>
+                    </div>
+                    <div id="notifications-list-box" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding-top:8px;"></div>
+                    <div style="display:flex; gap:8px; margin-top:10px;">
+                        <button type="button" class="primary-btn" style="flex:1; justify-content:center; padding:8px 10px; font-size:0.8em;" onclick="openAllNotificationsModal()">
+                            <i class="fas fa-list-ul"></i> فتح الكل
+                        </button>
+                        <button type="button" class="btn-edit-badge" style="flex:1; justify-content:center; padding:8px 10px; font-size:0.8em;" onclick="clearAllNotifications()">
+                            <i class="fas fa-trash-can"></i> مسح الكل
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -2366,6 +2390,7 @@
             </div>
         </div>
     </header>
+    <div id="v13-top-header-spacer" style="width: 100%; height: 96px; flex-shrink: 0; pointer-events: none;"></div>
 
     <div class="main-wrapper">
         <div class="main-content">
@@ -2857,11 +2882,11 @@
                             <h3 style="margin:0; font-size:1.22em; display:flex; align-items:center; gap:8px;">
                                 <i class="fas fa-sliders text-primary"></i> إعدادات التطبيق والمزامنة
                             </h3>
-                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V7.3</div>
+                            <div style="font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-top: 4px;" dir="ltr">Finexy • AI Cloud V7.4</div>
                         </div>
                         <div style="background: rgba(255, 85, 32, 0.1); border: 1px solid rgba(255, 85, 32, 0.3); border-radius: 14px; padding: 7px 14px; text-align: center;">
                             <div style="font-size: 0.72em; color: var(--text-muted); font-weight: 800;">التحديث الحالي / آخر تحديث</div>
-                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V7.3</div>
+                            <div style="font-size: 0.88em; font-weight: 900; color: var(--primary-color); font-family: 'Plus Jakarta Sans', sans-serif !important;" dir="ltr">Finexy • AI Cloud V7.4</div>
                         </div>
                     </div>
 
@@ -3866,6 +3891,49 @@
             </div>
         </div>
 
+        <!-- نافذة عرض جميع الإشعارات الكاملة (فتح الكل) -->
+        <div id="allNotificationsModal" class="modal">
+            <div class="modal-content" style="max-width: 620px; max-height: 88vh; display: flex; flex-direction: column;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:40px; height:40px; border-radius:12px; background:rgba(255,85,32,0.12); color:var(--primary-color); display:flex; align-items:center; justify-content:center; font-size:1.2em;">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin:0; font-size:1.15em;">سجل مركز الإشعارات الكامل</h3>
+                            <div id="all-notifs-summary-subtitle" style="font-size:0.78em; color:var(--text-muted); margin-top:2px;">جميع التنبيهات والعمليات المسجلة في الحساب</div>
+                        </div>
+                    </div>
+                    <button type="button" class="action-btn" style="padding:6px 12px; border-radius:10px;" onclick="closeModal('allNotificationsModal')"><i class="fas fa-times"></i></button>
+                </div>
+
+                <!-- أزرار التصفية والتحكم السريع بالإشعارات -->
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; flex-shrink:0;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;" id="all-notifs-filter-tabs">
+                        <button type="button" class="btn-edit-badge active-notif-filter" data-filter="all" onclick="setAllNotificationsFilter('all')" style="padding:5px 12px; font-size:0.78em; background:var(--primary-color); color:#fff; border-color:var(--primary-color);">الكل</button>
+                        <button type="button" class="btn-edit-badge" data-filter="unread" onclick="setAllNotificationsFilter('unread')" style="padding:5px 12px; font-size:0.78em;">غير المقروءة</button>
+                        <button type="button" class="btn-edit-badge" data-filter="alerts" onclick="setAllNotificationsFilter('alerts')" style="padding:5px 12px; font-size:0.78em;">التنبيهات والتحذيرات</button>
+                        <button type="button" class="btn-edit-badge" data-filter="success" onclick="setAllNotificationsFilter('success')" style="padding:5px 12px; font-size:0.78em;">العمليات الناجحة</button>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="btn-edit-badge" style="padding:5px 10px; font-size:0.76em; color:var(--success); border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.08);" onclick="markAllNotificationsRead()">
+                            <i class="fas fa-check-double"></i> قراءة الكل
+                        </button>
+                        <button type="button" class="btn-edit-badge" style="padding:5px 10px; font-size:0.76em; color:var(--danger); border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.08);" onclick="clearAllNotifications()">
+                            <i class="fas fa-trash-can"></i> مسح الكل
+                        </button>
+                    </div>
+                </div>
+
+                <!-- القائمة الكاملة للإشعارات -->
+                <div id="all-notifications-full-list" style="display:flex; flex-direction:column; gap:10px; overflow-y:auto; flex:1; padding:4px 2px; min-height:180px; max-height:58vh;"></div>
+
+                <div class="modal-actions" style="justify-content:flex-end; margin-top:14px; padding-top:12px; border-top:1px solid var(--border-color); flex-shrink:0;">
+                    <button type="button" class="btn-cancel" onclick="closeModal('allNotificationsModal')">إغلاق النافذة</button>
+                </div>
+            </div>
+        </div>
+
     <!-- نافذة عرض صورة الفاتورة بحجم كامل (Lightbox) -->
     <div id="receiptLightboxModal" class="modal" style="z-index: 3500; background-color: rgba(6, 5, 11, 0.85);">
         <div class="modal-content" style="max-width: 680px; width: 95%; padding: 20px; text-align: center; background: var(--surface-glass-heavy);">
@@ -4264,19 +4332,33 @@
         let lastLocalMutationTime = 0;
         let hasCompletedInitialCloudSyncForCurrentSession = false;
 
-        // فحص دقيق لمعرفة ما إذا كانت حالة البيانات فارغة (صفرية) لمنع أي جهاز جديد فارغ من مسح بيانات السحابة
+        // فحص دقيق للبيانات المالية الأساسية لمعرفة ما إذا كانت النسخة فارغة أو مصفرة (حتى لو بقي فيها سجل تاريخي فرعي قديم)
         function isStateEffectivelyEmpty(st) {
             if (!st || typeof st !== 'object') return true;
             const hasExpenses = Array.isArray(st.expenses) && st.expenses.length > 0;
             const hasBudget = (parseFloat(st.monthlyBudget) || 0) > 0 || (parseFloat(st.dailyBudget) || 0) > 0;
             const hasBank = (parseFloat(st.bankBalance) || 0) !== 0;
             const hasGoals = Array.isArray(st.savingsGoals) && st.savingsGoals.length > 0;
-            const hasDebts = (Array.isArray(st.debts) && st.debts.length > 0) || (Array.isArray(st.debtsHistory) && st.debtsHistory.length > 0);
-            const hasEm = (parseFloat(st.emergencySaved) || 0) > 0 || (Array.isArray(st.emergencyFundHistory) && st.emergencyFundHistory.some(r => r && !r.settledPhantom && (parseFloat(r.amount) || 0) > 0));
-            const hasSavHist = Array.isArray(st.savingsHistory) && st.savingsHistory.length > 0;
-            const hasSplit = Array.isArray(st.splitBills) && st.splitBills.length > 0;
+            const hasActiveDebts = Array.isArray(st.debts) && st.debts.length > 0;
+            const hasEmSaved = (parseFloat(st.emergencySaved) || 0) > 0;
             const hasCustomCats = Array.isArray(st.categories) && st.categories.some(c => (parseFloat(c && c.budget) || 0) > 0);
-            return !(hasExpenses || hasBudget || hasBank || hasGoals || hasDebts || hasEm || hasSavHist || hasSplit || hasCustomCats);
+            return !(hasExpenses || hasBudget || hasBank || hasGoals || hasActiveDebts || hasEmSaved || hasCustomCats);
+        }
+
+        // حساب نقاط غنى البيانات المالية للمقارنة الذكية ومنع النسخة الأقل/المصفرة من مسح النسخة الممتلئة
+        function getFinancialStateRichnessScore(st) {
+            if (!st || typeof st !== 'object') return 0;
+            let score = 0;
+            if ((parseFloat(st.monthlyBudget) || 0) > 0) score += 20;
+            if ((parseFloat(st.dailyBudget) || 0) > 0) score += 10;
+            if ((parseFloat(st.bankBalance) || 0) !== 0) score += 15;
+            if (Array.isArray(st.expenses)) score += st.expenses.length * 5;
+            if (Array.isArray(st.categories)) {
+                score += st.categories.filter(c => (parseFloat(c && c.budget) || 0) > 0).length * 4;
+            }
+            if (Array.isArray(st.savingsGoals)) score += st.savingsGoals.length * 4;
+            if (Array.isArray(st.debts)) score += st.debts.length * 4;
+            return score;
         }
         let pendingBudgetEditType = null;
 
@@ -4715,6 +4797,7 @@
                 localStorage.removeItem('smart_budget_local_backup_v69');
                 localStorage.removeItem('smart_budget_local_backup_v70');
                 localStorage.removeItem('smart_budget_local_backup_v71');
+                localStorage.setItem('smart_budget_local_backup_v74', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v73', backupPayload);
                 localStorage.setItem('smart_budget_local_backup_v72', backupPayload);
                 // حفظ نسخة محمية إضافية فقط عندما تحتوي البيانات على مصروفات أو ميزانية حقيقية، بحيث لا تمسحها أي حالة صفرية
@@ -4740,6 +4823,8 @@
 
                 // قراءة النسخة الاحتياطية المحلية مع ميزة الإنقاذ الذكي: إذا كانت النسخة الأحدث صفرية بالخطأ وتوجد نسخة سابقة غير فارغة، نستعيد النسخة الممتلئة تلقائياً
                 const candidateKeys = [
+                    'smart_budget_last_non_empty_backup',
+                    'smart_budget_local_backup_v74',
                     'smart_budget_local_backup_v73',
                     'smart_budget_local_backup_v72',
                     'smart_budget_last_non_empty_backup',
@@ -5423,7 +5508,9 @@
             showToast('تم تسجيل الخروج وإلغاء قفل الرمز من التطبيق لعدم وجود حساب نشط', 'info');
         }
 
-        // جلب وتنزيل بيانات الحساب من السحابة مباشرة عند تسجيل الدخول على جهاز جديد (بدون رفع أي حالة صفرية من الجهاز الجديد)
+        // جلب ومزامنة بيانات الحساب من السحابة بذكاء:
+        // - إذا كان الجهاز الجديد فارغاً والسحابة فيها بيانات -> ينزل بيانات السحابة فوراً.
+        // - إذا كان الجهاز فيه بياناتك الحقيقية والسحابة مصفرة -> يحافظ على بيانات جهازك ويرفعها لإصلاح السحابة!
         async function pullCloudAccountDataOnLogin(phone) {
             if (!firestoreDb || !FB || !phone) return false;
             const phoneKey = String(phone).replace(/[^0-9+]/g, '');
@@ -5436,22 +5523,38 @@
                 } catch (e) {
                     docSnap = await FB.getDoc(targetDocRef);
                 }
+                const localIsEmpty = isStateEffectivelyEmpty(APP_STATE);
                 if (docSnap && docSnap.exists()) {
                     const rawData = docSnap.data();
                     let statePayload = rawData.state ? rawData.state : rawData;
-                    // إنقاذ تلقائي: إذا كانت النسخة السحابية الحالية قد تصفرت بالخطأ وتوجد نسخة سحابية غير فارغة (lastNonEmptyState)، نسترجعها فوراً
                     if (isStateEffectivelyEmpty(statePayload) && !statePayload?.isExplicitFactoryReset && rawData.lastNonEmptyState && !isStateEffectivelyEmpty(rawData.lastNonEmptyState)) {
                         statePayload = rawData.lastNonEmptyState;
                     }
-                    if (statePayload) {
-                        applyCloudDataToAppState(statePayload, true);
-                        hasCompletedInitialCloudSyncForCurrentSession = true;
+                    const cloudIsEmpty = isStateEffectivelyEmpty(statePayload);
+                    hasCompletedInitialCloudSyncForCurrentSession = true;
+                    if (!localIsEmpty && cloudIsEmpty) {
+                        // الجهاز الحالي يحتوي على بياناتك بينما النسخة السحابية مصفرة -> نحافظ على بيانات جهازك ونحدث السحابة بها فوراً!
+                        APP_STATE.lastModifiedAt = Date.now();
+                        localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
+                        await saveCloudData();
                         return true;
                     }
+                    if (statePayload) {
+                        // لا نفرض الكتابة الفوقية (forceCloudOverwrite) إلا إذا كان الجهاز الحالي فارغاً تماماً
+                        applyCloudDataToAppState(statePayload, localIsEmpty);
+                        return true;
+                    }
+                } else {
+                    hasCompletedInitialCloudSyncForCurrentSession = true;
+                    if (!localIsEmpty) {
+                        APP_STATE.lastModifiedAt = Date.now();
+                        localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
+                        await saveCloudData();
+                    }
                 }
-                hasCompletedInitialCloudSyncForCurrentSession = true;
             } catch (err) {
                 console.error('Error pulling cloud account data on login:', err);
+                hasCompletedInitialCloudSyncForCurrentSession = true;
             }
             return false;
         }
@@ -5464,46 +5567,67 @@
             const localMod = localIsEmpty ? 0 : Number(APP_STATE.lastModifiedAt || localStorage.getItem('smart_budget_last_modified_at') || 0);
             const cloudMod = Number(cloudData.lastModifiedAt || 0);
 
-            // حماية ذهبية 1: إذا كان هذا الجهاز يحتوي على بيانات حقيقية (مصروفات/ميزانية/أهداف) بينما السحابة فارغة (بسبب فتح جهاز جديد فارغ سابقاً)،
-            // نمنع السحابة الفارغة من تصفير هذا الجهاز، بل نرفع بيانات هذا الجهاز الحقيقية فوراً لإصلاح واستعادة الحساب في السحابة!
-            if (!localIsEmpty && cloudIsEmpty && !cloudData.isExplicitFactoryReset) {
+            // حماية ذهبية 1: إذا كان هذا الجهاز يحتوي على بيانات حقيقية بينما السحابة فارغة أو مصفرة،
+            // نمنع السحابة الفارغة من تصفير هذا الجهاز قطعياً، ونرفع بيانات الجهاز الحقيقية لإصلاح السحابة!
+            if (!localIsEmpty && cloudIsEmpty) {
                 hasCompletedInitialCloudSyncForCurrentSession = true;
+                APP_STATE.lastModifiedAt = Date.now();
+                localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
                 hasPendingCloudSave = true;
-                setTimeout(() => saveCloudData(), 150);
+                setTimeout(() => saveCloudData(), 100);
                 return;
             }
 
-            // حماية ذهبية 2: إذا كان الجهاز الجديد فارغاً (localIsEmpty === true) والسحابة فيها بيانات، ننزل بيانات السحابة دائماً وفوراً على الجهاز الجديد مهما كانت التواريخ!
-            // أما إذا كان كلاهما يحتوي على بيانات حقيقية ولم يكن طلب سحب مباشر عند تسجيل الدخول (forceCloudOverwrite === false)، فنحترم الأحدث زمنياً.
-            if (!forceCloudOverwrite && !localIsEmpty && !cloudIsEmpty && (localMod >= cloudMod || isSavingToCloud || hasPendingCloudSave || (Date.now() - lastLocalMutationTime < 8000))) {
-                if (localMod > cloudMod) {
-                    hasPendingCloudSave = true;
-                    setTimeout(() => saveCloudData(), 150);
+            // حماية ذهبية 2: إذا كان كلا الجهاز والسحابة يحتويان على بيانات، ولكن النسخة المحلية أحدث زمنياً أو أغنى بالبيانات بينما النسخة السحابية مصفرة الميزانية، نحمي النسخة المحلية
+            const localScore = getFinancialStateRichnessScore(APP_STATE);
+            const cloudScore = getFinancialStateRichnessScore(cloudData);
+            if (!localIsEmpty && !cloudIsEmpty && !forceCloudOverwrite) {
+                if (localMod >= cloudMod || isSavingToCloud || hasPendingCloudSave || (Date.now() - lastLocalMutationTime < 8000) || (localScore > cloudScore && (parseFloat(cloudData.monthlyBudget) || 0) === 0 && (parseFloat(APP_STATE.monthlyBudget) || 0) > 0)) {
+                    if (localMod > cloudMod || localScore > cloudScore) {
+                        APP_STATE.lastModifiedAt = Date.now();
+                        localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
+                        hasPendingCloudSave = true;
+                        setTimeout(() => saveCloudData(), 150);
+                    }
+                    return;
                 }
-                return;
             }
 
             isSyncingFromCloud = true;
             sanitizeLegacyDefaultBudgets(cloudData);
             APP_STATE.isExplicitFactoryReset = Boolean(cloudData.isExplicitFactoryReset);
-            if (cloudData.monthlyBudget !== undefined) APP_STATE.monthlyBudget = cloudData.monthlyBudget;
-            if (cloudData.dailyBudget !== undefined) APP_STATE.dailyBudget = cloudData.dailyBudget;
-            if (cloudData.bankBalance !== undefined) setSafeBankBalance(cloudData.bankBalance);
+
+            // عدم السماح لقيمة صفرية قادمة من لقطة سحابية قديمة بمسح ميزانية أو رصيد غير صفري موجود محلياً ما لم يكن الجهاز المحلي فارغاً
+            if (cloudData.monthlyBudget !== undefined && (localIsEmpty || (parseFloat(cloudData.monthlyBudget) || 0) > 0 || (parseFloat(APP_STATE.monthlyBudget) || 0) === 0 || cloudData.isExplicitFactoryReset)) {
+                APP_STATE.monthlyBudget = cloudData.monthlyBudget;
+            }
+            if (cloudData.dailyBudget !== undefined && (localIsEmpty || (parseFloat(cloudData.dailyBudget) || 0) > 0 || (parseFloat(APP_STATE.dailyBudget) || 0) === 0 || cloudData.isExplicitFactoryReset)) {
+                APP_STATE.dailyBudget = cloudData.dailyBudget;
+            }
+            if (cloudData.bankBalance !== undefined && (localIsEmpty || (parseFloat(cloudData.bankBalance) || 0) !== 0 || getSafeBankBalance() === 0 || cloudData.isExplicitFactoryReset)) {
+                setSafeBankBalance(cloudData.bankBalance);
+            }
             if (cloudData.currency !== undefined) APP_STATE.currency = cloudData.currency;
-            if (cloudData.activationCode !== undefined) APP_STATE.activationCode = cloudData.activationCode;
+            if (cloudData.activationCode !== undefined && (cloudData.activationCode || localIsEmpty)) APP_STATE.activationCode = cloudData.activationCode;
             if (cloudData.em633FixedV71 !== undefined) APP_STATE.em633FixedV71 = Boolean(cloudData.em633FixedV71);
             if (cloudData.emergencySaved !== undefined) APP_STATE.emergencySaved = cloudData.emergencySaved;
-            if (Array.isArray(cloudData.emergencyFundHistory)) APP_STATE.emergencyFundHistory = cloudData.emergencyFundHistory;
-            if (Array.isArray(cloudData.savingsHistory)) APP_STATE.savingsHistory = cloudData.savingsHistory;
-            if (Array.isArray(cloudData.splitBills)) APP_STATE.splitBills = cloudData.splitBills;
-            if (Array.isArray(cloudData.debts)) APP_STATE.debts = cloudData.debts;
-            if (Array.isArray(cloudData.debtsHistory)) APP_STATE.debtsHistory = cloudData.debtsHistory;
-            if (Array.isArray(cloudData.monthlyArchives)) APP_STATE.monthlyArchives = cloudData.monthlyArchives;
+            if (Array.isArray(cloudData.emergencyFundHistory) && (cloudData.emergencyFundHistory.length > 0 || localIsEmpty)) APP_STATE.emergencyFundHistory = cloudData.emergencyFundHistory;
+            if (Array.isArray(cloudData.savingsHistory) && (cloudData.savingsHistory.length > 0 || localIsEmpty)) APP_STATE.savingsHistory = cloudData.savingsHistory;
+            if (Array.isArray(cloudData.splitBills) && (cloudData.splitBills.length > 0 || localIsEmpty)) APP_STATE.splitBills = cloudData.splitBills;
+            if (Array.isArray(cloudData.debts) && (cloudData.debts.length > 0 || localIsEmpty)) APP_STATE.debts = cloudData.debts;
+            if (Array.isArray(cloudData.debtsHistory) && (cloudData.debtsHistory.length > 0 || localIsEmpty)) APP_STATE.debtsHistory = cloudData.debtsHistory;
+            if (Array.isArray(cloudData.monthlyArchives) && (cloudData.monthlyArchives.length > 0 || localIsEmpty)) APP_STATE.monthlyArchives = cloudData.monthlyArchives;
             if (Array.isArray(cloudData.deletedExpenseIds)) {
                 const mergedDeleted = new Set([...(APP_STATE.deletedExpenseIds || []), ...cloudData.deletedExpenseIds]);
                 APP_STATE.deletedExpenseIds = Array.from(mergedDeleted).slice(-200);
             }
-            if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) APP_STATE.categories = cloudData.categories;
+            if (Array.isArray(cloudData.categories) && cloudData.categories.length > 0) {
+                const cloudHasCatBudget = cloudData.categories.some(c => (parseFloat(c && c.budget) || 0) > 0);
+                const localHasCatBudget = Array.isArray(APP_STATE.categories) && APP_STATE.categories.some(c => (parseFloat(c && c.budget) || 0) > 0);
+                if (localIsEmpty || cloudHasCatBudget || !localHasCatBudget || cloudData.isExplicitFactoryReset) {
+                    APP_STATE.categories = cloudData.categories;
+                }
+            }
             if (Array.isArray(cloudData.expenses)) {
                 const deletedSet = new Set(APP_STATE.deletedExpenseIds || []);
                 const currentLocal = (!localIsEmpty && Array.isArray(APP_STATE.expenses)) ? APP_STATE.expenses : [];
@@ -5646,7 +5770,7 @@
                         }
                         hasCompletedInitialCloudSyncForCurrentSession = true;
                         if (statePayload && !isSyncingFromCloud) {
-                            applyCloudDataToAppState(statePayload, localIsEmpty || isFirstSync);
+                            applyCloudDataToAppState(statePayload, localIsEmpty);
                         }
                     } else {
                         hasCompletedInitialCloudSyncForCurrentSession = true;
@@ -5685,14 +5809,8 @@
                 FB = fbFirestoreModule;
                 const firebaseApp = fbAppModule.initializeApp(firebaseConfig);
                 
-                // تفعيل الكاش المحلي (Offline Persistence) لفتح التطبيق والمزامنة فوراً
-                try {
-                    firestoreDb = FB.initializeFirestore(firebaseApp, {
-                        localCache: FB.persistentLocalCache({ tabManager: FB.persistentMultipleTabManager() })
-                    });
-                } catch(e) {
-                    firestoreDb = FB.getFirestore(firebaseApp);
-                }
+                // الاتصال المباشر بقاعدة البيانات السحابية الحية لمنع الكاش القديم من إرجاع نسخة مصفرة سابقة
+                firestoreDb = FB.getFirestore(firebaseApp);
 
                 await subscribeToActiveCloudDocument();
                 if (hasPendingCloudSave && !isStateEffectivelyEmpty(APP_STATE)) {
@@ -10579,17 +10697,134 @@ Return JSON:
             if(n) { n.read = true; savePersistentNotifications(); renderNotifications(); }
         }
 
+        let activeAllNotifsFilter = 'all';
+
+        function openAllNotificationsModal(filterMode = 'all') {
+            activeAllNotifsFilter = filterMode || 'all';
+            closeAllTopDropdowns();
+            renderAllNotificationsModal();
+            openModal('allNotificationsModal');
+        }
+
+        function setAllNotificationsFilter(filterMode) {
+            activeAllNotifsFilter = filterMode || 'all';
+            renderAllNotificationsModal();
+        }
+
+        function markAllNotificationsRead() {
+            if (!Array.isArray(APP_STATE.notifications) || APP_STATE.notifications.length === 0) return;
+            APP_STATE.notifications.forEach(n => { if (n) n.read = true; });
+            savePersistentNotifications();
+            renderNotifications();
+            renderAllNotificationsModal();
+            showToast('تم تحديد جميع الإشعارات كمقروءة ✅', 'success', true);
+        }
+
+        function renderAllNotificationsModal() {
+            const listEl = document.getElementById('all-notifications-full-list');
+            const subEl = document.getElementById('all-notifs-summary-subtitle');
+            const tabsContainer = document.getElementById('all-notifs-filter-tabs');
+            if (!listEl) return;
+
+            const allNotifs = Array.isArray(APP_STATE.notifications) ? APP_STATE.notifications : [];
+            const unreadCount = allNotifs.filter(n => n && !n.read).length;
+
+            if (subEl) {
+                subEl.innerHTML = `إجمالي الإشعارات: <strong>${allNotifs.length}</strong> • غير المقروءة: <strong style="color:${unreadCount > 0 ? 'var(--primary-color)' : 'var(--success)'};">${unreadCount}</strong>`;
+            }
+
+            if (tabsContainer) {
+                tabsContainer.querySelectorAll('button[data-filter]').forEach(btn => {
+                    const f = btn.getAttribute('data-filter');
+                    if (f === activeAllNotifsFilter) {
+                        btn.style.background = 'var(--primary-color)';
+                        btn.style.color = '#ffffff';
+                        btn.style.borderColor = 'var(--primary-color)';
+                    } else {
+                        btn.style.background = 'var(--surface-color)';
+                        btn.style.color = 'var(--text-main)';
+                        btn.style.borderColor = 'var(--border-color)';
+                    }
+                });
+            }
+
+            let filtered = allNotifs;
+            if (activeAllNotifsFilter === 'unread') {
+                filtered = allNotifs.filter(n => n && !n.read);
+            } else if (activeAllNotifsFilter === 'alerts') {
+                filtered = allNotifs.filter(n => n && (n.type === 'danger' || n.type === 'warning'));
+            } else if (activeAllNotifsFilter === 'success') {
+                filtered = allNotifs.filter(n => n && n.type === 'success');
+            }
+
+            listEl.innerHTML = '';
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div style="padding:35px 16px; text-align:center; color:var(--text-muted); background:var(--surface-color); border-radius:16px; border:1px dashed var(--border-color);">
+                    <i class="fas fa-bell-slash" style="font-size:2.2em; margin-bottom:10px; opacity:0.5;"></i>
+                    <div style="font-weight:800; font-size:0.95em;">لا توجد إشعارات في هذا القسم حالياً</div>
+                </div>`;
+                return;
+            }
+
+            filtered.forEach(n => {
+                let borderCol = 'var(--primary-color)';
+                let iconHtml = '<i class="fas fa-bell text-primary"></i>';
+                let typeBadge = '<span style="font-size:0.7em; padding:2px 8px; border-radius:999px; background:rgba(255,85,32,0.12); color:var(--primary-color); font-weight:800;">إشعار</span>';
+                if (n.type === 'danger') {
+                    borderCol = 'var(--danger)';
+                    iconHtml = '<i class="fas fa-circle-exclamation text-danger"></i>';
+                    typeBadge = '<span style="font-size:0.7em; padding:2px 8px; border-radius:999px; background:rgba(239,68,68,0.12); color:var(--danger); font-weight:800;">تنبيه هام</span>';
+                } else if (n.type === 'warning') {
+                    borderCol = 'var(--warning)';
+                    iconHtml = '<i class="fas fa-triangle-exclamation text-warning"></i>';
+                    typeBadge = '<span style="font-size:0.7em; padding:2px 8px; border-radius:999px; background:rgba(245,158,11,0.12); color:var(--warning); font-weight:800;">تحذير</span>';
+                } else if (n.type === 'success') {
+                    borderCol = 'var(--success)';
+                    iconHtml = '<i class="fas fa-check-circle text-success"></i>';
+                    typeBadge = '<span style="font-size:0.7em; padding:2px 8px; border-radius:999px; background:rgba(16,185,129,0.12); color:var(--success); font-weight:800;">عملية ناجحة</span>';
+                }
+
+                const statusBadge = n.read
+                    ? '<span style="font-size:0.68em; color:var(--text-muted); font-weight:700;"><i class="fas fa-check"></i> مقروء</span>'
+                    : '<span style="font-size:0.68em; background:var(--primary-color); color:#fff; padding:1px 7px; border-radius:999px; font-weight:800;">جديد</span>';
+
+                listEl.innerHTML += `
+                    <div style="padding:14px 16px; border-radius:14px; border:1px solid var(--border-color); background:${n.read ? 'var(--surface-color)' : 'rgba(255,85,32,0.06)'}; border-right:4px solid ${n.read ? 'var(--border-color)' : borderCol}; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; transition:all 0.2s ease;">
+                        <div style="flex:1; cursor:pointer;" onclick="markNotifRead(${n.id}); renderAllNotificationsModal();">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+                                ${typeBadge}
+                                ${statusBadge}
+                                <span style="font-size:0.75em; color:var(--text-muted); font-weight:700;" dir="ltr"><i class="far fa-clock"></i> ${n.date || ''}</span>
+                            </div>
+                            <div style="font-size:0.93em; font-weight:${n.read ? '600' : '800'}; line-height:1.55; color:var(--text-main);">
+                                ${iconHtml} ${n.text}
+                            </div>
+                        </div>
+                        <button type="button" onclick="deleteSingleNotification(event, ${n.id})" style="background:rgba(239,68,68,0.1); color:var(--danger); border:1px solid rgba(239,68,68,0.25); width:30px; height:30px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;" title="حذف الإشعار">
+                            <i class="fas fa-trash-can" style="font-size:0.85em;"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
         function deleteSingleNotification(e, id) {
             if (e) e.stopPropagation();
             APP_STATE.notifications = (APP_STATE.notifications || []).filter(x => x.id !== id);
             savePersistentNotifications();
             renderNotifications();
+            if (document.getElementById('allNotificationsModal')?.style.display === 'flex') {
+                renderAllNotificationsModal();
+            }
         }
 
         function clearAllNotifications() {
             APP_STATE.notifications = [];
             savePersistentNotifications();
             renderNotifications();
+            if (document.getElementById('allNotificationsModal')?.style.display === 'flex') {
+                renderAllNotificationsModal();
+            }
         }
 
         function generateAiAutomationRecommendations() {
@@ -11314,7 +11549,7 @@ Return JSON:
                 </table>
 
                 <div style="margin-top: 26px; padding-top: 12px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; font-size: 11px; color: #64748b;">
-                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy • AI Cloud V7.3)</span>
+                    <span>تم استخراج هذا التقرير آلياً من نظام الميزانية الذكية (Finexy • AI Cloud V7.4)</span>
                     <span dir="ltr">${sDate} -> ${eDate}</span>
                 </div>
             `;
@@ -11869,7 +12104,7 @@ Return JSON:
                 notifications: APP_STATE.notifications || [],
                 lastModifiedAt: APP_STATE.lastModifiedAt || Date.now(),
                 backupFormat: 'Finexy-Full-With-Receipts',
-                backupVersion: 'Finexy • AI Cloud V7.3',
+                backupVersion: 'Finexy • AI Cloud V7.4',
                 exportedAt: new Date().toISOString(),
                 receiptsCount: Object.keys(fullReceiptsMap).length
             };
@@ -11911,8 +12146,17 @@ Return JSON:
                         return;
                     }
 
-                    // استعادة بيانات الحساب الأساسية
+                    // الاحتفاظ بجلسة الحساب المسجل حالياً حتى تُرفع النسخة المستعادة إلى السحابة مباشرة ولا تمسحها السحابة القديمة
+                    const currentActiveAuth = (APP_STATE.userAuth && APP_STATE.userAuth.phone) ? APP_STATE.userAuth : null;
                     Object.assign(APP_STATE, data);
+                    if (currentActiveAuth) {
+                        APP_STATE.userAuth = currentActiveAuth;
+                    }
+                    APP_STATE.isExplicitFactoryReset = false;
+                    APP_STATE.lastModifiedAt = Date.now();
+                    lastLocalMutationTime = Date.now();
+                    hasCompletedInitialCloudSyncForCurrentSession = true;
+                    localStorage.setItem('smart_budget_last_modified_at', String(APP_STATE.lastModifiedAt));
                     APP_STATE.geminiApiKey = localStorage.getItem('smart_budget_gemini_key') || 'AQ.Ab8RN6JV0shJ4ARj0iiaFMCMlcEH-VmOF5uIGddPXcvdKHYvTw';
 
                     // استعادة وتثبيت كافة صور الفواتير في الذاكرة ومستودع IndexedDB
@@ -13148,9 +13392,27 @@ self.addEventListener('fetch', (e) => {
             }
         }
 
+        function syncTopHeaderSpacerHeight() {
+            const headerEl = document.getElementById('v13-top-navigation');
+            const spacerEl = document.getElementById('v13-top-header-spacer');
+            if (headerEl && spacerEl) {
+                const h = headerEl.offsetHeight;
+                if (h > 0) spacerEl.style.height = h + 'px';
+            }
+        }
+
         window.onload = function() {
             initSavedThemeMode();
             initInstallablePwaSetup();
+            syncTopHeaderSpacerHeight();
+            window.addEventListener('resize', syncTopHeaderSpacerHeight);
+            if (typeof ResizeObserver !== 'undefined') {
+                const headerEl = document.getElementById('v13-top-navigation');
+                if (headerEl) {
+                    const ro = new ResizeObserver(() => syncTopHeaderSpacerHeight());
+                    ro.observe(headerEl);
+                }
+            }
             loadLocalData();
             if (APP_STATE.userAuth && APP_STATE.userAuth.phone) {
                 if (APP_STATE.userAuth.email) savePhoneEmailMappingLocally(APP_STATE.userAuth.phone, APP_STATE.userAuth.email);
