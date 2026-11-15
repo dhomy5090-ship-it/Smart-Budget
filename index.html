@@ -4797,12 +4797,24 @@
             return parsed;
         }
 
+        let lastCloudErrorReason = '';
         async function firestoreRestGetProfile(phoneKey) {
             if (!phoneKey) return null;
             const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID_CONST}/databases/(default)/documents/user_profiles/${encodeURIComponent(phoneKey)}?key=${FIREBASE_API_KEY_CONST}&t=${Date.now()}`;
             const res = await withCloudTimeout(fetch(url, { method: 'GET', cache: 'no-store' }), 5000);
-            if (res.status === 404) return { exists: false, data: null };
-            if (!res.ok) throw new Error('REST_GET_FAILED_' + res.status);
+            if (res.status === 404) {
+                lastCloudErrorReason = '';
+                return { exists: false, data: null };
+            }
+            if (res.status === 403 || res.status === 401) {
+                lastCloudErrorReason = 'PERMISSION_DENIED';
+                throw new Error('PERMISSION_DENIED_' + res.status);
+            }
+            if (!res.ok) {
+                lastCloudErrorReason = 'HTTP_' + res.status;
+                throw new Error('REST_GET_FAILED_' + res.status);
+            }
+            lastCloudErrorReason = '';
             const json = await res.json();
             const data = parseFirestoreRestDocument(json);
             return { exists: Boolean(data), data };
@@ -4855,77 +4867,105 @@
             return true;
         }
 
-        // جلب أفضل وأحدث مستند سحابي للحساب عبر فحص كافة الصيغ المحتملة لرقم الجوال (05xxxxxxxx, +9665xxxxxxxx, 5xxxxxxxx) وتوحيدها
+        async function fetchSingleCandidateCloudProfile(candidateKey) {
+            let rawData = null;
+            let gotPermissionDenied = false;
+            if (firestoreDb && FB) {
+                try {
+                    const targetDocRef = FB.doc(firestoreDb, 'user_profiles', candidateKey);
+                    let docSnap = null;
+                    try {
+                        docSnap = await withCloudTimeout(FB.getDocFromServer(targetDocRef), 2800);
+                    } catch (eServer) {
+                        if (eServer && String(eServer.code || eServer.message || '').includes('permission')) {
+                            gotPermissionDenied = true;
+                        }
+                        docSnap = await withCloudTimeout(FB.getDoc(targetDocRef), 1800);
+                    }
+                    if (docSnap && docSnap.exists()) {
+                        rawData = docSnap.data();
+                        if (rawData && typeof rawData.stateJson === 'string' && (!rawData.state || isStateEffectivelyEmpty(rawData.state))) {
+                            try { rawData.state = JSON.parse(rawData.stateJson); } catch (e) {}
+                        }
+                        lastCloudTransportMode = 'sdk';
+                        isCloudConnected = true;
+                        lastCloudErrorReason = '';
+                    }
+                } catch (sdkErr) {
+                    if (sdkErr && String(sdkErr.code || sdkErr.message || '').includes('permission')) {
+                        gotPermissionDenied = true;
+                    }
+                }
+            }
+            if (!rawData) {
+                try {
+                    const restRes = await firestoreRestGetProfile(candidateKey);
+                    if (restRes) {
+                        isCloudConnected = true;
+                        lastCloudTransportMode = 'rest';
+                        if (restRes.exists && restRes.data) {
+                            rawData = restRes.data;
+                        }
+                    }
+                } catch (restErr) {
+                    if (restErr && String(restErr.message || '').includes('PERMISSION_DENIED')) {
+                        gotPermissionDenied = true;
+                    }
+                }
+            }
+            if (gotPermissionDenied && !rawData) {
+                lastCloudErrorReason = 'PERMISSION_DENIED';
+            }
+            return { candidateKey, rawData };
+        }
+
+        // جلب أفضل وأحدث مستند سحابي للحساب بسرعة فائقة (فحص الصيغة القياسية أولاً ثم البقية بالتوازي)
         async function fetchBestCloudProfileForPhone(rawPhone) {
             const candidates = getCandidatePhoneKeys(rawPhone);
             if (!candidates.length) return { exists: false, data: null, matchedKey: '' };
             const canonicalKey = candidates[0];
+            lastCloudErrorReason = '';
+
+            // 1. فحص المفتاح القياسي الموحد أولاً مباشرة
+            const firstRes = await fetchSingleCandidateCloudProfile(canonicalKey);
+            let results = [firstRes];
+
+            // 2. إذا لم يُعثر على بيانات في المفتاح القياسي (أو كانت فارغة) ولم يُرفض الاتصال بالصلاحيات، نفحص بقية الصيغ بالتوازي فوراً
+            const firstHasData = firstRes.rawData && !isStateEffectivelyEmpty(firstRes.rawData.state || firstRes.rawData);
+            if (!firstHasData && lastCloudErrorReason !== 'PERMISSION_DENIED' && candidates.length > 1) {
+                const restResults = await Promise.all(candidates.slice(1).map(k => fetchSingleCandidateCloudProfile(k)));
+                results = results.concat(restResults);
+            }
+
             let bestDocData = null;
             let bestMatchedKey = canonicalKey;
             let bestScore = -1;
             let bestRev = -1;
             let bestMod = -1;
 
-            for (const candidateKey of candidates) {
-                let rawData = null;
-                // المحاولة 1: عبر Firebase SDK مع مهلة زمنية قصيرة حتى لا يعلق أبداً
-                if (firestoreDb && FB) {
-                    try {
-                        const targetDocRef = FB.doc(firestoreDb, 'user_profiles', candidateKey);
-                        let docSnap = null;
-                        try {
-                            docSnap = await withCloudTimeout(FB.getDocFromServer(targetDocRef), 3500);
-                        } catch (eServer) {
-                            docSnap = await withCloudTimeout(FB.getDoc(targetDocRef), 2500);
-                        }
-                        if (docSnap && docSnap.exists()) {
-                            rawData = docSnap.data();
-                            if (rawData && typeof rawData.stateJson === 'string' && (!rawData.state || isStateEffectivelyEmpty(rawData.state))) {
-                                try { rawData.state = JSON.parse(rawData.stateJson); } catch (e) {}
-                            }
-                            lastCloudTransportMode = 'sdk';
-                            isCloudConnected = true;
-                        }
-                    } catch (sdkErr) {
-                        // في حال تأخر SDK، ننتقل فوراً لمحرك REST المباشر
-                    }
+            for (const item of results) {
+                const rawData = item && item.rawData;
+                if (!rawData) continue;
+                let st = rawData.state ? rawData.state : rawData;
+                if (isStateEffectivelyEmpty(st) && !st?.isExplicitFactoryReset && rawData.lastNonEmptyState && !isStateEffectivelyEmpty(rawData.lastNonEmptyState)) {
+                    st = rawData.lastNonEmptyState;
                 }
-                // المحاولة 2: عبر محرك HTTPS REST المباشر
-                if (!rawData) {
-                    try {
-                        const restRes = await firestoreRestGetProfile(candidateKey);
-                        if (restRes) {
-                            isCloudConnected = true;
-                            lastCloudTransportMode = 'rest';
-                            if (restRes.exists && restRes.data) {
-                                rawData = restRes.data;
-                            }
-                        }
-                    } catch (restErr) {}
-                }
-
-                if (rawData) {
-                    let st = rawData.state ? rawData.state : rawData;
-                    if (isStateEffectivelyEmpty(st) && !st?.isExplicitFactoryReset && rawData.lastNonEmptyState && !isStateEffectivelyEmpty(rawData.lastNonEmptyState)) {
-                        st = rawData.lastNonEmptyState;
-                    }
-                    const richness = getFinancialStateRichnessScore(st);
-                    const rev = Math.max(Number(rawData.syncRevision || 0), Number(st?.syncRevision || 0));
-                    const mod = Math.max(Number(rawData.lastModifiedAt || 0), Number(st?.lastModifiedAt || 0));
-                    const isBetter = (richness > 0 && bestScore <= 0) ||
-                                     (richness > 0 && (mod > bestMod || (mod === bestMod && rev > bestRev))) ||
-                                     (bestDocData === null);
-                    if (isBetter) {
-                        bestDocData = rawData;
-                        bestMatchedKey = candidateKey;
-                        bestScore = richness;
-                        bestRev = rev;
-                        bestMod = mod;
-                    }
+                const richness = getFinancialStateRichnessScore(st);
+                const rev = Math.max(Number(rawData.syncRevision || 0), Number(st?.syncRevision || 0));
+                const mod = Math.max(Number(rawData.lastModifiedAt || 0), Number(st?.lastModifiedAt || 0));
+                const isBetter = (richness > 0 && bestScore <= 0) ||
+                                 (richness > 0 && (mod > bestMod || (mod === bestMod && rev > bestRev))) ||
+                                 (bestDocData === null);
+                if (isBetter) {
+                    bestDocData = rawData;
+                    bestMatchedKey = item.candidateKey;
+                    bestScore = richness;
+                    bestRev = rev;
+                    bestMod = mod;
                 }
             }
             updateCloudSyncStatusBadge();
-            return { exists: Boolean(bestDocData), data: bestDocData, matchedKey: bestMatchedKey, canonicalKey };
+            return { exists: Boolean(bestDocData), data: bestDocData, matchedKey: bestMatchedKey, canonicalKey, errorReason: lastCloudErrorReason };
         }
 
         // حفظ واسترجاع رمز الـ PIN المرتبط بكل حساب (رقم جوال) ليبقى محفوظاً للحساب عند إعادة تسجيل الدخول، مع إلغائه من الجهاز عند تسجيل الخروج
@@ -5881,9 +5921,16 @@
                 renderPinSettings();
                 renderLinkedAccountSettings();
                 closeModal('userAuthModal');
-                await pullCloudAccountDataOnLogin(phone);
+                showToast(`جاري جلب بيانات حسابك (${phone}) من السحابة... ☁️`, 'info');
+                const pulledRecOk = await pullCloudAccountDataOnLogin(phone, isStateEffectivelyEmpty(APP_STATE));
                 await subscribeToActiveCloudDocument();
-                showToast(`تم تسجيل الدخول وجلب بيانات حسابك من السحابة برقم (${phone}) بنجاح! 📱☁️`, 'success');
+                if (lastCloudErrorReason === 'PERMISSION_DENIED') {
+                    showToast('⚠️ السيرفر (Firebase) رفض الوصول للبيانات (Permission Denied). يرجى تحديث Firestore Rules', 'danger', true);
+                } else if (pulledRecOk && !isStateEffectivelyEmpty(APP_STATE)) {
+                    showToast(`✅ تم تسجيل الدخول وجلب بيانات حسابك من السحابة برقم (${normalizePhoneKey(phone)}) بنجاح! 📱☁️`, 'success', true);
+                } else {
+                    showToast(`تم الدخول برقم (${normalizePhoneKey(phone)})، ولم تُرفع بيانات من الكمبيوتر للسحابة بعد. اضغط (حفظ) على الكمبيوتر أولاً.`, 'warning', true);
+                }
                 return;
             }
 
@@ -5990,11 +6037,17 @@
             renderLinkedAccountSettings();
             closeModal('userAuthModal');
 
-            // سحب وتنزيل بيانات الحساب من السحابة أولاً إلى الجهاز الجديد قبل تشغيل المستمع اللحظي
-            await pullCloudAccountDataOnLogin(phone);
+            showToast(`جاري سحب بيانات حسابك (${phone}) من السحابة... ☁️`, 'info');
+            const pulledOk = await pullCloudAccountDataOnLogin(phone, isStateEffectivelyEmpty(APP_STATE));
             await subscribeToActiveCloudDocument();
 
-            showToast(`تم ربط الحساب وتنزيل بياناتك من السحابة بنجاح برقم (${phone}) 📱☁️`, 'success');
+            if (lastCloudErrorReason === 'PERMISSION_DENIED') {
+                showToast('⚠️ السيرفر (Firebase) رفض الوصول للبيانات (Permission Denied). يرجى تمديد صلاحيات Rules في مشروع smart-budget-8f104', 'danger', true);
+            } else if (pulledOk && !isStateEffectivelyEmpty(APP_STATE)) {
+                showToast(`✅ تم تسجيل الدخول وتنزيل كامل بياناتك من السحابة برقم (${normalizePhoneKey(phone)}) بنجاح! 📱☁️`, 'success', true);
+            } else {
+                showToast(`تم تسجيل الدخول برقم (${normalizePhoneKey(phone)})، لكن السحابة لا تحتوي على بيانات محفوظة لهذا الرقم بعد! افتح الكمبيوتر واضغط (حفظ) أو (مزامنة وربط فوري).`, 'warning', true);
+            }
         }
 
         async function logoutUserSession() {
